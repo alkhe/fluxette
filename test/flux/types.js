@@ -1,0 +1,12 @@
+export default {
+	USER: {
+		SETNAME: 'USER_SETNAME',
+		SETEMAIL: 'USER_SETEMAIL'
+	},
+	GAME: {
+		ADDPOINTS: 'GAME_ADDPOINTS',
+		RESET: 'GAME_RESET',
+		WIN: 'GAME_WIN',
+		LOSE: 'GAME_LOSE'
+	}
+}
