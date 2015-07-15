@@ -1,6 +1,16 @@
 # fluxette
 
-`fluxette` is a minimalist Flux implementation, based heavily off of ideas from Dan Abramov's Redux.
+`fluxette` is a minimalist Flux implementation, based heavily off of ideas from [Dan Abramov's (@gaearon) talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
+
+## Table of Contents
+
+* [Install](#install)
+* [Getting Started](#getting-started)
+* [API](#api)
+* [Rehydration](#rehydration)
+* [Isomorphic Flux](#isomorphic-flux)
+* [Asynchronous](#asynchronous)
+* [Todo](#todo)
 
 ## Install
 
@@ -225,6 +235,9 @@ Isomorphic Flux is as easy as creating a new instance of `fluxette`. It is up to
 ```js
 let flux = new Flux(stores);
 ```
+
+## Asynchronous
+Because `fluxette` does not care about how your action creators work, asynchronous data fetching should not be a problem in your application. This makes it easy to work with `React Router`. When you want to update your state, simply call `flux.dispatch(action)`. This can be from a callback, a Promise resolution, or anything else.
 
 ## Todo
 * add an organized test suite
