@@ -1,6 +1,6 @@
 {
   "name": "fluxette",
-  "version": "1.0.1",
+  "version": "0.1.0",
   "description": "Minimalist, functional, and concise Flux.",
   "main": "index.js",
   "directories": {
