@@ -1,9 +1,10 @@
 # fluxette
 
-`fluxette` is a minimalist Flux implementation, based heavily off of ideas from [Dan Abramov's (@gaearon) talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
+`fluxette` is a minimalist Flux implementation, based off of ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
 
 ## Table of Contents
 
+* [Why](#why)
 * [Install](#install)
 * [Getting Started](#getting-started)
 * [API](#api)
@@ -12,13 +13,30 @@
 * [Asynchronous](#asynchronous)
 * [Todo](#todo)
 
+## Why
+
+Why `fluxette`? (Some buzzwords to attract you.)
+
+* declarative and functional
+* isomorphic
+* faciliated rehydration
+* unopinionated
+* loosely coupled
+* unidirectional
+* inverted control
+* no boilerplate
+* extremely concise
+* React integration
+
 ## Install
 
-`npm i --save fluxette`
+```sh
+$ npm i --save fluxette
+```
 
 ## Getting Started
 
-First, create your action types. These types define the behaviors your application, and will be used by your stores and action creators. `fluxette` has no notion of action creators, they are simply userland functions that aid you in creating actions. You can use `fluxette` without action creators at all.
+First, create your action types. These are important, because types define the behaviors your application. They will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
 
 **types.js**
 ```js
@@ -100,10 +118,22 @@ import Flux from 'fluxette';
 import stores from './stores';
 import { user, game } from './creators';
 
-let flux = new Flux(stores);
+const flux = new Flux(stores);
 
 export default flux;
-export let state = ::flux.state
+export const state = ::flux.state
+```
+
+In your application, the majority of your interactions with `fluxette` should consist of dispatching actions.
+
+**something.js**
+```js
+import flux from './flux';
+import game from './flux/creators';
+
+flux.dispatch(game.addpoints(100));
+
+flux.dispatch(game.reset());
 ```
 
 ## API
@@ -193,7 +223,7 @@ flux.history
 ```js
 import { connect } from './flux';
 
-@connect
+@connect()
 export default class extends React.Component {
 	// ...
 	render() {
@@ -222,7 +252,7 @@ When you want to retrieve the state from the previous session, use any method to
 ```js
 let history = getDeserializedActionHistorySomehow();
 
-let flux = new Flux(stores);
+const flux = new Flux(stores);
 
 flux.dispatch(history);
 
@@ -237,7 +267,7 @@ let flux = new Flux(stores);
 ```
 
 ## Asynchronous
-Because `fluxette` does not care about how your action creators work, asynchronous data fetching should not be a problem in your application. This makes it easy to work with `React Router`. When you want to update your state, simply call `flux.dispatch(action)`. This can be from a callback, a Promise resolution, or anything else.
+Because `fluxette` does not care about how your action creators work, asynchronous data fetching should not be a problem in your application. This makes it easy to work with `React Router`. When you want to update your state, simply call `flux.dispatch(action)`. This can be from a callback, a Promise resolution, or something else.
 
 ## Todo
 * add an organized test suite
