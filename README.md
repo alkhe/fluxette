@@ -11,6 +11,7 @@
 * [Rehydration](#rehydration)
 * [Isomorphic Flux](#isomorphic-flux)
 * [Asynchronous](#asynchronous)
+* [Testing](#testing)
 * [Todo](#todo)
 
 ## Why
@@ -269,9 +270,15 @@ let flux = new Flux(stores);
 ## Asynchronous
 Because `fluxette` does not care about how your action creators work, asynchronous data fetching should not be a problem in your application. This makes it easy to work with `React Router`. When you want to update your state, simply call `flux.dispatch(action)`. This can be from a callback, a Promise resolution, or something else.
 
+## Testing
+```sh
+$ npm test
+```
+
 ## Todo
 * add organized tests
 * add build system
 * add more examples
 * add more philosophy and best practices to README
 * submit to HN
+* implement nested stores

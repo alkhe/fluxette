@@ -17,14 +17,16 @@ export default class {
 	}
 	dispatch(...data) {
 		// Normalize array of actions
-		data = normalizeArray(data);
-		// Push all actions onto stack
-		this.history.push(...data);
-		let { stores } = this;
-		// Synchronously process all actions
-		callAllObj(stores, data);
-		// Call all registered listeners
-		callAll(this.hooks, deriveState(stores));
+		data = normalizeArray(data).filter(x => x instanceof Object);
+		if (data.length > 0) {
+			// Push all actions onto stack
+			this.history.push(...data);
+			let { stores } = this;
+			// Synchronously process all actions
+			callAllObj(stores, data);
+			// Call all registered listeners
+			callAll(this.hooks, deriveState(stores));
+		}
 	}
 	hook(fn) {
 		// Add listener
