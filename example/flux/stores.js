@@ -2,7 +2,7 @@ import { Store } from '../..';
 import { USER, GAME } from './types';
 
 export default {
-	user: Store({ username: '',	email: '' }, {
+	user: Store({ username: '', email: '' }, {
 		[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 		[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
 	}),
