@@ -1,4 +1,4 @@
-import _ from './lodash';
+import _ from '../vendor/lodash';
 
 export let deriveState = stores => _.mapValues(stores, store => store());
 
