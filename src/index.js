@@ -1,5 +1,6 @@
 import React from 'react';
 import Store from './store';
+import Set from 'es6-set';
 import { deriveState, normalizeArray, callAll, callAllObj, listenerKey } from './util';
 export { Store };
 

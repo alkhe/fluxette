@@ -34,6 +34,7 @@
   "author": "synchronous",
   "license": "MIT",
   "dependencies": {
+    "es6-set": "^0.1.1",
     "react": "^0.13.3"
   },
   "repository": {
