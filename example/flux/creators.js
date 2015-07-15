@@ -1,7 +1,6 @@
 import { USER, GAME } from './types';
 import { state } from '.';
 
-
 let actions = {
 	user: {
 		setname: name => ({ type: USER.SETNAME, name }),
@@ -25,6 +24,5 @@ let actions = {
 		lose: () => ({ type: GAME.LOSE })
 	}
 };
-
 
 export default actions;

@@ -1,13 +1,12 @@
 import Flux from '../..';
 import stores from './stores';
 import { user, game } from './creators';
-import equal from '../equal';
 
-let log = ::console.log;
-let flux = new Flux(stores);
+const log = ::console.log;
+const flux = new Flux(stores);
 
 export default flux;
-export let state = ::flux.state
+export const state = ::flux.state
 
 flux.hook(log);
 
