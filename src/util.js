@@ -5,15 +5,16 @@ export let deriveState = stores => _.mapValues(stores, store => store());
 export let normalizeArray = _.flattenDeep;
 
 export let callAll = (iterable, ...data) => {
-	for (let fn of iterable) {
-		fn(...data);
+	for (let key in iterable) {
+		iterable[key](...data);
 	}
 };
 
-export let callAllObj = (keyIterable, ...data) => {
-	for (let key in keyIterable) {
-		keyIterable[key](...data);
-	}
-};
+export let listenerKey = Symbol ? Symbol() : '__fluxetteListener' ;
 
-export let listenerKey = Symbol();
+export let deleteFrom = (array, obj) => {
+	let index = array.indexOf(obj);
+	if (~index) {
+		array.splice(index, 1);
+	}
+}

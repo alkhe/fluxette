@@ -1,0 +1,11 @@
+{
+  "framework": "mocha",
+  "before_tests": "browserify ./test/flux.js ./test/store.js ./test/flux.connect.js -t babelify -o ./test/testem.js",
+  "on_exit": "rm ./test/testem.js",
+  "serve_files": ["./test/testem.js"],
+  "src_files": [
+    "./test/flux.js",
+    "./test/store.js",
+    "./test/flux.connect.js"
+  ]
+}

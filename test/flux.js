@@ -46,13 +46,13 @@ describe('Flux', () => {
 		};
 
 		flux = new Flux(stores);
-	});
+	})
 
 	describe('constructor', () => {
 		it('should properly construct flux class', () => {
 			expect(flux).to.have.property('stores', stores);
 			expect(flux).to.have.property('hooks')
-				.that.is.an.instanceof(Set);
+				.that.is.an.instanceof(Array);
 			expect(flux).to.have.property('history')
 				.that.is.an.instanceof(Array)
 				.and.deep.equals([]);
@@ -66,8 +66,8 @@ describe('Flux', () => {
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('connect')
 				.that.is.an.instanceof(Function);
-		});
-	});
+		})
+	})
 
 	describe('state', () => {
 		it('should return state when called', () => {
@@ -81,8 +81,8 @@ describe('Flux', () => {
 					propBB: []
 				}
 			});
-		});
-	});
+		})
+	})
 
 	describe('dispatch', () => {
 		it('should update state when called', () => {
@@ -91,12 +91,7 @@ describe('Flux', () => {
 			expect(state).to.have.deep.property('storeA.propAA', 123);
 			expect(state).to.have.deep.property('storeB.propBA')
 				.that.deep.equals({ num: 6 });
-		});
-		it('should update history when called', () => {
-			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.Y.A }, { type: TYPES.Y.B });
-			expect(flux).to.have.property('history')
-				.that.deep.equals([{ type: TYPES.X.A }, { type: TYPES.Y.A }, { type: TYPES.Y.B }]);
-		});
+		})
 		it('should dispatch arrays', () => {
 			flux.dispatch([{ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B }]);
 			let state = flux.state();
@@ -104,7 +99,7 @@ describe('Flux', () => {
 				.that.deep.equals({ propAA: 234, propAB: 'thing' });
 			expect(state).to.have.property('storeB')
 				.that.deep.equals({ propBA: { num: 9 }, propBB: ['3', '4'] });
-		});
+		})
 		it('should dispatch argument lists', () => {
 			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B });
 			let state = flux.state();
@@ -112,7 +107,7 @@ describe('Flux', () => {
 				.that.deep.equals({ propAA: 234, propAB: 'thing' });
 			expect(state).to.have.property('storeB')
 				.that.deep.equals({ propBA: { num: 9 }, propBB: ['3', '4'] });
-		});
+		})
 		it('should not dispatch when nothing is passed', () => {
 			flux.hook(listener);
 			flux.dispatch();
@@ -122,6 +117,14 @@ describe('Flux', () => {
 			flux.hook(listener);
 			flux.dispatch(undefined, [0, false, null]);
 			expect(listener).not.to.have.been.called;
+		})
+	})
+
+	describe('history', () => {
+		it('should be updated on dispatch', () => {
+			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.Y.A }, { type: TYPES.Y.B });
+			expect(flux).to.have.property('history')
+				.that.deep.equals([{ type: TYPES.X.A }, { type: TYPES.Y.A }, { type: TYPES.Y.B }]);
 		})
 	});
 
@@ -147,4 +150,4 @@ describe('Flux', () => {
 			expect(listener).to.have.been.called.twice;
 		})
 	})
-});
+})

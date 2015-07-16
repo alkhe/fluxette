@@ -1,7 +1,6 @@
 import React from 'react';
 import Store from './store';
-import Set from 'es6-set';
-import { deriveState, normalizeArray, callAll, callAllObj, listenerKey } from './util';
+import { deriveState, normalizeArray, callAll, callAllObj, deleteFrom, listenerKey } from './util';
 export { Store };
 
 export default class {
@@ -9,7 +8,7 @@ export default class {
 		// Top-level Stores
 		this.stores = stores;
 		// Dispatcher
-		this.hooks = new Set();
+		this.hooks = [];
 		// Action Stack
 		this.history = [];
 	}
@@ -24,43 +23,38 @@ export default class {
 			this.history.push(...data);
 			let { stores } = this;
 			// Synchronously process all actions
-			callAllObj(stores, data);
+			callAll(stores, data);
 			// Call all registered listeners
 			callAll(this.hooks, deriveState(stores));
 		}
 	}
 	hook(fn) {
 		// Add listener
-		this.hooks.add(fn);
+		this.hooks.push(fn);
 	}
 	unhook(fn) {
 		// Remove listener
-		this.hooks.delete(fn);
+		deleteFrom(this.hooks, fn);
 	}
-	connect(specifier) {
+	connect(specifier = data => data) {
 		// decorator for React class
 		let { hooks } = this;
 		let state = ::this.state;
 		return (Component) =>
-			class extends React.Component {
+			class extends Component {
 				constructor(...args) {
 					super(...args);
 					// Initial state
 					this.state = state();
 					// Ensure the same reference of setState
-					this[listenerKey] = ::this.setState;
+					this[listenerKey] = data => super.setState(specifier(data));
 					// Register setState
-					hooks.add(this[listenerKey]);
+					hooks.push(this[listenerKey]);
 				}
 				componentWillUnmount(...args) {
 					super.componentWillUnmount(...args);
 					// Unregister setState
-					hooks.delete(this[listenerKey]);
-				}
-				render() {
-					let { props, state } = this;
-					// Proxy props and state, but call the specifier on the state if provided
-					return <Component { ...props } { ...(specifier ? specifier(state) : state) } />;
+					deleteFrom(hooks, this[listenerKey]);
 				}
 			}
 	}
