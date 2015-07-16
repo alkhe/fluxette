@@ -40,7 +40,7 @@ export default class {
 		// decorator for React class
 		let { hooks } = this;
 		let state = ::this.state;
-		return (Component) =>
+		return Component =>
 			class extends Component {
 				constructor(...args) {
 					super(...args);

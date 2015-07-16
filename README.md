@@ -19,6 +19,7 @@
 Why `fluxette`? (Some buzzwords to attract you.)
 
 * declarative and functional
+* minimalist
 * isomorphic
 * faciliated rehydration
 * unopinionated
@@ -26,7 +27,7 @@ Why `fluxette`? (Some buzzwords to attract you.)
 * unidirectional
 * inverted control
 * no boilerplate
-* extremely concise
+* concise
 * React integration
 
 ## Install

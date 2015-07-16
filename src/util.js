@@ -1,6 +1,12 @@
 import _ from '../vendor/lodash';
 
-export let deriveState = stores => _.mapValues(stores, store => store());
+export let deriveState = stores => {
+	let obj = {};
+	for (let key in stores) {
+		obj[key] = stores[key]();
+	}
+	return obj;
+};
 
 export let normalizeArray = _.flattenDeep;
 
