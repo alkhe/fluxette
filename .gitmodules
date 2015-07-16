@@ -1,0 +1,3 @@
+[submodule "examples/fluxette-todo"]
+	path = examples/fluxette-todo
+	url = https://github.com/edge/fluxette-todo

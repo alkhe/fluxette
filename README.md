@@ -38,7 +38,7 @@ $ npm i --save fluxette
 
 ## Getting Started
 
-First, create your action types. These are important, because types define the behaviors your application. They will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
+First, create your action types. These are important, because they define the behaviors your application. They will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
 
 **types.js**
 ```js
@@ -56,8 +56,8 @@ export default {
 }
 ```
 
-Then, create your stores. Stores are pure functions that reduce an action into your state, much like an accumulator. All stores should have the signature: `(oldstate, action) => newstate`.
-`fluxette` provides a store creator function, which takes an initial state and your store functions. Stores should be fast and synchronous, so that rehydration is easy.
+Then, create your stores. Stores are values bound to pure functions (reducers) that reduce an action into your state, much like an accumulator. All reducers should have the signature: `(oldstate, action) => newstate`.
+`fluxette` provides a store creator function, which takes an initial state and your reducers. Stores should be fast and synchronous, so that rehydration is easy.
 
 **stores.js**
 ```js
@@ -78,7 +78,7 @@ export default {
 }
 ```
 
-Now, create your action creators. Action creators are not necessary, but are highly recommended in general. It is up to you on how to implement your action creators, but I recommend using a function that takes any relevant arguments, and using the `state` function from your base flux module if your action creator relies on state to create the action. Action creators can return an action or an array of actions. They can also use other action creators for composable application behavior.
+Now, create your action creators. Action creators are not necessary, but are recommended in general. It is up to you on how you implement your action creators, but one good way is to use functions that take relevant arguments, and use the `state` function from your base flux module if your action creator relies on state to create the action. Action creators can return an action or an array of actions. They can also use other action creators for composable application behavior.
 
 **creators.js**
 ```js
@@ -118,7 +118,6 @@ Finally, create your instance of `fluxette`.
 ```js
 import Flux from 'fluxette';
 import stores from './stores';
-import { user, game } from './creators';
 
 const flux = new Flux(stores);
 
@@ -131,10 +130,10 @@ In your application, the majority of your interactions with `fluxette` should co
 **something.js**
 ```js
 import flux from './flux';
-import game from './flux/creators';
+import { user, game } from './flux/creators';
 
+flux.dispatch(user.setemail('user@example.org'));
 flux.dispatch(game.addpoints(100));
-
 flux.dispatch(game.reset());
 ```
 
@@ -223,9 +222,9 @@ flux.history
 `flux.connect` is a class decorator that lets you easily integrate `fluxette` into your React classes. It takes an optional function that makes your component state more specific.
 
 ```js
-import { connect } from './flux';
+import flux from './flux';
 
-@connect()
+@flux.connect()
 export default class extends React.Component {
 	// ...
 	render() {
@@ -236,7 +235,7 @@ export default class extends React.Component {
 
 // or
 
-@connect(state => state.domain)
+@flux.connect(state => state.domain)
 export default class extends React.Component {
 	// ...
 	render() {
