@@ -8,6 +8,7 @@
 * [Install](#install)
 * [Getting Started](#getting-started)
 * [API](#api)
+* [Debugging](#debugging)
 * [Rehydration](#rehydration)
 * [Isomorphic Flux](#isomorphic-flux)
 * [Asynchronous](#asynchronous)
@@ -258,6 +259,20 @@ export default class extends React.Component {
 		// result of flux.state().domain
 	}
 }
+```
+
+## Debugging
+Simply pass your logger/debugger to `flux.hook` when you want to log state changes, and `flux.unhook` when you're done.
+
+```js
+let logger = data => {
+	sendToDashboard(data);
+	alertTimeMachine();
+}
+
+flux.hook(logger);
+
+flux.unhook(logger);
 ```
 
 ## Rehydration
