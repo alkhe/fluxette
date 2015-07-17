@@ -37,6 +37,7 @@ Why `fluxette`? (Some buzzwords to attract you.)
 ```sh
 $ npm i --save fluxette
 ```
+Browser builds are available [here](https://github.com/edge/fluxette/tree/master/dist).
 
 ## Getting Started
 
@@ -309,8 +310,13 @@ async function doSomething(data) {
 doSomething(foo);
 ```
 
+## Examples
+
+Examples can be found [here](https://github.com/edge/fluxette/tree/master/examples).
+
 ## Testing
 ```sh
+# npm i -g testem
 $ npm test
 ```
 
