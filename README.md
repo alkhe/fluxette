@@ -27,6 +27,7 @@ Why `fluxette`? (Some buzzwords to attract you.)
 * unidirectional
 * inverted control
 * no boilerplate
+* no switch statements!
 * concise
 * React integration
 
@@ -38,7 +39,7 @@ $ npm i --save fluxette
 
 ## Getting Started
 
-First, create your action types. These are important, because they define the behaviors your application. They will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
+First, create your action types. While a module exporting constants isn't strictly necessary to use `fluxette`, they are recommended for a structured application. These are important, because they define the behaviors your application. They will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
 
 **types.js**
 ```js
@@ -56,7 +57,7 @@ export default {
 }
 ```
 
-Then, create your stores. Stores are values bound to pure functions (reducers) that reduce an action into your state, much like an accumulator. All reducers should have the signature: `(oldstate, action) => newstate`.
+Then, create your stores. Stores are values (primitives, arrays, objects) bound to pure functions (reducers) that reduce an action into your state, much like an accumulator. All reducers should have the signature: `(oldstate, action) => newstate`. While you don't necessary have to use pure functions, it is recommended to do so to keep a maintainable project.
 `fluxette` provides a store creator function, which takes an initial state and your reducers. Stores should be fast and synchronous, so that rehydration is easy.
 
 **stores.js**
@@ -140,12 +141,19 @@ flux.dispatch(game.reset());
 ## API
 
 ### new Flux(stores)
-The `fluxette` constructor takes an object with keys mapping to top-level stores.
+The `fluxette` constructor takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture the latter.
 
 ```js
 const flux = new Flux({
 	storeA: @Store,
-	storeB: @Store
+	storeB: @Store,
+	domainA: {
+		storeC: @Store
+	},
+	domainB: [
+		storeD: @Store,
+		storeE: @Store
+	]
 });
 ```
 
@@ -157,7 +165,14 @@ flux.state()
 
 // {
 //     storeA: @Store.state,
-//     storeB: @Store.state
+//     storeB: @Store.state,
+//     domainA: {
+//        storeC: @Store.state
+//     },
+//     domainB: [
+//         @Store.state,
+//         @Store.state
+//     ]
 // }
 ```
 

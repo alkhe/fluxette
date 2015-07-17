@@ -5,7 +5,7 @@ export let deriveState = state => state instanceof Function
 	: getState(state);
 
 let getState = stores => {
-	let obj = {};
+	let obj = stores instanceof Array ? [] : {};
 	for (let key in stores) {
 		let store = stores[key];
 		obj[key] = store instanceof Function
@@ -23,7 +23,16 @@ export let callAll = (iterable, ...data) => {
 	}
 };
 
-export let callAllDeep = (iterable, ...data) => {
+export let updateState = (store, ...data) => {
+	if (store instanceof Function) {
+		store(...data);
+	}
+	else {
+		callAllDeep(store, ...data);
+	}
+}
+
+let callAllDeep = (iterable, ...data) => {
 	for (let key in iterable) {
 		let fn = iterable[key];
 		if (fn instanceof Function) {

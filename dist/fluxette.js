@@ -67,7 +67,7 @@ var _default = (function () {
 				var stores = this.stores;
 
 				// Synchronously process all actions
-				(0, _util.callAllDeep)(stores, data);
+				(0, _util.updateState)(stores, data);
 				// Call all registered listeners
 				(0, _util.callAll)(this.hooks, (0, _util.deriveState)(stores));
 			}
@@ -195,7 +195,7 @@ var deriveState = function deriveState(state) {
 
 exports.deriveState = deriveState;
 var getState = function getState(stores) {
-	var obj = {};
+	var obj = stores instanceof Array ? [] : {};
 	for (var key in stores) {
 		var store = stores[key];
 		obj[key] = store instanceof Function ? store() : getState(store);
@@ -217,9 +217,22 @@ var callAll = function callAll(iterable) {
 };
 
 exports.callAll = callAll;
-var callAllDeep = function callAllDeep(iterable) {
+var updateState = function updateState(store) {
 	for (var _len2 = arguments.length, data = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
 		data[_key2 - 1] = arguments[_key2];
+	}
+
+	if (store instanceof Function) {
+		store.apply(undefined, data);
+	} else {
+		callAllDeep.apply(undefined, [store].concat(data));
+	}
+};
+
+exports.updateState = updateState;
+var callAllDeep = function callAllDeep(iterable) {
+	for (var _len3 = arguments.length, data = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+		data[_key3 - 1] = arguments[_key3];
 	}
 
 	for (var key in iterable) {
@@ -232,7 +245,6 @@ var callAllDeep = function callAllDeep(iterable) {
 	}
 };
 
-exports.callAllDeep = callAllDeep;
 var listenerKey = Symbol ? Symbol() : '__fluxetteListener';
 
 exports.listenerKey = listenerKey;

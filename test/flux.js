@@ -21,6 +21,8 @@ describe('Flux', () => {
 		AXA, AXB, AYA,
 		BXA, BYA, BYB;
 
+	let flux2;
+
 	beforeEach(() => {
 		listener = chai.spy(() => {});
 
@@ -48,14 +50,23 @@ describe('Flux', () => {
 					[TYPES.Y.A]: state => state + 1
 				}),
 				storeCB: {
-					storeCBA: Store(5, {
-						[TYPES.Y.A]: state => state + 1
-					})
+					storeCBA: [
+						Store(5, {
+							[TYPES.Y.A]: state => state + 1
+						}),
+						Store(7, {
+							[TYPES.Y.A]: state => state + 1
+						})
+					]
 				}
 			}
 		};
 
 		flux = new Flux(stores);
+
+		flux2 = new Flux(Store(0, {
+			[TYPES.X.A]: state => state + 5
+		}));
 	})
 
 	describe('constructor', () => {
@@ -93,10 +104,12 @@ describe('Flux', () => {
 				storeC: {
 					storeCA: 0,
 					storeCB: {
-						storeCBA: 5
+						storeCBA: [5, 7]
 					}
 				}
 			});
+
+			expect(flux2.state()).to.equal(0);
 		})
 	})
 
@@ -107,6 +120,9 @@ describe('Flux', () => {
 			expect(state).to.have.deep.property('storeA.propAA', 123);
 			expect(state).to.have.deep.property('storeB.propBA')
 				.that.deep.equals({ num: 6 });
+
+			flux2.dispatch({ type : TYPES.X.A });
+			expect(flux2.state()).to.equal(5);
 		})
 		it('should dispatch arrays', () => {
 			flux.dispatch([{ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B }]);
@@ -115,6 +131,9 @@ describe('Flux', () => {
 				.that.deep.equals({ propAA: 234, propAB: 'thing' });
 			expect(state).to.have.property('storeB')
 				.that.deep.equals({ propBA: { num: 9 }, propBB: ['3', '4'] });
+
+			flux2.dispatch([{ type : TYPES.X.A }, { type : TYPES.X.A }]);
+			expect(flux2.state()).to.equal(10);
 		})
 		it('should dispatch argument lists', () => {
 			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B });

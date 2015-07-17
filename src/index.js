@@ -1,6 +1,6 @@
 import React from 'react';
 import Store from './store';
-import { deriveState, normalizeArray, callAll, callAllDeep, deleteFrom, listenerKey } from './util';
+import { deriveState, updateState, normalizeArray, callAll, deleteFrom, listenerKey } from './util';
 export { Store };
 
 export default class {
@@ -23,7 +23,7 @@ export default class {
 			this.history.push(...data);
 			let { stores } = this;
 			// Synchronously process all actions
-			callAllDeep(stores, data);
+			updateState(stores, data);
 			// Call all registered listeners
 			callAll(this.hooks, deriveState(stores));
 		}
