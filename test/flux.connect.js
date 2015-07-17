@@ -1,6 +1,9 @@
 import React, { addons } from 'react/addons';
 import chai, { expect } from 'chai';
+import spies from 'chai-spies';
 import Flux, { Store } from '..';
+
+chai.use(spies);
 
 let { TestUtils: { Simulate, renderIntoDocument } } = addons;
 
@@ -83,5 +86,35 @@ describe('Flux', () => {
 			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
 			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
 		})
+	})
+	it('should not call setState when the state has not changed', () => {
+		let spy = chai.spy(() => {});
+
+		@flux.connect()
+		class Component extends React.Component {
+			submit() {
+				flux.dispatch({});
+			}
+			render() {
+				let { state: { user } } = this;
+				spy();
+				return (
+					<div>
+						<input ref='username' />
+						<input ref='email' />
+						<button ref='submit' onClick={ ::this.submit } />
+						Username: <span ref='username_label'>{ user.username }</span>
+						Email: <span ref='email_label'>{ user.email }</span>
+					</div>
+				);
+			}
+		}
+
+		let c = renderIntoDocument(<Component />);
+		Simulate.click(React.findDOMNode(c.refs.submit));
+		expect(spy).to.have.been.called.once;
+		// Simulate.click(React.findDOMNode(c.refs.submit));
+		// expect(spy).to.have.been.called.twice;
+
 	})
 });

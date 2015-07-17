@@ -52,3 +52,5 @@ export let deleteFrom = (array, obj) => {
 		array.splice(index, 1);
 	}
 }
+
+export let same = _.isEqual;

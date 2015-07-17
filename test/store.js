@@ -27,6 +27,10 @@ describe('Store', () => {
 		expect(store()).to.have.property('num', 0);
 	});
 
+	it('should return same state when if not modified', () => {
+		expect(store()).to.equal(store());
+	});
+
 	it('should call appropriate reducer when called', () => {
 		store({ type: TYPES.INC });
 		expect(inc).to.have.been.called();

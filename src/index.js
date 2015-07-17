@@ -1,6 +1,6 @@
 import React from 'react';
 import Store from './store';
-import { deriveState, updateState, normalizeArray, callAll, deleteFrom, listenerKey } from './util';
+import { deriveState, updateState, normalizeArray, callAll, deleteFrom, same, listenerKey } from './util';
 export { Store };
 
 export default class {
@@ -45,9 +45,22 @@ export default class {
 				constructor(...args) {
 					super(...args);
 					// Initial state
-					this.state = specifier(state());
+					let last = this.state = specifier(state());
+					let ls = state();
 					// Ensure the same reference of setState
-					let listener = this[listenerKey] = data => super.setState(specifier(data));
+					let listener = this[listenerKey] = data => {
+						let now = specifier(data);
+						let s = state();
+						console.assert(ls === s, ls, s)
+						if (last !== now) {
+							console.log('different state!', last, now)
+							last = now;
+							super.setState(now);
+						}
+						else {
+							console.log('same state!')
+						}
+					}
 					// Register setState
 					hooks.push(listener);
 				}
