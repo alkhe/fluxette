@@ -80,7 +80,7 @@ export default {
 	}),
 	game: Store({ points: 0, wins: 0, losses: 0 }, {
 		[GAME.ADDPOINTS]: (state, action) => ({ ...state, points: state.points + action.points }),
-		[GAME.RESET]: state => ({ ...state , points: 0, wins: 0, losses: 0 }),
+		[GAME.RESET]: state => ({ ...state, points: 0, wins: 0, losses: 0 }),
 		[GAME.WIN]: state => ({ ...state, wins: state.wins + 1, points: 0 }),
 		[GAME.LOSE]: state => ({ ...state, losses: state.losses + 1, points: 0 })
 	})
@@ -121,7 +121,7 @@ let actions = {
 export default actions;
 ```
 
-Finally, create your instance of `fluxette`.
+Finally, create your instance of `fluxette`. Export bound functions so you can type less!
 
 **index.js**
 ```js
@@ -132,18 +132,19 @@ const flux = new Flux(stores);
 
 export default flux;
 export const state = ::flux.state
+export const dispatch = ::flux.dispatch
 ```
 
 In your application, the majority of your interactions with `fluxette` should consist of dispatching actions.
 
 **something.js**
 ```js
-import flux from './flux';
+import { dispatch } from './flux';
 import { user, game } from './flux/creators';
 
-flux.dispatch(user.setemail('user@example.org'));
-flux.dispatch(game.addpoints(100));
-flux.dispatch(game.reset());
+dispatch(user.setemail('user@example.org'));
+dispatch(game.addpoints(100));
+dispatch(game.reset());
 ```
 
 ## API
@@ -169,7 +170,9 @@ const flux = new Flux({
 `flux.state()` returns the object representation of the state.
 
 ```js
-flux.state()
+import { state } from './flux';
+
+state()
 
 // {
 //     storeA: @Store.state,
@@ -188,14 +191,16 @@ flux.state()
 `flux.dispatch(...actions)` takes an action, an array of actions, or an argument list of actions. It synchronously runs all actions through each store reducer, and calls any registered listeners afterwards.
 
 ```js
+import { dispatch } from './flux';
+
 // Single action
-flux.dispatch({ type: ACTION_TYPE });
+dispatch({ type: ACTION_TYPE });
 
 // Array of actions
-flux.dispatch([{ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE }]);
+dispatch([{ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE }]);
 
 // Argument list of actions
-flux.dispatch({ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE });
+dispatch({ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE });
 ```
 
 ### flux.hook(fn)
