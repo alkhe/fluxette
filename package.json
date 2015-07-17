@@ -1,6 +1,6 @@
 {
   "name": "fluxette",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "Minimalist, functional, and concise Flux.",
   "main": "index.js",
   "optionalDependencies": {
