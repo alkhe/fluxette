@@ -12,6 +12,7 @@
 * [Rehydration](#rehydration)
 * [Isomorphic Flux](#isomorphic-flux)
 * [Asynchronous](#asynchronous)
+* [Examples](#examples)
 * [Testing](#testing)
 * [Todo](#todo)
 
@@ -145,7 +146,7 @@ flux.dispatch(game.reset());
 ## API
 
 ### new Flux(stores)
-The `fluxette` constructor takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture the latter.
+The `fluxette` constructor takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter.
 
 ```js
 const flux = new Flux({
@@ -327,6 +328,8 @@ $ npm test
 ```
 
 ## Todo
+* implement rewinding
+* add lint, code coverage, CI, badges, and all that jazz
 * add more examples
 * add more philosophy and best practices to README
 * submit to HN
