@@ -42,7 +42,17 @@ describe('Flux', () => {
 				[TYPES.X.A]: BXA,
 				[TYPES.Y.A]: BYA,
 				[TYPES.Y.B]: BYB
-			})
+			}),
+			storeC: {
+				storeCA: Store(0, {
+					[TYPES.Y.A]: state => state + 1
+				}),
+				storeCB: {
+					storeCBA: Store(5, {
+						[TYPES.Y.A]: state => state + 1
+					})
+				}
+			}
 		};
 
 		flux = new Flux(stores);
@@ -79,6 +89,12 @@ describe('Flux', () => {
 				storeB: {
 					propBA: {},
 					propBB: []
+				},
+				storeC: {
+					storeCA: 0,
+					storeCB: {
+						storeCBA: 5
+					}
 				}
 			});
 		})

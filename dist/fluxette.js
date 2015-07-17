@@ -67,7 +67,7 @@ var _default = (function () {
 				var stores = this.stores;
 
 				// Synchronously process all actions
-				(0, _util.callAll)(stores, data);
+				(0, _util.callAllDeep)(stores, data);
 				// Call all registered listeners
 				(0, _util.callAll)(this.hooks, (0, _util.deriveState)(stores));
 			}
@@ -189,15 +189,20 @@ var _vendorLodash = require('../vendor/lodash');
 
 var _vendorLodash2 = _interopRequireDefault(_vendorLodash);
 
-var deriveState = function deriveState(stores) {
+var deriveState = function deriveState(state) {
+	return state instanceof Function ? state() : getState(state);
+};
+
+exports.deriveState = deriveState;
+var getState = function getState(stores) {
 	var obj = {};
 	for (var key in stores) {
-		obj[key] = stores[key]();
+		var store = stores[key];
+		obj[key] = store instanceof Function ? store() : getState(store);
 	}
 	return obj;
 };
 
-exports.deriveState = deriveState;
 var normalizeArray = _vendorLodash2['default'].flattenDeep;
 
 exports.normalizeArray = normalizeArray;
@@ -212,6 +217,22 @@ var callAll = function callAll(iterable) {
 };
 
 exports.callAll = callAll;
+var callAllDeep = function callAllDeep(iterable) {
+	for (var _len2 = arguments.length, data = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+		data[_key2 - 1] = arguments[_key2];
+	}
+
+	for (var key in iterable) {
+		var fn = iterable[key];
+		if (fn instanceof Function) {
+			fn.apply(undefined, data);
+		} else {
+			callAllDeep(fn);
+		}
+	}
+};
+
+exports.callAllDeep = callAllDeep;
 var listenerKey = Symbol ? Symbol() : '__fluxetteListener';
 
 exports.listenerKey = listenerKey;
