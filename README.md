@@ -41,6 +41,8 @@ Browser builds are available [here](https://github.com/edge/fluxette/tree/master
 
 ## Getting Started
 
+As you will see, `fluxette` has many recommended practices, but never forces you to do something in a particular way.
+
 First, create your action types. While a module exporting constants isn't strictly necessary to use `fluxette`, they are recommended for a structured application. These are important, because they define the behaviors your application. They will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
 
 **types.js**
@@ -279,16 +281,20 @@ flux.unhook(logger);
 ## Rehydration
 The action history is always available on `flux.history`. When you want to save the state for later rehydration, simply serialize `flux.history` however you want and send it to the server.
 
-When you want to retrieve the state from the previous session, use any method to get the deserialized state, and simply pass the state through `flux.dispatch` before any listeners are registered.
+When you want to retrieve the state from the previous session, use your method to get the deserialized state, and simply pass the state through `flux.dispatch`.
 
 ```js
-let history = getDeserializedActionHistorySomehow();
+let history = getDeserializedActionHistoryPromise();
 
 const flux = new Flux(stores);
 
-flux.dispatch(history);
+// components take default state
 
-// flux is now rehydrated
+(async () => {
+	flux.dispatch(await history);
+
+	// flux is now rehydrated
+})();
 ```
 
 ## Isomorphic Flux
