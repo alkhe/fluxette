@@ -1,6 +1,9 @@
 import React, { addons } from 'react/addons';
 import chai, { expect } from 'chai';
+import spies from 'chai-spies';
 import Flux, { Store } from '..';
+
+chai.use(spies);
 
 let { TestUtils: { Simulate, renderIntoDocument } } = addons;
 
@@ -82,6 +85,42 @@ describe('Flux', () => {
 			Simulate.click(React.findDOMNode(c.refs.submit));
 			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
 			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
+		})
+		it('should not call setState when data is the same', () => {
+			let spy = chai.spy(() => {});
+
+			@flux.connect(state => state.user)
+			class Component extends React.Component {
+				submit() {
+					flux.dispatch({ type: 'bogus_action' });
+				}
+				render() {
+					spy();
+					let { state: user } = this;
+					return (
+						<div>
+							<input ref='username' />
+							<input ref='email' />
+							<button ref='submit' onClick={ ::this.submit } />
+							Username: <span ref='username_label'>{ user.username }</span>
+							Email: <span ref='email_label'>{ user.email }</span>
+						</div>
+					);
+				}
+			}
+
+			let c = renderIntoDocument(<Component />);
+			Simulate.click(React.findDOMNode(c.refs.submit));
+			expect(spy).to.have.been.called.once;
+			React.findDOMNode(c.refs.username).value = '';
+			React.findDOMNode(c.refs.email).value = '';
+			Simulate.click(React.findDOMNode(c.refs.submit));
+			expect(spy).to.have.been.called.once;
+			React.findDOMNode(c.refs.username).value = 'fluxette';
+			React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
+			Simulate.click(React.findDOMNode(c.refs.submit));
+			console.log(flux.state());
+			expect(spy).to.have.been.called.twice;
 		})
 	})
 });

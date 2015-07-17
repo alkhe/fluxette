@@ -1,6 +1,6 @@
 import React from 'react';
 import Store from './store';
-import { deriveState, updateState, normalizeArray, callAll, deleteFrom, listenerKey } from './util';
+import { deriveState, updateState, normalizeArray, callAll, deleteFrom, bootstrap, changedKey, listenerKey } from './util';
 export { Store };
 
 export default class {
@@ -11,6 +11,8 @@ export default class {
 		this.hooks = [];
 		// Action Stack
 		this.history = [];
+		// React caching
+		this.snapshot = bootstrap(stores);
 	}
 	state() {
 		return deriveState(this.stores);
@@ -21,11 +23,11 @@ export default class {
 		if (data.length > 0) {
 			// Push all actions onto stack
 			this.history.push(...data);
-			let { stores } = this;
+			let { stores, hooks, snapshot } = this;
 			// Synchronously process all actions
-			updateState(stores, data);
+			updateState(stores, snapshot, data);
 			// Call all registered listeners
-			callAll(this.hooks, deriveState(stores));
+			callAll(hooks, deriveState(stores));
 		}
 	}
 	hook(fn) {
@@ -38,16 +40,24 @@ export default class {
 	}
 	connect(specifier = data => data) {
 		// decorator for React class
-		let { hooks } = this;
+		let { hooks, stores } = this;
 		let state = ::this.state;
+		let storefn = specifier(stores);
+		storefn = storefn instanceof Function
+			? storefn : () => storefn;
 		return Component =>
 			class extends Component {
 				constructor(...args) {
 					super(...args);
 					// Initial state
-					this.state = specifier(state());
+					this.state = storefn();
 					// Ensure the same reference of setState
-					let listener = this[listenerKey] = data => super.setState(specifier(data));
+					let listener = this[listenerKey] = () => {
+						if (storefn[changedKey]) {
+							console.log(storefn);
+							super.setState(storefn());
+						}
+					};
 					// Register setState
 					hooks.push(listener);
 				}
