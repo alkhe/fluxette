@@ -3,9 +3,6 @@
   "version": "0.4.6",
   "description": "Minimalist, functional, and concise Flux.",
   "main": "index.js",
-  "directories": {
-    "example": "example"
-  },
   "optionalDependencies": {
     "react": "^0.13.3"
   },
@@ -43,5 +40,9 @@
   "bugs": {
     "url": "https://github.com/edge/fluxette/issues"
   },
-  "homepage": "https://github.com/edge/fluxette#readme"
+  "homepage": "https://github.com/edge/fluxette#readme",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  }
 }
