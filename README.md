@@ -4,7 +4,7 @@
 
 ## Table of Contents
 
-* [Why](#why)
+* [Why?](#why)
 * [Install](#install)
 * [Getting Started](#getting-started)
 * [API](#api)
@@ -16,12 +16,14 @@
 * [Testing](#testing)
 * [Todo](#todo)
 
-## Why
+## Why?
 
 Why `fluxette`? (Some buzzwords to attract you.)
 
 * declarative and functional
 * minimalist
+* exhaustive
+* modular
 * isomorphic
 * faciliated rehydration
 * unopinionated
@@ -31,6 +33,7 @@ Why `fluxette`? (Some buzzwords to attract you.)
 * no boilerplate
 * no switch statements!
 * concise
+* small (~100 sloc)
 * React integration
 
 ## Install
@@ -329,6 +332,7 @@ $ npm test
 
 ## Todo
 * implement rewinding
+* React and non-React builds
 * add lint, code coverage, CI, badges, and all that jazz
 * add more examples
 * add more philosophy and best practices to README
