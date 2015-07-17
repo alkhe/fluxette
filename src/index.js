@@ -45,11 +45,11 @@ export default class {
 				constructor(...args) {
 					super(...args);
 					// Initial state
-					this.state = state();
+					this.state = specifier(state());
 					// Ensure the same reference of setState
-					this[listenerKey] = data => super.setState(specifier(data));
+					let listener = this[listenerKey] = data => super.setState(specifier(data));
 					// Register setState
-					hooks.push(this[listenerKey]);
+					hooks.push(listener);
 				}
 				componentWillUnmount(...args) {
 					super.componentWillUnmount(...args);

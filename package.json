@@ -21,7 +21,7 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register"
+    "test": "testem"
   },
   "keywords": [
     "flux",

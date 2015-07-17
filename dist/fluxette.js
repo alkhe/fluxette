@@ -110,13 +110,13 @@ var _default = (function () {
 
 						_get(Object.getPrototypeOf(_class.prototype), 'constructor', this).apply(this, args);
 						// Initial state
-						this.state = state();
+						this.state = specifier(state());
 						// Ensure the same reference of setState
-						this[_util.listenerKey] = function (data) {
+						var listener = this[_util.listenerKey] = function (data) {
 							return _get(Object.getPrototypeOf(_class.prototype), 'setState', _this).call(_this, specifier(data));
 						};
 						// Register setState
-						hooks.push(this[_util.listenerKey]);
+						hooks.push(listener);
 					}
 
 					_createClass(_class, [{
