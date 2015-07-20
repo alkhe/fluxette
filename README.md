@@ -340,6 +340,7 @@ $ npm test
 
 ## Todo
 * implement rewinding
+* implement flattenDeep
 * take care of #1
 * arrays of middleware
 * React and non-React builds
