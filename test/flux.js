@@ -12,7 +12,8 @@ const TYPES = {
 	Y: {
 		A: 'Y_A',
 		B: 'Y_B'
-	}
+	},
+	Z: 'Z'
 };
 
 describe('Flux', () => {
@@ -20,6 +21,8 @@ describe('Flux', () => {
 	let flux, stores, listener,
 		AXA, AXB, AYA,
 		BXA, BYA, BYB;
+
+	let middleware;
 
 	let flux2;
 
@@ -62,7 +65,10 @@ describe('Flux', () => {
 			}
 		};
 
-		flux = new Flux(stores);
+		middleware = chai.spy(list => list.map(action => action.type == TYPES.Z
+			? { ...action, extra: 'ex' } : action));
+
+		flux = new Flux(stores, middleware);
 
 		flux2 = new Flux(Store(0, {
 			[TYPES.X.A]: state => state + 5
@@ -152,6 +158,11 @@ describe('Flux', () => {
 			flux.hook(listener);
 			flux.dispatch(undefined, [0, false, null]);
 			expect(listener).not.to.have.been.called;
+		})
+		it('should call middleware when called', () => {
+			flux.dispatch({ type: TYPES.Z }, { type: TYPES.X.A });
+			expect(middleware).to.have.been.called.once;
+			expect(flux.history).to.deep.equal([{ type: TYPES.Z, extra: 'ex' }, { type: TYPES.X.A }]);
 		})
 	})
 

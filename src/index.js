@@ -4,13 +4,15 @@ import { deriveState, updateState, normalizeArray, callAll, deleteFrom, listener
 export { Store };
 
 export default class {
-	constructor(stores = {}) {
+	constructor(stores = {}, middleware = list => list) {
 		// Top-level Stores
 		this.stores = stores;
 		// Dispatcher
 		this.hooks = [];
 		// Action Stack
 		this.history = [];
+		// Middleware
+		this.middleware = middleware;
 	}
 	state() {
 		return deriveState(this.stores);
@@ -19,6 +21,8 @@ export default class {
 		// Normalize array of actions
 		data = normalizeArray(data).filter(x => x instanceof Object);
 		if (data.length > 0) {
+			// Call Middleware
+			data = this.middleware(data);
 			// Push all actions onto stack
 			this.history.push(...data);
 			let { stores } = this;
