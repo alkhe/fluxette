@@ -29,7 +29,7 @@ export default class {
 			// Synchronously process all actions
 			updateState(stores, data);
 			// Call all registered listeners
-			callAll(this.hooks, deriveState(stores));
+			callAll(this.hooks, deriveState(stores), data);
 		}
 	}
 	hook(fn) {

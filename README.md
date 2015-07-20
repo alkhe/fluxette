@@ -205,14 +205,14 @@ dispatch({ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE });
 ```
 
 ### flux.hook(fn)
-`flux.hook(fn)` registers a function as a listener. The listener should have a signature of `data => {}`. Listeners will be called in the order that they were registered.
+`flux.hook(fn)` registers a function as a listener. The listener should have a signature of `(data, [actions]) => {}`. Listeners will be called in the order that they were registered.
 
 ```js
-// Log all state changes to console
+// Log all state changes with actions to console
 flux.hook(::console.log);
 
 // In a React class
-flux.hook(::this.setState);
+flux.hook(data => this.setState(data));
 // However, it is better to use the flux.connect decorator
 
 // Arbitrary function
