@@ -8,7 +8,7 @@ export default function(state = {}, reducers = {}) {
 				actions = [actions];
 			}
 			// Call the appropriate reducer with the state and the action
-			for (let i in actions) {
+			for (let i = 0; i < actions.length; i++) {
 				let action = actions[i];
 				let reducer = reducers[action.type];
 				if (reducer) {
