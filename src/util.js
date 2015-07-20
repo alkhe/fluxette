@@ -71,4 +71,4 @@ export let deleteFrom = (array, obj) => {
 
 export let isString = val => typeof val === 'string' || val instanceof String;
 
-export let listenerKey = Symbol ? Symbol() : '@@fluxetteListener';
+export let listenerKey = (typeof Symbol !== 'undefined') ? Symbol() : '@@fluxetteListener';
