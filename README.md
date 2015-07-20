@@ -12,6 +12,7 @@
 * [Rehydration](#rehydration)
 * [Isomorphic Flux](#isomorphic-flux)
 * [Asynchronous](#asynchronous)
+* [Middleware](#middleware)
 * [Examples](#examples)
 * [Testing](#testing)
 * [Todo](#todo)
@@ -149,8 +150,8 @@ dispatch(game.reset());
 
 ## API
 
-### new Flux(stores)
-The `fluxette` constructor takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter.
+### new Flux(stores, [middleware])
+The `fluxette` constructor takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter. Optionally, it will also take a function as middleware with the signature `actions => actions`.
 
 ```js
 const flux = new Flux({
@@ -163,7 +164,7 @@ const flux = new Flux({
 		storeD: @Store,
 		storeE: @Store
 	]
-});
+}, actions => actions.map(transform));
 ```
 
 ### flux.state()
@@ -314,7 +315,7 @@ let flux = new Flux(stores);
 ```
 
 ## Asynchronous
-Because `fluxette` does not care about how your action creators work, asynchronous data fetching should not be a problem in your application. This makes it easy to work with `React Router`. When you want to update your state, simply call `flux.dispatch(action)`. This can be from a callback, a Promise resolution/await, or something else.
+Because `fluxette` does not care about how your action creators work, asynchronous data fetching should not be a problem in your application. This makes it easy to work with `React Router`. When you want to update your state, simply call `flux.dispatch(action)`. This can be from a callback, a Promise resolution/await, or something else. It is also possible to write a Promise middleware to simplify your asynchronous I/O tasks.
 
 ```js
 async function doSomething(data) {
@@ -325,8 +326,10 @@ async function doSomething(data) {
 doSomething(foo);
 ```
 
-## Examples
+## Middleware
+Middleware are a simple but powerful addition to the dispatcher, and `fluxette` allows you to hook your own middleware into the dispatch cycle. Every time a dispatch is made, the middleware will be called first with the array of actions being dispatched, and the dispatcher expects it to return a new array of actions. The stores will only ever see actions returned by the middleware. This allows you to transform the actions, drop actions, or perform any other behavior required by your application, such as setting cookies and localstorage. This solves the problem of discerning between the Store and non-Store aspects of eminent data.
 
+## Examples
 Examples can be found [here](https://github.com/edge/fluxette/tree/master/examples).
 
 ## Testing
@@ -337,6 +340,8 @@ $ npm test
 
 ## Todo
 * implement rewinding
+* take care of #1
+* arrays of middleware
 * React and non-React builds
 * add lint, code coverage, CI, badges, and all that jazz
 * add more examples
