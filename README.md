@@ -247,8 +247,8 @@ flux.history
 // [actionA, actionB, actionC, actionD, actionE, actionF, actionG]
 ```
 
-### flux.connect
-`flux.connect` is a class decorator that lets you easily integrate `fluxette` into your React classes. It takes an optional function that makes your component state more specific.
+### flux.connect([specifier], [identifier])
+`flux.connect` is a class decorator that lets you easily integrate `fluxette` into your React classes. It takes an optional function that makes your component state more specific. Your specifier does not necessarily need to subscribe to a Store, but if it does, your component will have a nice performance boost due to Store caching. It also takes an optional identifier ('flux' by default) that determines what key on your state it will be stored as.
 
 ```js
 import flux from './flux';
@@ -257,18 +257,18 @@ import flux from './flux';
 export default class extends React.Component {
 	// ...
 	render() {
-		this.state
+		this.state.flux
 		// result of flux.state()
 	}
 }
 
 // or
 
-@flux.connect(state => state.domain)
+@flux.connect(state => state.domain, 'domain')
 export default class extends React.Component {
 	// ...
 	render() {
-		this.state
+		this.state.domain
 		// result of flux.state().domain
 	}
 }
@@ -340,7 +340,6 @@ $ npm test
 
 ## Todo
 * implement rewinding
-* take care of #1
 * switch to webpack for builds
 * make isomorphic easier
 * arrays of middleware

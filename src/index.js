@@ -40,10 +40,10 @@ export default class {
 		// Remove listener
 		deleteFrom(this.hooks, fn);
 	}
-	connect(specifier = data => data, property = 'flux') {
+	connect(specifier = data => data, identifier = 'flux') {
 		// typecheck
 		if (isString(specifier)) {
-			property = specifier;
+			identifier = specifier;
 			specifier = data => data;
 		}
 		// decorator for React class
@@ -55,13 +55,13 @@ export default class {
 					super(...args);
 					// Initial state
 					let lastState = specifier(state());
-					this.state = { [property]: lastState };
+					this.state = { [identifier]: lastState };
 					// Ensure the same reference of setState
 					let listener = this[listenerKey] = data => {
 						let newState = specifier(data);
 						if (lastState !== newState) {
 							lastState = newState;
-							super.setState({ [property]: newState });
+							super.setState({ [identifier]: newState });
 						}
 					}
 					// Register setState

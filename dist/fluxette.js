@@ -99,11 +99,11 @@ var _default = (function () {
 			var specifier = arguments.length <= 0 || arguments[0] === undefined ? function (data) {
 				return data;
 			} : arguments[0];
-			var property = arguments.length <= 1 || arguments[1] === undefined ? 'flux' : arguments[1];
+			var identifier = arguments.length <= 1 || arguments[1] === undefined ? 'flux' : arguments[1];
 
 			// typecheck
 			if ((0, _util.isString)(specifier)) {
-				property = specifier;
+				identifier = specifier;
 				specifier = function (data) {
 					return data;
 				};
@@ -128,13 +128,13 @@ var _default = (function () {
 						_get(Object.getPrototypeOf(_class.prototype), 'constructor', this).apply(this, args);
 						// Initial state
 						var lastState = specifier(state());
-						this.state = _defineProperty({}, property, lastState);
+						this.state = _defineProperty({}, identifier, lastState);
 						// Ensure the same reference of setState
 						var listener = this[_util.listenerKey] = function (data) {
 							var newState = specifier(data);
 							if (lastState !== newState) {
 								lastState = newState;
-								_get(Object.getPrototypeOf(_class.prototype), 'setState', _this).call(_this, _defineProperty({}, property, newState));
+								_get(Object.getPrototypeOf(_class.prototype), 'setState', _this).call(_this, _defineProperty({}, identifier, newState));
 							}
 						};
 						// Register setState
