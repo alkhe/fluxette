@@ -69,4 +69,6 @@ export let deleteFrom = (array, obj) => {
 	}
 }
 
-export let listenerKey = Symbol ? Symbol() : '__fluxetteListener';
+export let isString = val => typeof val === 'string' || val instanceof String;
+
+export let listenerKey = Symbol ? Symbol() : '@@fluxetteListener';

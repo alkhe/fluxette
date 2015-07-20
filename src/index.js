@@ -1,6 +1,6 @@
 import React from 'react';
 import Store from './store';
-import { deriveState, updateState, flattenDeep, callAll, deleteFrom, listenerKey } from './util';
+import { deriveState, updateState, flattenDeep, callAll, isString, deleteFrom, listenerKey } from './util';
 export { Store };
 
 export default class {
@@ -40,7 +40,12 @@ export default class {
 		// Remove listener
 		deleteFrom(this.hooks, fn);
 	}
-	connect(specifier = data => data) {
+	connect(specifier = data => data, property = 'flux') {
+		// typecheck
+		if (isString(specifier)) {
+			property = specifier;
+			specifier = data => data;
+		}
 		// decorator for React class
 		let { hooks } = this;
 		let state = ::this.state;
@@ -49,9 +54,16 @@ export default class {
 				constructor(...args) {
 					super(...args);
 					// Initial state
-					this.state = specifier(state());
+					let lastState = specifier(state());
+					this.state = { [property]: lastState };
 					// Ensure the same reference of setState
-					let listener = this[listenerKey] = data => super.setState(specifier(data));
+					let listener = this[listenerKey] = data => {
+						let newState = specifier(data);
+						if (lastState !== newState) {
+							lastState = newState;
+							super.setState({ [property]: newState });
+						}
+					}
 					// Register setState
 					hooks.push(listener);
 				}

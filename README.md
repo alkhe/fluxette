@@ -341,6 +341,8 @@ $ npm test
 ## Todo
 * implement rewinding
 * take care of #1
+* switch to webpack for builds
+* make isomorphic easier
 * arrays of middleware
 * React and non-React builds
 * add lint, code coverage, CI, badges, and all that jazz
