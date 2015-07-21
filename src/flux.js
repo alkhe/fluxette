@@ -28,14 +28,6 @@ export default class {
 			callAll(this.hooks, this.state, data);
 		}
 	}
-	hook(fn) {
-		// Add listener
-		this.hooks.push(fn);
-	}
-	unhook(fn) {
-		// Remove listener
-		deleteFrom(this.hooks, fn);
-	}
 	connect(specifier = data => data, identifier = 'flux') {
 		// typecheck
 		if (isString(specifier)) {

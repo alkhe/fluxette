@@ -349,12 +349,12 @@ $ npm test
 ```
 
 ## Todo
-* implement rewinding
-* switch to webpack for builds
-* make isomorphic easier
-* arrays of middleware
 * React and non-React builds
+* switch to webpack for builds
+* implement rewinding
+* arrays of middleware
 * add lint, code coverage, CI, badges, and all that jazz
-* add more examples
+* make isomorphic easier
+* add more examples (async, router, flux-comparison, etc.)
 * add more philosophy and best practices to README
 * submit to HN

@@ -1,6 +1,8 @@
 import Flux from './flux';
 import Store from './store';
 
+import { deleteFrom } from './util';
+
 export { Flux, Store };
 
 export default (stores, middleware) => {
@@ -9,8 +11,8 @@ export default (stores, middleware) => {
 		dispatch: ::flux.dispatch,
 		state: () => flux.state,
 		history: () => flux.history,
-		hook: ::flux.hook,
-		unhook: ::flux.unhook,
+		hook: ::flux.hooks.push,
+		unhook: fn => { deleteFrom(flux.hooks, fn); },
 		connect: ::flux.connect
 	};
 }
