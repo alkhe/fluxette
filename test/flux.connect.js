@@ -19,7 +19,7 @@ describe('Flux', () => {
 	let flux;
 
 	beforeEach(() => {
-		flux = new Flux({
+		flux = Flux({
 			user: Store({ username: '', email: '' }, {
 				[TYPES.USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 				[TYPES.USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })

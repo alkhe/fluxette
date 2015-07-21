@@ -13,6 +13,7 @@
 * [Isomorphic Flux](#isomorphic-flux)
 * [Asynchronous](#asynchronous)
 * [Middleware](#middleware)
+* [Tips](#tips)
 * [Examples](#examples)
 * [Testing](#testing)
 * [Todo](#todo)
@@ -122,18 +123,16 @@ let actions = {
 export default actions;
 ```
 
-Finally, create your instance of `fluxette`. Export bound functions so you can type less!
+Finally, create your instance of `fluxette`.
 
 **index.js**
 ```js
 import Flux from 'fluxette';
 import stores from './stores';
 
-const flux = new Flux(stores);
+const flux = Flux(stores);
 
 export default flux;
-export const state = ::flux.state
-export const dispatch = ::flux.dispatch
 ```
 
 In your application, the majority of your interactions with `fluxette` should consist of dispatching actions.
@@ -150,11 +149,11 @@ dispatch(game.reset());
 
 ## API
 
-### new Flux(stores, [middleware])
-The `fluxette` constructor takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter. Optionally, it will also take a function as middleware with the signature `actions => actions`.
+### Flux(stores, [middleware])
+The `fluxette` factory method takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter. Optionally, it will also take a function as middleware with the signature `actions => actions`.
 
 ```js
-const flux = new Flux({
+const flux = Flux({
 	storeA: @Store,
 	storeB: @Store,
 	domainA: {
@@ -168,7 +167,7 @@ const flux = new Flux({
 ```
 
 ### flux.state()
-`flux.state()` returns the object representation of the state.
+`flux.state()` returns the object representation of the state. It is guaranteed to be the same between dispatches.
 
 ```js
 import { state } from './flux';
@@ -208,15 +207,17 @@ dispatch({ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE });
 `flux.hook(fn)` registers a function as a listener. The listener should have a signature of `(data, [actions]) => {}`. Listeners will be called in the order that they were registered.
 
 ```js
+import { hook } from './flux';
+
 // Log all state changes with actions to console
-flux.hook(::console.log);
+hook(::console.log);
 
 // In a React class
-flux.hook(data => this.setState(data));
+hook(data => this.setState(data));
 // However, it is better to use the flux.connect decorator
 
 // Arbitrary function
-flux.hook(data => {
+hook(data => {
 	// do something
 });
 ```
@@ -225,25 +226,29 @@ flux.hook(data => {
 `flux.unhook(fn)` deregisters a listener that was `flux.hook`ed before.
 
 ```js
+import { hook, unhook } from './flux';
+
 let fn = data => {
 	// do something
 };
 
 // fn will be called on state changes
-flux.hook(fn);
+hook(fn);
 
 // fn will no longer be called on state changes
-flux.unhook(fn);
+unhook(fn);
 ```
 
-### flux.history
-`flux.history` contains an array of all actions that have been dispatched through `fluxette`. This is useful for rewinding state and rehydration.
+### flux.history()
+`flux.history()` returns the array of all actions that have been dispatched through `fluxette`. This is useful for rewinding state and de/rehydration.
 
 ```js
-flux.dispatch(actionA, actionB, actionC);
-flux.dispatch([actionD, [actionE, actionF]], actionG);
+import { dispatch, history } from './flux';
 
-flux.history
+dispatch(actionA, actionB, actionC);
+dispatch([actionD, [actionE, actionF]], actionG);
+
+history()
 // [actionA, actionB, actionC, actionD, actionE, actionF, actionG]
 ```
 
@@ -251,9 +256,9 @@ flux.history
 `flux.connect` is a class decorator that lets you easily integrate `fluxette` into your React classes. It takes an optional function that makes your component state more specific. Your specifier does not necessarily need to subscribe to a Store, but if it does, your component will have a nice performance boost due to Store caching. It also takes an optional identifier ('flux' by default) that determines what key on your state it will be stored as.
 
 ```js
-import flux from './flux';
+import { connect } from './flux';
 
-@flux.connect()
+@connect()
 export default class extends React.Component {
 	// ...
 	render() {
@@ -264,7 +269,7 @@ export default class extends React.Component {
 
 // or
 
-@flux.connect(state => state.domain, 'domain')
+@connect(state => state.domain, 'domain')
 export default class extends React.Component {
 	// ...
 	render() {
@@ -283,9 +288,9 @@ let logger = data => {
 	alertTimeMachine();
 }
 
-flux.hook(logger);
+hook(logger);
 
-flux.unhook(logger);
+unhook(logger);
 ```
 
 ## Rehydration
@@ -296,12 +301,12 @@ When you want to retrieve the state from the previous session, use your method t
 ```js
 let history = getDeserializedActionHistoryPromise();
 
-const flux = new Flux(stores);
+const flux = Flux(stores);
 
 // components take default state
 
 (async () => {
-	flux.dispatch(await history);
+	dispatch(await history);
 
 	// flux is now rehydrated
 })();
@@ -311,7 +316,7 @@ const flux = new Flux(stores);
 Isomorphic Flux is as easy as creating a new instance of `fluxette`. It is up to you how you coordinate synchronization between the server and client.
 
 ```js
-let flux = new Flux(stores);
+let flux = Flux(stores);
 ```
 
 ## Asynchronous
@@ -320,7 +325,7 @@ Because `fluxette` does not care about how your action creators work, asynchrono
 ```js
 async function doSomething(data) {
 	let result = await somePromise(data);
-	flux.dispatch(actions.doSomething(result));
+	dispatch(actions.doSomething(result));
 }
 
 doSomething(foo);
@@ -328,6 +333,11 @@ doSomething(foo);
 
 ## Middleware
 Middleware are a simple but powerful addition to the dispatcher, and `fluxette` allows you to hook your own middleware into the dispatch cycle. Every time a dispatch is made, the middleware will be called first with the array of actions being dispatched, and the dispatcher expects it to return a new array of actions. The stores will only ever see actions returned by the middleware. This allows you to transform the actions, drop actions, or perform any other behavior required by your application, such as setting cookies and localstorage. This solves the problem of discerning between the Store and non-Store aspects of eminent data.
+
+## Tips
+The `fluxette` factory is essentially a wrapper around the `fluxette` constructor that autobinds methods and hides properties for your convenience and safety. If you use the factory, you can individually import methods from your base flux module. It is entirely possible to use `fluxette` without import flux itself.
+
+You can `import { Flux } from 'fluxette';` if you desire; this will allow you to extend `fluxette` however you like.
 
 ## Examples
 Examples can be found [here](https://github.com/edge/fluxette/tree/master/examples).

@@ -68,21 +68,17 @@ describe('Flux', () => {
 		middleware = chai.spy(list => list.map(action => action.type == TYPES.Z
 			? { ...action, extra: 'ex' } : action));
 
-		flux = new Flux(stores, middleware);
+		flux = Flux(stores, middleware);
 
-		flux2 = new Flux(Store(0, {
+		flux2 = Flux(Store(0, {
 			[TYPES.X.A]: state => state + 5
 		}));
 	})
 
-	describe('constructor', () => {
+	describe('wrapper', () => {
 		it('should properly construct flux class', () => {
-			expect(flux).to.have.property('stores', stores);
-			expect(flux).to.have.property('hooks')
-				.that.is.an.instanceof(Array);
 			expect(flux).to.have.property('history')
-				.that.is.an.instanceof(Array)
-				.and.deep.equals([]);
+				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('state')
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('dispatch')
@@ -116,6 +112,9 @@ describe('Flux', () => {
 			});
 
 			expect(flux2.state()).to.equal(0);
+		})
+		it('should stay the same between dispatches', () => {
+			expect(flux.state()).to.equal(flux.state());
 		})
 	})
 
@@ -162,15 +161,14 @@ describe('Flux', () => {
 		it('should call middleware when called', () => {
 			flux.dispatch({ type: TYPES.Z }, { type: TYPES.X.A });
 			expect(middleware).to.have.been.called.once;
-			expect(flux.history).to.deep.equal([{ type: TYPES.Z, extra: 'ex' }, { type: TYPES.X.A }]);
+			expect(flux.history()).to.deep.equal([{ type: TYPES.Z, extra: 'ex' }, { type: TYPES.X.A }]);
 		})
 	})
 
 	describe('history', () => {
 		it('should be updated on dispatch', () => {
 			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.Y.A }, { type: TYPES.Y.B });
-			expect(flux).to.have.property('history')
-				.that.deep.equals([{ type: TYPES.X.A }, { type: TYPES.Y.A }, { type: TYPES.Y.B }]);
+			expect(flux.history()).to.deep.equal([{ type: TYPES.X.A }, { type: TYPES.Y.A }, { type: TYPES.Y.B }]);
 		})
 	});
 
