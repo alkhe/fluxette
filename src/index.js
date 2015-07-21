@@ -1,6 +1,6 @@
 import React from 'react';
 import Store from './store';
-import { deriveState, updateState, flattenDeep, callAll, isString, deleteFrom, listenerKey } from './util';
+import { deriveState, updateState, normalizeArray, callAll, isString, deleteFrom, listenerKey } from './util';
 export { Store };
 
 export default class {
@@ -19,7 +19,7 @@ export default class {
 	}
 	dispatch(...data) {
 		// Normalize array of actions
-		data = flattenDeep(data).filter(x => x instanceof Object);
+		data = normalizeArray(data);
 		if (data.length > 0) {
 			// Call Middleware
 			data = this.middleware(data);

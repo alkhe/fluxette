@@ -28,11 +28,11 @@ export let updateState = (store, data) => {
 	}
 }
 
-let callAllDeep = (iterable, ...data) => {
+let callAllDeep = (iterable, data) => {
 	for (let key in iterable) {
 		let fn = iterable[key];
 		if (fn instanceof Function) {
-			fn(...data);
+			fn(data);
 		}
 		else {
 			callAllDeep(fn);
@@ -40,25 +40,27 @@ let callAllDeep = (iterable, ...data) => {
 	}
 };
 
-export let flattenDeep = arr => arr.length ? flatten(arr, []) : arr;
+export let normalizeArray = arr => arr.length ? normalize(arr, []) : arr;
 
-let flatten = (arr, into) => {
-	for (let i in arr) {
+let normalize = (arr, into) => {
+	for (let i = 0; i < arr.length; i++) {
 		let val = arr[i];
 		if (val instanceof Array) {
-			flatten(val, into);
+			normalize(val, into);
 		}
 		else {
-			into.push(val);
+			if (val instanceof Object) {
+				into.push(val);
+			}
 		}
 	}
 	return into;
 }
 
 // Call each function in an array of functions with data
-export let callAll = (iterable, ...data) => {
-	for (let key in iterable) {
-		iterable[key](...data);
+export let callAll = (arr, data) => {
+	for (let i = 0; i < arr.length; i++) {
+		arr[i](data);
 	}
 };
 
