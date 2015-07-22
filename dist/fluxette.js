@@ -28,9 +28,7 @@ var _util = require('./util');
 var _default = (function () {
 	function _default() {
 		var stores = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-		var middleware = arguments.length <= 1 || arguments[1] === undefined ? function (list) {
-			return list;
-		} : arguments[1];
+		var middleware = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
 		_classCallCheck(this, _default);
 
@@ -41,7 +39,7 @@ var _default = (function () {
 		// Action Stack
 		this.history = [];
 		// Middleware
-		this.middleware = middleware;
+		this.middleware = middleware instanceof Array ? middleware : [middleware];
 		// State
 		this.state = (0, _util.stateCall)(this.stores);
 	}
@@ -49,23 +47,23 @@ var _default = (function () {
 	_createClass(_default, [{
 		key: 'dispatch',
 		value: function dispatch() {
-			for (var _len = arguments.length, data = Array(_len), _key = 0; _key < _len; _key++) {
-				data[_key] = arguments[_key];
+			for (var _len = arguments.length, actions = Array(_len), _key = 0; _key < _len; _key++) {
+				actions[_key] = arguments[_key];
 			}
 
 			// Normalize array of actions
-			data = (0, _util.normalizeArray)(data);
-			if (data.length > 0) {
+			actions = (0, _util.normalizeArray)(actions);
+			if (actions.length > 0) {
 				var _history;
 
 				// Call Middleware
-				data = this.middleware(data);
+				actions = (0, _util.waterfall)(actions, this.middleware);
 				// Push all actions onto stack
-				(_history = this.history).push.apply(_history, _toConsumableArray(data));
+				(_history = this.history).push.apply(_history, _toConsumableArray(actions));
 				// Synchronously process all actions
-				this.state = (0, _util.stateCall)(this.stores, data);
+				this.state = (0, _util.stateCall)(this.stores, actions);
 				// Call all registered listeners
-				(0, _util.callAll)(this.hooks, this.state, data);
+				(0, _util.callAll)(this.hooks, actions, this.state);
 			}
 		}
 	}, {
@@ -105,7 +103,7 @@ var _default = (function () {
 						var lastState = specifier(state);
 						this.state = _defineProperty({}, identifier, lastState);
 						// Ensure the same reference of setState
-						var listener = this[_util.listenerKey] = function (data) {
+						var listener = this[_util.listenerKey] = function (actions, data) {
 							var newState = specifier(data);
 							if (lastState !== newState) {
 								lastState = newState;
@@ -141,7 +139,7 @@ var _default = (function () {
 exports['default'] = _default;
 module.exports = exports['default'];
 
-},{"./util":4,"react":"react"}],2:[function(require,module,exports){
+},{"./util":5,"react":"react"}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -158,13 +156,20 @@ var _store = require('./store');
 
 var _store2 = _interopRequireDefault(_store);
 
+var _mapware = require('./mapware');
+
+var _mapware2 = _interopRequireDefault(_mapware);
+
 var _util = require('./util');
 
-exports.Flux = _flux2['default'];
+exports.Fluxette = _flux2['default'];
 exports.Store = _store2['default'];
+exports.Mapware = _mapware2['default'];
 
-exports['default'] = function (stores, middleware) {
+exports['default'] = function (stores) {
 	var _context;
+
+	var middleware = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
 	var flux = new _flux2['default'](stores, middleware);
 	return {
@@ -183,7 +188,43 @@ exports['default'] = function (stores, middleware) {
 	};
 };
 
-},{"./flux":1,"./store":3,"./util":4}],3:[function(require,module,exports){
+},{"./flux":1,"./mapware":3,"./store":4,"./util":5}],3:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+exports["default"] = function () {
+	var reducers = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+	// Function that takes an action or array of actions
+	return function (actions) {
+		// If no actions, just return them
+		if (actions !== undefined) {
+			// Ensure actions are an array
+			if (!(actions instanceof Array)) {
+				actions = [actions];
+			}
+			// Call the appropriate reducer with the action
+			for (var i = 0; i < actions.length; i++) {
+				var action = actions[i];
+				var reducer = reducers[action.type];
+				if (reducer) {
+					var redux = reducer(action);
+					if (redux !== undefined) {
+						action[i] = redux;
+					}
+				}
+			}
+		}
+		return actions;
+	};
+};
+
+module.exports = exports["default"];
+
+},{}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -207,7 +248,10 @@ exports["default"] = function () {
 				var action = actions[i];
 				var reducer = reducers[action.type];
 				if (reducer) {
-					state = reducer(state, action);
+					var redux = reducer(state, action);
+					if (redux !== undefined) {
+						state = redux;
+					}
 				}
 			}
 		}
@@ -217,7 +261,7 @@ exports["default"] = function () {
 
 module.exports = exports["default"];
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 // Dispatch actions to stores
 // If it's a store, just dispatch it
 // Otherwise recursively dispatch
@@ -261,9 +305,13 @@ var normalize = function normalize(arr, into) {
 };
 
 // Call each in array of functions
-var callAll = function callAll(arr, data) {
+var callAll = function callAll(arr) {
+	for (var _len = arguments.length, data = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+		data[_key - 1] = arguments[_key];
+	}
+
 	for (var i = 0; i < arr.length; i++) {
-		arr[i](data);
+		arr[i].apply(arr, data);
 	}
 };
 
@@ -277,6 +325,15 @@ var deleteFrom = function deleteFrom(array, obj) {
 };
 
 exports.deleteFrom = deleteFrom;
+//
+var waterfall = function waterfall(value, functions) {
+	for (var i = 0; i < functions.length; i++) {
+		value = functions[i](value);
+	}
+	return value;
+};
+
+exports.waterfall = waterfall;
 var isString = function isString(val) {
 	return typeof val === 'string' || val instanceof String;
 };

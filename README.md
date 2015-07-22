@@ -1,6 +1,6 @@
 # fluxette
 
-`fluxette` is a minimalist Flux implementation, based off of ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
+`fluxette` is a minimalist Flux implementation, inspired by ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
 
 ## Table of Contents
 
@@ -150,7 +150,7 @@ dispatch(game.reset());
 ## API
 
 ### Flux(stores, [middleware])
-The `fluxette` factory method takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter. Optionally, it will also take a function as middleware with the signature `actions => actions`.
+The `fluxette` factory method takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter. Optionally, it will also take a function or array functions as middleware with the signature `actions => actions`.
 
 ```js
 const flux = Flux({
@@ -283,13 +283,26 @@ export default class extends React.Component {
 `Store` is a factory method that takes an initial state and an object containing reducers, with each key being your desired mapping from an action type to a reducer. It produces a pure state machine function that takes an action or an array of actions.
 
 ```js
+import { Store } from 'fluxette';
+
 const store = Store({}, {
 	actionA: (state, action) => ({ ...state, a: action.item })
 })
 ```
 
+### Mapware(reducers)
+Because Stores are just functions that reduce over an array of actions, you can use them as middleware and hooks. `fluxette` provides a further level of abstraction by including `Mapware`, which reduces over actions themselves, instead of state.
+
+```js
+import { Mapware } from 'fluxette';
+
+const ware = Mapware({
+	actionA: (action) => ({ ...action, a: transform(action.a) })
+})
+```
+
 ## Debugging
-Simply pass your logger/debugger to `flux.hook` when you want to log state changes, and `flux.unhook` when you're done.
+Simply pass your logger/debugger to `flux.hook` when you want to log state changes, and `flux.unhook` when you're done. You can also use `Mapware` to map over actions by type.
 
 ```js
 let logger = (actions, state) => {
@@ -297,9 +310,15 @@ let logger = (actions, state) => {
 	alertTimeMachine(actions);
 }
 
+let ware = Mapware({
+	actionA: () => { console.log('Action A was dispatched'); }
+});
+
 hook(logger);
+hook(ware);
 
 unhook(logger);
+unhook(ware);
 ```
 
 ## Rehydration
@@ -315,7 +334,7 @@ const flux = Flux(stores);
 // components take default state
 
 (async () => {
-	dispatch(await history);
+	flux.dispatch(await history);
 
 	// flux is now rehydrated
 })();
@@ -341,7 +360,14 @@ doSomething(foo);
 ```
 
 ## Middleware
-Middleware are a simple but powerful addition to the dispatcher, and `fluxette` allows you to hook your own middleware into the dispatch cycle. Every time a dispatch is made, the middleware will be called first with the array of actions being dispatched, and the dispatcher expects it to return a new array of actions. The stores will only ever see actions returned by the middleware. This allows you to transform the actions, drop actions, or perform any other behavior required by your application, such as setting cookies and localstorage. This solves the problem of discerning between the Store and non-Store aspects of eminent data.
+Middleware are a simple but powerful addition to the dispatcher, and `fluxette` allows you to hook your own middleware into the dispatch cycle. Every time a dispatch is made, each middleware will be called in order with the array of actions being dispatched, and the dispatcher expects it to return a new array of actions. The stores will only ever see actions returned by the middleware. This allows you to transform the actions, drop actions, or perform any other behavior required by your application, such as setting cookies and localstorage. This solves the problem of discerning between the Store and non-Store aspects of eminent data. `fluxette` also provides the `Mapware` factory to automatically reduce over each action by type.
+
+```js
+const ware = Mapware()
+
+const flux = Flux(stores, )
+
+```
 
 ## Tips
 The `fluxette` factory is essentially a wrapper around the `fluxette` constructor that autobinds methods and hides properties for your convenience and safety. If you use the factory, you can individually import methods from your base flux module. It is entirely possible to use `fluxette` without import flux itself.
@@ -349,8 +375,6 @@ The `fluxette` factory is essentially a wrapper around the `fluxette` constructo
 You can `import { Fluxette } from 'fluxette';` if you desire, thus allowing you to extend `fluxette` in whatever way would benefit your application.
 
 Think of hooks as the post-dispatch counterpart of middleware. In fact, you can reuse some middleware as hooks, and vice-versa.
-
-Because Stores are just functions that reduce over an array of actions, you can use them as middleware and hooks.
 
 ## Examples
 Examples can be found [here](https://github.com/edge/fluxette/tree/master/examples).
@@ -365,7 +389,6 @@ $ npm test
 * React and non-React builds
 * switch to webpack for builds
 * implement rewinding
-* arrays of middleware
 * add lint, code coverage, CI, badges, and all that jazz
 * make isomorphic easier
 * add more examples (async, router, flux-comparison, etc.)

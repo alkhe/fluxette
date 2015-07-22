@@ -15,7 +15,6 @@ let derive = (stores, data) => {
 	return obj;
 }
 
-
 // Flatten array and filter Objects
 export let normalizeArray = arr => arr.length ? normalize(arr, []) : arr;
 
@@ -47,6 +46,14 @@ export let deleteFrom = (array, obj) => {
 	if (~index) {
 		array.splice(index, 1);
 	}
+}
+
+//
+export let waterfall = (value, functions) => {
+	for (let i = 0; i < functions.length; i++) {
+		value = functions[i](value);
+	}
+	return value;
 }
 
 export let isString = val => typeof val === 'string' || val instanceof String;

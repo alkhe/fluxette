@@ -1,8 +1,8 @@
 import React from 'react';
-import { stateCall, normalizeArray, callAll, isString, deleteFrom, listenerKey } from './util';
+import { stateCall, normalizeArray, callAll, waterfall, isString, deleteFrom, listenerKey } from './util';
 
 export default class {
-	constructor(stores = {}, middleware = list => list) {
+	constructor(stores = {}, middleware = []) {
 		// Top-level Stores
 		this.stores = stores;
 		// Dispatcher
@@ -10,7 +10,7 @@ export default class {
 		// Action Stack
 		this.history = [];
 		// Middleware
-		this.middleware = middleware;
+		this.middleware = middleware instanceof Array ? middleware : [middleware];
 		// State
 		this.state = stateCall(this.stores);
 	}
@@ -19,7 +19,7 @@ export default class {
 		actions = normalizeArray(actions);
 		if (actions.length > 0) {
 			// Call Middleware
-			actions = this.middleware(actions);
+			actions = waterfall(actions, this.middleware);
 			// Push all actions onto stack
 			this.history.push(...actions);
 			// Synchronously process all actions

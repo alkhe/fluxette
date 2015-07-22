@@ -1,11 +1,12 @@
 import Fluxette from './flux';
 import Store from './store';
+import Mapware from './mapware';
 
 import { deleteFrom } from './util';
 
-export { Fluxette, Store };
+export { Fluxette, Store, Mapware };
 
-export default (stores, middleware) => {
+export default (stores, middleware = []) => {
 	let flux = new Fluxette(stores, middleware);
 	return {
 		dispatch: ::flux.dispatch,

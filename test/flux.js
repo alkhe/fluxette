@@ -1,6 +1,6 @@
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import Flux, { Store } from '..';
+import Flux, { Store, Mapware } from '..';
 
 chai.use(spies);
 
@@ -18,16 +18,17 @@ const TYPES = {
 
 describe('Flux', () => {
 
-	let flux, stores, listener,
+	let flux, stores, listener, listener2,
 		AXA, AXB, AYA,
 		BXA, BYA, BYB;
 
 	let middleware;
 
-	let flux2, flux3;
+	let flux2;
 
 	beforeEach(() => {
 		listener = chai.spy(() => {});
+		listener2 = chai.spy(() => {});
 
 		AXA = chai.spy(state => ({ ...state, propAA: 123 }));
 		AXB = chai.spy(state => ({ ...state, propAA: 234, propAB: 'thing' }));
@@ -65,17 +66,14 @@ describe('Flux', () => {
 			}
 		};
 
-		middleware = chai.spy(list => list.map(action => action.type == TYPES.Z
-			? { ...action, extra: 'ex' } : action));
+		middleware = chai.spy(Mapware({
+			[TYPES.Z]: action => ({ ...action, extra: 'ex' })
+		}));
 
-		flux = Flux(stores, middleware);
+		flux = Flux(stores, [middleware, Mapware({ [TYPES.X.A]: listener2() })]);
 
 		flux2 = Flux(Store(0, {
 			[TYPES.X.A]: state => state + 5
-		}));
-
-		flux3 = Flux(stores, Store([], {
-			[TYPES.X.A]: (history, actions) => { listener(); return [...history, actions]; }
 		}));
 	})
 
@@ -93,11 +91,6 @@ describe('Flux', () => {
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('connect')
 				.that.is.an.instanceof(Function);
-		})
-		it('can use stores as middleware', () => {
-			flux3.dispatch({ type: TYPES.X.A });
-			flux3.dispatch({ type: TYPES.X.B });
-			expect(listener).to.have.been.called.once;
 		})
 	})
 
@@ -199,16 +192,6 @@ describe('Flux', () => {
 			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B });
 			expect(hook).to.have.been.called.once;
 		})
-		it('can use stores as listeners', () => {
-			let fn = chai.spy(() => {});
-			let store = Store({}, {
-				[TYPES.X.A]: fn
-			});
-			flux.hook(store);
-			flux.dispatch({ type: TYPES.X.A });
-			flux.dispatch({ type: TYPES.X.B });
-			expect(fn).to.have.been.called.once;
-		})
 	})
 
 	describe('unhook', () => {
@@ -220,6 +203,22 @@ describe('Flux', () => {
 			flux.unhook(listener);
 			flux.dispatch({ type: TYPES.X.A });
 			expect(listener).to.have.been.called.twice;
+		})
+	})
+
+	describe('Mapware', () => {
+		it('can be used as middleware', () => {
+			flux.dispatch({ type: TYPES.X.A });
+			flux.dispatch({ type: TYPES.X.B });
+			expect(listener2).to.have.been.called.once;
+		})
+		it('can be used as a hook', () => {
+			let fn = chai.spy(() => {});
+			let ware = Mapware({ [TYPES.X.A]: fn });
+			flux.hook(ware);
+			flux.dispatch({ type: TYPES.X.A });
+			flux.dispatch({ type: TYPES.X.B });
+			expect(fn).to.have.been.called.once;
 		})
 	})
 })
