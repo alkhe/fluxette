@@ -1,6 +1,6 @@
 # fluxette
 
-`fluxette` is a minimalist Flux implementation, inspired by ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
+`fluxette` is a minimalist yet powerful Flux implementation, inspired by ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
 
 ## Table of Contents
 
@@ -35,7 +35,7 @@ Why `fluxette`? (Some buzzwords to attract you.)
 * no boilerplate
 * no switch statements!
 * concise
-* small (~100 sloc)
+* small
 * React integration
 
 ## Install
@@ -47,9 +47,9 @@ Browser builds are available [here](https://github.com/edge/fluxette/tree/master
 
 ## Getting Started
 
-As you will see, `fluxette` has many recommended practices, but never forces you to do something in a particular way.
+As you will see, `fluxette` has a set recommended practices, but never forces you to do anything in a particular way.
 
-First, create your action types. While a module exporting constants isn't strictly necessary to use `fluxette`, they are recommended for a structured application. These are important, because they define the behaviors your application. They will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
+Let's start off with creating your action types. While a module exporting constants isn't strictly necessary to use `fluxette`, they are recommended for a structured application. Constants are important, because they define the behaviors of your application (but don't worry, no switch statements). Constants will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
 
 **types.js**
 ```js
@@ -67,8 +67,7 @@ export default {
 }
 ```
 
-Then, create your stores. Stores are values (primitives, arrays, objects) bound to pure functions (reducers) that reduce an action into your state, much like an accumulator. All reducers should have the signature: `(oldstate, action) => newstate`. While you don't necessary have to use pure functions, it is recommended to do so to keep a maintainable project.
-`fluxette` provides a store creator function, which takes an initial state and your reducers. Stores should be fast and synchronous, so that rehydration is easy.
+Next, create your stores. Stores are values (primitives, arrays, objects) bound to pure functions (reducers) that reduce an array of actions into your state, much like an accumulator. All reducers should have the signature: `(state, action) => state`. While you don't necessarily have to use pure functions, it is recommended to do so to keep a maintainable project. `fluxette` provides a store factory, which takes an initial state and your reducers. Stores should be fast and synchronous, so that rehydration is easy.
 
 **stores.js**
 ```js
@@ -89,7 +88,7 @@ export default {
 }
 ```
 
-Now, create your action creators. Action creators are not necessary, but are recommended in general. It is up to you on how you implement your action creators, but one good way is to use functions that take relevant arguments, and use the `state` function from your base flux module if your action creator relies on state to create the action. Action creators can return an action or an array of actions. They can also use other action creators for composable application behavior.
+Now, create your action creators. Action creators are not necessary, but are recommended in general. In smaller projects, such as the todo example, it is usually okay to omit action creators. It is up to you on how you implement your action creators, but one good way is to use functions that take relevant arguments, and the `state` function from your base flux module if your action creator relies on state. Action creators should return an action or an array of actions. This allows them to also use other action creators for composable application behavior.
 
 **creators.js**
 ```js
@@ -135,7 +134,7 @@ const flux = Flux(stores);
 export default flux;
 ```
 
-In your application, the majority of your interactions with `fluxette` should consist of dispatching actions.
+Now, simply dispatch your actions, and `fluxette` will take care of the rest.
 
 **something.js**
 ```js
@@ -150,7 +149,7 @@ dispatch(game.reset());
 ## API
 
 ### Flux(stores)
-The `fluxette` factory method takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter.
+The `fluxette` factory takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter.
 
 ```js
 const flux = Flux({
@@ -163,7 +162,7 @@ const flux = Flux({
 		storeD: @Store,
 		storeE: @Store
 	]
-}, actions => actions.map(transform));
+});
 ```
 
 ### flux.state()
@@ -188,7 +187,7 @@ state()
 ```
 
 ### flux.dispatch(...actions)
-`flux.dispatch(...actions)` takes an action, an array of actions, or an argument list of actions. It synchronously runs all actions through each store reducer, and calls any registered listeners afterwards.
+`flux.dispatch(...actions)` takes an action, an array of actions, or an argument list of both. It first passes them through middleware, synchronously runs them through each store, and calls any registered hooks afterwards.
 
 ```js
 import { dispatch } from './flux';
@@ -204,13 +203,16 @@ dispatch({ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE });
 ```
 
 ### flux.proxy(fn)
-`flux.hook(fn)` registers a function as middleware that gets called before the dispatch. The listener should have a signature of `actions => actions`. Middleware will be called in the order that they were registered.
+`flux.proxy(fn)` registers a function as middleware that gets called before the dispatch. The middleware should have a signature of `actions => actions`. Middleware will be called in the order that they were registered. `Mapware` is great for action-specific middleware.
 
 ```js
 import { proxy } from './flux';
 
 // Transform the actions somehow
 proxy(transform);
+
+// Do anything with side effects
+proxy(handler);
 ```
 
 ### flux.unproxy(fn)
@@ -224,13 +226,12 @@ let fn = (actions) => {
 	return actions;
 };
 
-// fn will be called before dispatch
+// fn will be called before dispatches
 proxy(fn);
 
 // fn will no longer be called before dispatches
 unproxy(fn);
 ```
-
 
 ### flux.hook(fn)
 `flux.hook(fn)` registers a function as a listener that gets called after the dispatch. The listener should have a signature of `(actions, state) => {}`. Listeners will be called in the order that they were registered.
@@ -282,7 +283,7 @@ history()
 ```
 
 ### flux.connect([specifier], [identifier])
-`flux.connect` is a class decorator that lets you easily integrate `fluxette` into your React classes. It takes an optional function that makes your component state more specific. Your specifier does not necessarily need to subscribe to a Store, but if it does, your component will have a nice performance boost due to Store caching. It also takes an optional identifier ('flux' by default) that determines what key on your state it will be stored as.
+`flux.connect` is a class decorator that lets you easily integrate `fluxette` into your React classes. It takes an optional function that makes your component state more specific. Your specifier does not necessarily need to subscribe to a Store, but if it does, your component will have a nice performance boost due to Store caching. It also takes an optional identifier ('flux' by default) that determines which key on your state it will be stored as.
 
 ```js
 import { connect } from './flux';
@@ -292,6 +293,17 @@ export default class extends React.Component {
 	// ...
 	render() {
 		this.state.flux
+		// result of flux.state()
+	}
+}
+
+// or
+
+@connect('domain')
+export default class extends React.Component {
+	// ...
+	render() {
+		this.state.domain
 		// result of flux.state()
 	}
 }
@@ -320,14 +332,17 @@ const store = Store({}, {
 ```
 
 ### Mapware(reducers)
-Because Stores are just functions that reduce over an array of actions, you can use them as middleware and hooks. `fluxette` provides a further level of abstraction by including `Mapware`, which reduces over actions themselves, instead of state.
+Because Stores are just functions that reduce over an array of actions, you can use them as middleware and hooks. `fluxette` provides a further level of abstraction as `Mapware`, which reduces over actions themselves, instead of state.
 
 ```js
 import { Mapware } from 'fluxette';
+import { proxy } from './flux';
 
 const ware = Mapware({
 	actionA: (action) => ({ ...action, a: transform(action.a) })
 })
+
+proxy(ware);
 ```
 
 ## Debugging
@@ -351,9 +366,9 @@ unhook(ware);
 ```
 
 ## Rehydration
-The action history is always available on `flux.history`. When you want to save the state for later rehydration, simply serialize `flux.history` however you want and send it to the server.
+The action history is always available from `flux.history()`. When you want to save the state for later rehydration, simply serialize `flux.history` however you want and send it to the server.
 
-When you want to retrieve the state from the previous session, use your method to get the deserialized state, and simply pass the state through `flux.dispatch`.
+When you want to retrieve the state from the previous session, send the state, deserialize it, and simply pass it through `flux.dispatch`.
 
 ```js
 let history = getDeserializedActionHistoryPromise();
@@ -370,7 +385,7 @@ const flux = Flux(stores);
 ```
 
 ## Isomorphic Flux
-Isomorphic Flux is as easy as creating a new instance of `fluxette`. It is up to you how you coordinate synchronization between the server and client.
+Isomorphic Flux is as easy as creating a new instance of `fluxette`. It is your choice how you coordinate synchronization between the server and client.
 
 ```js
 let flux = Flux(stores);
@@ -388,8 +403,33 @@ async function doSomething(data) {
 doSomething(foo);
 ```
 
+For your classic request/success/failure behaviors, the following approach is viable:
+```js
+// actions
+let api = {
+	items: {
+		request: () => ({ type: API.ITEMS.REQUEST }),
+		request: items => ({ type: API.ITEMS.DONE, items }),
+		fail: error => ({ type: API.ITEMS.FAIL, error })
+	}
+};
+
+// async helper
+let getItems = () => {
+	dispatch(api.items.request());
+	asyncRequest((err, res) => {
+		if (err) {
+			flux.dispatch(api.items.fail(err));
+		}
+		else {
+			flux.dispatch(api.items.done(res));
+		}
+	});
+}
+```
+
 ## Middleware
-Middleware are a simple but powerful addition to the dispatcher, and `fluxette` allows you to hook your own middleware into the dispatch cycle. Every time a dispatch is made, each middleware will be called in order with the array of actions being dispatched, and the dispatcher expects it to return a new array of actions. The stores will only ever see actions returned by the middleware. This allows you to transform the actions, drop actions, or perform any other behavior required by your application, such as setting cookies and localstorage. This solves the problem of discerning between the Store and non-Store aspects of eminent data. `fluxette` also provides the `Mapware` factory to automatically reduce over each action by type.
+Middleware are a simple but powerful addition to the dispatcher, and `fluxette` allows you to hook your own middleware into the dispatch cycle. Every time a dispatch is made, each middleware will be called in order with the array of actions being dispatched, and the dispatcher expects it to return a new array of actions. The stores will only ever see actions returned by the middleware. This allows you to transform the actions, drop actions, or perform any other behavior required by your application, such as setting cookies and localStorage. This solves the problem of discerning between the Store and non-Store aspects of eminent data. `fluxette` also provides the `Mapware` factory to automatically reduce over each action by type.
 
 ```js
 const ware = actions => actions.map(action =>
@@ -407,11 +447,15 @@ flux.proxy(ware);
 ```
 
 ## Tips
-The `fluxette` factory is essentially a wrapper around the `fluxette` constructor that autobinds methods and hides properties for your convenience and safety. If you use the factory, you can individually import methods from your base flux module. It is entirely possible to use `fluxette` without import flux itself.
+The `fluxette` factory is essentially a wrapper around the `fluxette` constructor, which autobinds methods and hides properties for your convenience and safety. If you use the factory, you can individually import methods from your base flux module. It is then entirely possible to use `fluxette` without import flux itself.
 
 You can `import { Fluxette } from 'fluxette';` if you desire, thus allowing you to extend `fluxette` in whatever way would benefit your application.
 
 Think of hooks as the post-dispatch counterpart of middleware. In fact, you can reuse some middleware as hooks, and vice-versa.
+
+If you change the state, make sure that you return something with a different reference in order for your components to update.
+
+`fluxette` works best when its internals are asynchronous; this ensures that it is fast. It is recommended that you keep asynchronous code outside of stores, but you can write asynchronous middleware if you wish.
 
 ## Examples
 Examples can be found [here](https://github.com/edge/fluxette/tree/master/examples).
@@ -424,10 +468,11 @@ $ npm test
 
 ## Todo
 * React and non-React builds
+* declarative rehydration
 * switch to webpack for builds
 * implement rewinding
 * add lint, code coverage, CI, badges, and all that jazz
 * make isomorphic easier
-* add more examples (async, router, flux-comparison, etc.)
+* add more examples (async, router, ~~flux-comparison~~, etc.)
 * add more philosophy and best practices to README
 * submit to HN

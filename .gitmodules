@@ -1,3 +1,6 @@
 [submodule "examples/fluxette-todo"]
 	path = examples/fluxette-todo
 	url = https://github.com/edge/fluxette-todo
+[submodule "examples/flux-comparison"]
+	path = examples/flux-comparison
+	url = https://github.com/edge/flux-comparison
