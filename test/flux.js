@@ -70,7 +70,10 @@ describe('Flux', () => {
 			[TYPES.Z]: action => ({ ...action, extra: 'ex' })
 		}));
 
-		flux = Flux(stores, [middleware, Mapware({ [TYPES.X.A]: listener2() })]);
+		flux = Flux(stores);
+
+		flux.proxy(middleware);
+		flux.proxy(Mapware({ [TYPES.X.A]: listener2() }));
 
 		flux2 = Flux(Store(0, {
 			[TYPES.X.A]: state => state + 5

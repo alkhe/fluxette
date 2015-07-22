@@ -6,12 +6,14 @@ import { deleteFrom } from './util';
 
 export { Fluxette, Store, Mapware };
 
-export default (stores, middleware = []) => {
-	let flux = new Fluxette(stores, middleware);
+export default stores => {
+	let flux = new Fluxette(stores);
 	return {
 		dispatch: ::flux.dispatch,
 		state: () => flux.state,
 		history: () => flux.history,
+		proxy: ::flux.middleware.push,
+		unproxy: fn => { deleteFrom(flux.middleware, fn); },
 		hook: ::flux.hooks.push,
 		unhook: fn => { deleteFrom(flux.hooks, fn); },
 		connect: ::flux.connect

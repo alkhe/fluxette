@@ -149,8 +149,8 @@ dispatch(game.reset());
 
 ## API
 
-### Flux(stores, [middleware])
-The `fluxette` factory method takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter. Optionally, it will also take a function or array functions as middleware with the signature `actions => actions`.
+### Flux(stores)
+The `fluxette` factory method takes a single Store, an object with keys mapping to Stores, an array of Stores, or a mixture of the latter.
 
 ```js
 const flux = Flux({
@@ -203,8 +203,37 @@ dispatch([{ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE }]);
 dispatch({ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE });
 ```
 
+### flux.proxy(fn)
+`flux.hook(fn)` registers a function as middleware that gets called before the dispatch. The listener should have a signature of `actions => actions`. Middleware will be called in the order that they were registered.
+
+```js
+import { proxy } from './flux';
+
+// Transform the actions somehow
+proxy(transform);
+```
+
+### flux.unproxy(fn)
+`flux.unproxy(fn)` deregisters middleware that was `flux.proxy`ed before.
+
+```js
+import { proxy, unproxy } from './flux';
+
+let fn = (actions) => {
+	// do something
+	return actions;
+};
+
+// fn will be called before dispatch
+proxy(fn);
+
+// fn will no longer be called before dispatches
+unproxy(fn);
+```
+
+
 ### flux.hook(fn)
-`flux.hook(fn)` registers a function as a listener. The listener should have a signature of `(actions, state) => {}`. Listeners will be called in the order that they were registered.
+`flux.hook(fn)` registers a function as a listener that gets called after the dispatch. The listener should have a signature of `(actions, state) => {}`. Listeners will be called in the order that they were registered.
 
 ```js
 import { hook } from './flux';
@@ -374,7 +403,7 @@ const ware = Mapware({
 	[ACTION_TYPE]: action => ({ ...action, extra: 'extra' })
 })
 
-const flux = Flux(stores, ware);
+flux.proxy(ware);
 ```
 
 ## Tips

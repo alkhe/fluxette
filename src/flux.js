@@ -2,7 +2,7 @@ import React from 'react';
 import { stateCall, normalizeArray, callAll, waterfall, isString, deleteFrom, listenerKey } from './util';
 
 export default class {
-	constructor(stores = {}, middleware = []) {
+	constructor(stores = {}) {
 		// Top-level Stores
 		this.stores = stores;
 		// Dispatcher
@@ -10,7 +10,7 @@ export default class {
 		// Action Stack
 		this.history = [];
 		// Middleware
-		this.middleware = middleware instanceof Array ? middleware : [middleware];
+		this.middleware = [];
 		// State
 		this.state = stateCall(this.stores);
 	}
