@@ -24,7 +24,7 @@ describe('Flux', () => {
 
 	let middleware;
 
-	let flux2;
+	let flux2, flux3;
 
 	beforeEach(() => {
 		listener = chai.spy(() => {});
@@ -73,9 +73,13 @@ describe('Flux', () => {
 		flux2 = Flux(Store(0, {
 			[TYPES.X.A]: state => state + 5
 		}));
+
+		flux3 = Flux(stores, Store([], {
+			[TYPES.X.A]: (history, actions) => { listener(); return [...history, actions]; }
+		}));
 	})
 
-	describe('wrapper', () => {
+	describe('factory', () => {
 		it('should properly construct flux class', () => {
 			expect(flux).to.have.property('history')
 				.that.is.an.instanceof(Function);
@@ -89,6 +93,11 @@ describe('Flux', () => {
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('connect')
 				.that.is.an.instanceof(Function);
+		})
+		it('can use stores as middleware', () => {
+			flux3.dispatch({ type: TYPES.X.A });
+			flux3.dispatch({ type: TYPES.X.B });
+			expect(listener).to.have.been.called.once;
 		})
 	})
 
@@ -189,6 +198,16 @@ describe('Flux', () => {
 			flux.hook(hook);
 			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B });
 			expect(hook).to.have.been.called.once;
+		})
+		it('can use stores as listeners', () => {
+			let fn = chai.spy(() => {});
+			let store = Store({}, {
+				[TYPES.X.A]: fn
+			});
+			flux.hook(store);
+			flux.dispatch({ type: TYPES.X.A });
+			flux.dispatch({ type: TYPES.X.B });
+			expect(fn).to.have.been.called.once;
 		})
 	})
 

@@ -12,7 +12,10 @@ export default function(state = {}, reducers = {}) {
 				let action = actions[i];
 				let reducer = reducers[action.type];
 				if (reducer) {
-					state = reducer(state, action);
+					let redux = reducer(state, action);
+					if (redux !== undefined) {
+						state = redux;
+					}
 				}
 			}
 		}
