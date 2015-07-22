@@ -204,20 +204,20 @@ dispatch({ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE });
 ```
 
 ### flux.hook(fn)
-`flux.hook(fn)` registers a function as a listener. The listener should have a signature of `(data, [actions]) => {}`. Listeners will be called in the order that they were registered.
+`flux.hook(fn)` registers a function as a listener. The listener should have a signature of `(actions, state) => {}`. Listeners will be called in the order that they were registered.
 
 ```js
 import { hook } from './flux';
 
-// Log all state changes with actions to console
+// Log all new actions and the state to console
 hook(::console.log);
 
 // In a React class
-hook(data => this.setState(data));
+hook((actions, state) => this.setState(state));
 // However, it is better to use the flux.connect decorator
 
 // Arbitrary function
-hook(data => {
+hook((actions, state) => {
 	// do something
 });
 ```
@@ -228,11 +228,11 @@ hook(data => {
 ```js
 import { hook, unhook } from './flux';
 
-let fn = data => {
+let fn = (actions, state) => {
 	// do something
 };
 
-// fn will be called on state changes
+// fn will be called on dispatch
 hook(fn);
 
 // fn will no longer be called on state changes
@@ -279,13 +279,22 @@ export default class extends React.Component {
 }
 ```
 
+### Store(state, reducers)
+`Store` is a factory method that takes an initial state and an object containing reducers, with each key being your desired mapping from an action type to a reducer. It produces a pure state machine function that takes an action or an array of actions.
+
+```js
+const store = Store({}, {
+	actionA: (state, action) => ({ ...state, a: action.item })
+})
+```
+
 ## Debugging
 Simply pass your logger/debugger to `flux.hook` when you want to log state changes, and `flux.unhook` when you're done.
 
 ```js
-let logger = data => {
-	sendToDashboard(data);
-	alertTimeMachine();
+let logger = (actions, state) => {
+	sendToDashboard(state);
+	alertTimeMachine(actions);
 }
 
 hook(logger);
@@ -337,7 +346,11 @@ Middleware are a simple but powerful addition to the dispatcher, and `fluxette` 
 ## Tips
 The `fluxette` factory is essentially a wrapper around the `fluxette` constructor that autobinds methods and hides properties for your convenience and safety. If you use the factory, you can individually import methods from your base flux module. It is entirely possible to use `fluxette` without import flux itself.
 
-You can `import { Flux } from 'fluxette';` if you desire; this will allow you to extend `fluxette` however you like.
+You can `import { Fluxette } from 'fluxette';` if you desire, thus allowing you to extend `fluxette` in whatever way would benefit your application.
+
+Think of hooks as the post-dispatch counterpart of middleware. In fact, you can reuse some middleware as hooks, and vice-versa.
+
+Because Stores are just functions that reduce over an array of actions, you can use them as middleware and hooks.
 
 ## Examples
 Examples can be found [here](https://github.com/edge/fluxette/tree/master/examples).

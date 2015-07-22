@@ -14,18 +14,18 @@ export default class {
 		// State
 		this.state = stateCall(this.stores);
 	}
-	dispatch(...data) {
+	dispatch(...actions) {
 		// Normalize array of actions
-		data = normalizeArray(data);
-		if (data.length > 0) {
+		actions = normalizeArray(actions);
+		if (actions.length > 0) {
 			// Call Middleware
-			data = this.middleware(data);
+			actions = this.middleware(actions);
 			// Push all actions onto stack
-			this.history.push(...data);
+			this.history.push(...actions);
 			// Synchronously process all actions
-			this.state = stateCall(this.stores, data);
+			this.state = stateCall(this.stores, actions);
 			// Call all registered listeners
-			callAll(this.hooks, this.state, data);
+			callAll(this.hooks, actions, this.state);
 		}
 	}
 	connect(specifier = data => data, identifier = 'flux') {
@@ -44,7 +44,7 @@ export default class {
 					let lastState = specifier(state);
 					this.state = { [identifier]: lastState };
 					// Ensure the same reference of setState
-					let listener = this[listenerKey] = data => {
+					let listener = this[listenerKey] = (actions, data) => {
 						let newState = specifier(data);
 						if (lastState !== newState) {
 							lastState = newState;

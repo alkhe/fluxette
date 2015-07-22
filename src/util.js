@@ -35,9 +35,9 @@ let normalize = (arr, into) => {
 }
 
 // Call each in array of functions
-export let callAll = (arr, data) => {
+export let callAll = (arr, ...data) => {
 	for (let i = 0; i < arr.length; i++) {
-		arr[i](data);
+		arr[i](...data);
 	}
 };
 

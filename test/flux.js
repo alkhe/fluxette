@@ -181,13 +181,14 @@ describe('Flux', () => {
 			flux.dispatch({ type: TYPES.X.A });
 			expect(listener).to.have.been.called.exactly(3);
 		})
-		it('should call listeners with (state, actions)', () => {
-			let hook = (state, actions) => {
+		it('should call listeners with (actions, state)', () => {
+			let hook = chai.spy((actions, state) => {
 				expect(actions).to.deep.equal([{ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B }]);
-			}
-			flux.hook(listener);
+				expect(state).to.equal(flux.state());
+			});
+			flux.hook(hook);
 			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B });
-			expect(listener).to.have.been.called.once;
+			expect(hook).to.have.been.called.once;
 		})
 	})
 
