@@ -363,10 +363,18 @@ doSomething(foo);
 Middleware are a simple but powerful addition to the dispatcher, and `fluxette` allows you to hook your own middleware into the dispatch cycle. Every time a dispatch is made, each middleware will be called in order with the array of actions being dispatched, and the dispatcher expects it to return a new array of actions. The stores will only ever see actions returned by the middleware. This allows you to transform the actions, drop actions, or perform any other behavior required by your application, such as setting cookies and localstorage. This solves the problem of discerning between the Store and non-Store aspects of eminent data. `fluxette` also provides the `Mapware` factory to automatically reduce over each action by type.
 
 ```js
-const ware = Mapware()
+const ware = actions => actions.map(action =>
+	action.type == ACTION_TYPE
+		? { ...action, extra: 'extra' }
+		: action);
 
-const flux = Flux(stores, )
+// or
 
+const ware = Mapware({
+	[ACTION_TYPE]: action => ({ ...action, extra: 'extra' })
+})
+
+const flux = Flux(stores, ware);
 ```
 
 ## Tips
