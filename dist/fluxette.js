@@ -213,7 +213,7 @@ exports["default"] = function () {
 				if (reducer) {
 					var redux = reducer(action);
 					if (redux !== undefined) {
-						action[i] = redux;
+						actions[i] = redux;
 					}
 				}
 			}
