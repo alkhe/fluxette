@@ -409,7 +409,7 @@ For your classic request/success/failure behaviors, the following approach is vi
 let api = {
 	items: {
 		request: () => ({ type: API.ITEMS.REQUEST }),
-		request: items => ({ type: API.ITEMS.DONE, items }),
+		done: items => ({ type: API.ITEMS.DONE, items }),
 		fail: error => ({ type: API.ITEMS.FAIL, error })
 	}
 };
@@ -422,7 +422,7 @@ let getItems = () => {
 			flux.dispatch(api.items.fail(err));
 		}
 		else {
-			flux.dispatch(api.items.done(res));
+			flux.dispatch(api.items.done(res.items));
 		}
 	});
 }
