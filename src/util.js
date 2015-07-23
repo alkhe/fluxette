@@ -1,3 +1,14 @@
+export let fluxDispatch = (flux, actions) => {
+	// Push all actions onto stack
+	flux.history.push(...actions);
+	// Synchronously process all actions
+	atomicDispatch(flux.vector, actions);
+	// Derive state
+	flux.state = derive(flux.stores);
+	// Call all registered listeners
+	callAll(flux.hooks, actions, flux.state);
+};
+
 // Flatten a Store into an array
 export let vectorize = store => {
 	if (store instanceof Function) {
@@ -8,7 +19,7 @@ export let vectorize = store => {
 		$vectorize(store, norm);
 		return norm;
 	}
-}
+};
 
 let $vectorize = (obj, into) => {
 	for (let i in obj) {
@@ -20,8 +31,7 @@ let $vectorize = (obj, into) => {
 			$vectorize(store, into);
 		}
 	}
-}
-
+};
 
 // Derive state from stores
 // If it's a store, just get its state
@@ -38,7 +48,7 @@ let $derive = stores => {
 			: $derive(store);
 	}
 	return obj;
-}
+};
 
 // Flatten array and filter Objects
 export let normalize = arr => {
@@ -64,7 +74,7 @@ let $normalize = (arr, into) => {
 			}
 		}
 	}
-}
+};
 
 // Call each action in order with Store vector
 export let atomicDispatch = (vector, actions) => {
@@ -74,7 +84,7 @@ export let atomicDispatch = (vector, actions) => {
 			vector[j](action);
 		}
 	}
-}
+};
 
 // Call each in array of functions
 export let callAll = (arr, ...data) => {
@@ -89,7 +99,7 @@ export let deleteFrom = (array, obj) => {
 	if (~index) {
 		array.splice(index, 1);
 	}
-}
+};
 
 // Waterfall an array of functions
 export let waterfall = (value, functions) => {
@@ -97,7 +107,7 @@ export let waterfall = (value, functions) => {
 		value = functions[i](value);
 	}
 	return value;
-}
+};
 
 export let isString = val => typeof val === 'string' || val instanceof String;
 

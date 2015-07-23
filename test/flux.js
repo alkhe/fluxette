@@ -18,7 +18,8 @@ const TYPES = {
 
 describe('Flux', () => {
 
-	let flux, stores, listener, listener2,
+	let flux, reflux, stores, restores,
+		listener, listener2,
 		AXA, AXB, AYA,
 		BXA, BYA, BYB;
 
@@ -66,14 +67,46 @@ describe('Flux', () => {
 			}
 		};
 
+		restores = {
+			storeA: Store({ propAA: 0, propAB: '' }, {
+				[TYPES.X.A]: AXA,
+				[TYPES.X.B]: AXB,
+				[TYPES.Y.A]: AYA,
+			}),
+			storeB: Store({ propBA: {}, propBB: [] }, {
+				[TYPES.X.A]: BXA,
+				[TYPES.Y.A]: BYA,
+				[TYPES.Y.B]: BYB
+			}),
+			storeC: {
+				storeCA: Store(0, {
+					[TYPES.Y.A]: state => state + 1
+				}),
+				storeCB: {
+					storeCBA: [
+						Store(5, {
+							[TYPES.Y.A]: state => state + 1
+						}),
+						Store(7, {
+							[TYPES.Y.A]: state => state + 1
+						})
+					]
+				}
+			}
+		};
+
 		middleware = chai.spy(Mapware({
 			[TYPES.Z]: action => ({ ...action, extra: 'ex' })
 		}));
 
 		flux = Flux(stores);
+		reflux = Flux(restores);
 
 		flux.proxy(middleware);
-		flux.proxy(Mapware({ [TYPES.X.A]: listener2() }));
+		flux.proxy(Mapware({ [TYPES.X.A]: listener2 }));
+
+		reflux.proxy(middleware);
+		reflux.proxy(Mapware({ [TYPES.X.A]: listener2 }));
 
 		flux2 = Flux(Store(0, {
 			[TYPES.X.A]: state => state + 5
@@ -169,6 +202,14 @@ describe('Flux', () => {
 			expect(flux.history()).to.deep.equal([{ type: TYPES.Z, extra: 'ex' }, { type: TYPES.X.A }]);
 		})
 	})
+
+	describe('hydrate', () => {
+		it('should be recover state from history', () => {
+			flux.dispatch({ type: TYPES.Z }, { type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.A }, { type: TYPES.Y.B });
+			reflux.hydrate(flux.history());
+			expect(reflux.state()).to.deep.equal(flux.state());
+		})
+	});
 
 	describe('history', () => {
 		it('should be updated on dispatch', () => {

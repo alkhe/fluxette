@@ -203,6 +203,16 @@ dispatch([{ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE }]);
 dispatch({ type: ACTION_TYPE }, { type: OTHER_ACTION_TYPE });
 ```
 
+### flux.hydrate(actions)
+`flux.hydrate(actions)` is a dispatch that does not flatten the actions or run them through middleware; its primary purpose is to allow you to imperatively rehydrate the stores.
+
+```js
+import { hydrate } from './flux';
+
+// get action history
+hydrate(historyArray);
+```
+
 ### flux.proxy(fn)
 `flux.proxy(fn)` registers a function as middleware that gets called before the dispatch. The middleware should have a signature of `actions => actions`. Middleware will be called in the order that they were registered. `Mapware` is great for action-specific middleware.
 
@@ -369,7 +379,7 @@ unhook(ware);
 ## Rehydration
 The action history is always available from `flux.history()`. When you want to save the state for later rehydration, simply serialize `flux.history` however you want and send it to the server.
 
-When you want to retrieve the state from the previous session, send the state, deserialize it, and simply pass it through `flux.dispatch`.
+When you want to retrieve the state from the previous session, send the state, deserialize it, and simply pass it through `flux.hydrate`.
 
 ```js
 let history = getDeserializedActionHistoryPromise();
@@ -379,7 +389,7 @@ const flux = Flux(stores);
 // components take default state
 
 (async () => {
-	flux.dispatch(await history);
+	flux.hydrate(await history);
 
 	// flux is now rehydrated
 })();
@@ -463,6 +473,8 @@ If you change the state, make sure that you return something with a different re
 
 In `fluxette`, *everything* is a function! That means that your Stores, middleware, and hooks can be plain functions if you so desire.
 
+Actions dictate the state of your application. You should structure your application so that your application would have the same state whether the actions were processed by normal user interaction or by rehydration.
+
 ## Examples
 Examples can be found [here](https://github.com/edge/fluxette/tree/master/examples).
 
@@ -473,12 +485,12 @@ $ npm test
 ```
 
 ## Todo
-* React and non-React builds
-* declarative rehydration
-* switch to webpack for builds
 * implement rewinding
-* add lint, code coverage, CI, badges, and all that jazz
+* React and non-React builds
+* switch to webpack for builds
+* declarative rehydration
 * make isomorphic easier
+* add ~~lint~~, code coverage, CI, badges, and all that jazz
 * add more examples (async, router, ~~flux-comparison~~, etc.)
-* add more philosophy and best practices to README
+* rewrite docs
 * submit to HN

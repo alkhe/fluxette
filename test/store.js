@@ -7,7 +7,7 @@ chai.use(spies);
 let TYPES = {
 	INC: 'INC',
 	DEC: 'DEC'
-}
+};
 
 describe('Store', () => {
 

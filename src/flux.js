@@ -1,5 +1,4 @@
-import React from 'react';
-import { vectorize, derive, normalize, callAll, atomicDispatch, waterfall, isString, deleteFrom, listenerKey } from './util';
+import { vectorize, normalize, derive, fluxDispatch, waterfall, isString, deleteFrom, listenerKey } from './util';
 
 export default class {
 	constructor(stores = {}) {
@@ -22,14 +21,8 @@ export default class {
 		if (actions.length > 0) {
 			// Call Middleware
 			actions = waterfall(actions, this.middleware);
-			// Push all actions onto stack
-			this.history.push(...actions);
-			// Synchronously process all actions
-			atomicDispatch(this.vector, actions);
-			// Derive state
-			this.state = derive(this.stores);
-			// Call all registered listeners
-			callAll(this.hooks, actions, this.state);
+			// Dispatch
+			fluxDispatch(this, actions);
 		}
 	}
 	connect(specifier = data => data, identifier = 'flux') {
@@ -54,7 +47,7 @@ export default class {
 							lastState = newState;
 							super.setState({ [identifier]: newState });
 						}
-					}
+					};
 					// Register setState
 					hooks.push(listener);
 				}
@@ -63,6 +56,6 @@ export default class {
 					// Unregister setState
 					deleteFrom(hooks, this[listenerKey]);
 				}
-			}
+			};
 	}
 }
