@@ -13,6 +13,7 @@
 * [Isomorphic Flux](#isomorphic-flux)
 * [Asynchronous](#asynchronous)
 * [Middleware](#middleware)
+* [Store Dependencies](#store-dependencies)
 * [Tips](#tips)
 * [Examples](#examples)
 * [Testing](#testing)
@@ -49,7 +50,7 @@ Browser builds are available [here](https://github.com/edge/fluxette/tree/master
 
 As you will see, `fluxette` has a set recommended practices, but never forces you to do anything in a particular way.
 
-Let's start off with creating your action types. While a module exporting constants isn't strictly necessary to use `fluxette`, they are recommended for a structured application. Constants are important, because they define the behaviors of your application (but don't worry, no switch statements). Constants will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
+Let's start off with creating your action types. While a module exporting constants isn't strictly necessary to use `fluxette`, they are recommended for a structured application. Constants are important, because they define the behaviors of your application (but don't worry, no switch statements). In smaller projects, such as the todo example, it is usually okay to omit a constants module. Constants will be used by your stores and in your actions. `fluxette` has no notion of action creators; they are simply userland functions that aid you in creating actions. You can use `fluxette` without any action creators at all.
 
 **types.js**
 ```js
@@ -67,7 +68,7 @@ export default {
 }
 ```
 
-Next, create your stores. Stores are values (primitives, arrays, objects) bound to pure functions (reducers) that reduce an array of actions into your state, much like an accumulator. All reducers should have the signature: `(state, action) => state`. While you don't necessarily have to use pure functions, it is recommended to do so to keep a maintainable project. `fluxette` provides a store factory, which takes an initial state and your reducers. Stores should be fast and synchronous, so that rehydration is easy.
+Next, create your stores. Stores are values (primitives, arrays, objects) bound to pure functions (reducers) that reduce an array of actions into your state, much like an accumulator. All reducers should have the signature: `(state, action) => state`. While you don't necessarily have to use pure functions, it is recommended to do so to keep a maintainable project. `fluxette` provides a store factory, which takes an initial state and your reducers. The Store itself is a function, so if for some reason your use case cannot use the Store factory, you can use a plain function instead. Stores should be fast and synchronous, so that rehydration is easy.
 
 **stores.js**
 ```js
@@ -88,7 +89,7 @@ export default {
 }
 ```
 
-Now, create your action creators. Action creators are not necessary, but are recommended in general. In smaller projects, such as the todo example, it is usually okay to omit action creators. It is up to you on how you implement your action creators, but one good way is to use functions that take relevant arguments, and the `state` function from your base flux module if your action creator relies on state. Action creators should return an action or an array of actions. This allows them to also use other action creators for composable application behavior.
+Now, create your action creators. Action creators are not necessary, but are recommended in general. It is up to you on how you implement your action creators, but one good way is to use functions that take relevant arguments, and the `state` function from your base flux module if your action creator relies on state. Action creators should return an action or an array of actions. This allows them to also use other action creators for composable application behavior.
 
 **creators.js**
 ```js
@@ -283,7 +284,7 @@ history()
 ```
 
 ### flux.connect([specifier], [identifier])
-`flux.connect` is a class decorator that lets you easily integrate `fluxette` into your React classes. It takes an optional function that makes your component state more specific. Your specifier does not necessarily need to subscribe to a Store, but if it does, your component will have a nice performance boost due to Store caching. It also takes an optional identifier ('flux' by default) that determines which key on your state it will be stored as.
+`flux.connect` is a class decorator that lets you easily integrate `fluxette` into your React classes. It takes an optional function that makes your component state more specific. Specifiers allow you to subscribe to Stores, as well as both coarser and finer grained updates. If your specifier subscribes to a Store or part of a store, your component will have a nice performance boost due to Store caching. It also takes an optional identifier ('flux' by default) that determines which key on your state it will be stored as.
 
 ```js
 import { connect } from './flux';
@@ -446,6 +447,9 @@ const ware = Mapware({
 flux.proxy(ware);
 ```
 
+## Store Dependencies
+Store dependencies in vanilla flux is handled by using `waitFor`, but `waitFor` is hard to trace, and may result in unpredictable application behavior, such as infinite loops. The `fluxette` way to handle store dependencies is to instead split an action into two semantic actions, which will be dispatched in order. This is known as action-splitting, and it allows for declarative store dependencies, simultaneously improving clarity and preventing any possibility of mutual dependencies. In most Flux implementations, this would not be a viable solution, as dispatching twice results in an extra setState on each component. Since `fluxette` allows you to dispatch arrays of actions, atomic action handling of arrays is possible, and only one setState is called once the array has been fully processed. A dependency refactor should usually not involve changing component code; you can just make the relevant action creator return an array of actions instead. If you do not want to use action-splitting, you can use the [redux way](https://gist.github.com/gaearon/d77ca812015c0356654f) as well.
+
 ## Tips
 The `fluxette` factory is essentially a wrapper around the `fluxette` constructor, which autobinds methods and hides properties for your convenience and safety. If you use the factory, you can individually import methods from your base flux module. It is then entirely possible to use `fluxette` without import flux itself.
 
@@ -456,6 +460,8 @@ Think of hooks as the post-dispatch counterpart of middleware. In fact, you can 
 If you change the state, make sure that you return something with a different reference in order for your components to update.
 
 `fluxette` works best when its internals are asynchronous; this ensures that it is fast. It is recommended that you keep asynchronous code outside of stores, but you can write asynchronous middleware if you wish.
+
+In `fluxette`, *everything* is a function! That means that your Stores, middleware, and hooks can be plain functions if you so desire.
 
 ## Examples
 Examples can be found [here](https://github.com/edge/fluxette/tree/master/examples).
