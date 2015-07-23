@@ -1,10 +1,12 @@
 import React from 'react';
-import { stateCall, normalizeArray, callAll, waterfall, isString, deleteFrom, listenerKey } from './util';
+import { vectorize, derive, normalize, callAll, atomicDispatch, waterfall, isString, deleteFrom, listenerKey } from './util';
 
 export default class {
 	constructor(stores = {}) {
 		// Top-level Stores
 		this.stores = stores;
+		// Optimized iteration vector
+		this.vector = vectorize(stores);
 		// Dispatcher
 		this.hooks = [];
 		// Action Stack
@@ -12,18 +14,20 @@ export default class {
 		// Middleware
 		this.middleware = [];
 		// State
-		this.state = stateCall(this.stores);
+		this.state = derive(this.stores);
 	}
 	dispatch(...actions) {
-		// Normalize array of actions
-		actions = normalizeArray(actions);
+		// Flatten and filter array of actions
+		actions = normalize(actions);
 		if (actions.length > 0) {
 			// Call Middleware
 			actions = waterfall(actions, this.middleware);
 			// Push all actions onto stack
 			this.history.push(...actions);
 			// Synchronously process all actions
-			this.state = stateCall(this.stores, actions);
+			atomicDispatch(this.vector, actions);
+			// Derive state
+			this.state = derive(this.stores);
 			// Call all registered listeners
 			callAll(this.hooks, actions, this.state);
 		}

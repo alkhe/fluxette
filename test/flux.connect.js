@@ -180,7 +180,7 @@ describe('Flux', () => {
 			@flux.connect('store')
 			class Component extends React.Component {
 				submit() {
-					flux.dispatch({});
+					flux.dispatch({ type: 'bogus-type' });
 				}
 				render() {
 					spy();

@@ -1,36 +1,79 @@
-// Dispatch actions to stores
-// If it's a store, just dispatch it
-// Otherwise recursively dispatch
-export let stateCall = (store, data) => store instanceof Function
-	? store(data) : derive(store, data);
+// Flatten a Store into an array
+export let vectorize = store => {
+	if (store instanceof Function) {
+		return [store];
+	}
+	else {
+		let norm = [];
+		$vectorize(store, norm);
+		return norm;
+	}
+}
 
-let derive = (stores, data) => {
+let $vectorize = (obj, into) => {
+	for (let i in obj) {
+		let store = obj[i];
+		if (store instanceof Function) {
+			into.push(store);
+		}
+		else {
+			$vectorize(store, into);
+		}
+	}
+}
+
+
+// Derive state from stores
+// If it's a store, just get its state
+// Otherwise recursively derive
+export let derive = store => store instanceof Function
+	? store() : $derive(store);
+
+let $derive = stores => {
 	let obj = stores instanceof Array ? [] : {};
 	for (let key in stores) {
 		let store = stores[key];
 		obj[key] = store instanceof Function
-			? store(data)
-			: derive(store, data);
+			? store()
+			: $derive(store);
 	}
 	return obj;
 }
 
 // Flatten array and filter Objects
-export let normalizeArray = arr => arr.length ? normalize(arr, []) : arr;
+export let normalize = arr => {
+	if (arr.length > 0) {
+		let norm = [];
+		$normalize(arr, norm);
+		return norm;
+	}
+	else {
+		return arr;
+	}
+};
 
-let normalize = (arr, into) => {
+let $normalize = (arr, into) => {
 	for (let i = 0; i < arr.length; i++) {
 		let val = arr[i];
 		if (val instanceof Array) {
-			normalize(val, into);
+			$normalize(val, into);
 		}
 		else {
-			if (val instanceof Object) {
+			if (val instanceof Object && val.type) {
 				into.push(val);
 			}
 		}
 	}
-	return into;
+}
+
+// Call each action in order with Store vector
+export let atomicDispatch = (vector, actions) => {
+	for (let i = 0; i < actions.length; i++) {
+		let action = actions[i];
+		for (let j = 0; j < vector.length; j++) {
+			vector[j](action);
+		}
+	}
 }
 
 // Call each in array of functions
@@ -48,7 +91,7 @@ export let deleteFrom = (array, obj) => {
 	}
 }
 
-//
+// Waterfall an array of functions
 export let waterfall = (value, functions) => {
 	for (let i = 0; i < functions.length; i++) {
 		value = functions[i](value);
