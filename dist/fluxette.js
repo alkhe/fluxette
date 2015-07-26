@@ -9,19 +9,11 @@ var _get = function get(_x4, _x5, _x6) { var _again = true; _function: while (_a
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-var _react = require('react');
-
-var _react2 = _interopRequireDefault(_react);
 
 var _util = require('./util');
 
@@ -55,18 +47,10 @@ var _default = (function () {
 			// Flatten and filter array of actions
 			actions = (0, _util.normalize)(actions);
 			if (actions.length > 0) {
-				var _history;
-
 				// Call Middleware
 				actions = (0, _util.waterfall)(actions, this.middleware);
-				// Push all actions onto stack
-				(_history = this.history).push.apply(_history, _toConsumableArray(actions));
-				// Synchronously process all actions
-				(0, _util.atomicDispatch)(this.vector, actions);
-				// Derive state
-				this.state = (0, _util.derive)(this.stores);
-				// Call all registered listeners
-				(0, _util.callAll)(this.hooks, actions, this.state);
+				// Dispatch
+				(0, _util.fluxDispatch)(this, actions);
 			}
 		}
 	}, {
@@ -142,7 +126,7 @@ var _default = (function () {
 exports['default'] = _default;
 module.exports = exports['default'];
 
-},{"./util":5,"react":"react"}],2:[function(require,module,exports){
+},{"./util":5}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -175,6 +159,9 @@ exports['default'] = function (stores) {
 	var flux = new _flux2['default'](stores);
 	return {
 		dispatch: flux.dispatch.bind(flux),
+		hydrate: function hydrate(actions) {
+			return (0, _util.fluxDispatch)(flux, actions);
+		},
 		state: function state() {
 			return flux.state;
 		},
@@ -267,12 +254,29 @@ exports["default"] = function () {
 module.exports = exports["default"];
 
 },{}],5:[function(require,module,exports){
-// Flatten a Store into an array
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
 	value: true
 });
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+var fluxDispatch = function fluxDispatch(flux, actions) {
+	var _flux$history;
+
+	// Push all actions onto stack
+	(_flux$history = flux.history).push.apply(_flux$history, _toConsumableArray(actions));
+	// Synchronously process all actions
+	atomicDispatch(flux.vector, actions);
+	// Derive state
+	flux.state = derive(flux.stores);
+	// Call all registered listeners
+	callAll(flux.hooks, actions, flux.state);
+};
+
+// Flatten a Store into an array
+exports.fluxDispatch = fluxDispatch;
 var vectorize = function vectorize(store) {
 	if (store instanceof Function) {
 		return [store];
@@ -347,8 +351,8 @@ var atomicDispatch = function atomicDispatch(vector, actions) {
 	}
 };
 
-exports.atomicDispatch = atomicDispatch;
 // Call each in array of functions
+exports.atomicDispatch = atomicDispatch;
 var callAll = function callAll(arr) {
 	for (var _len = arguments.length, data = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 		data[_key - 1] = arguments[_key];
@@ -359,8 +363,8 @@ var callAll = function callAll(arr) {
 	}
 };
 
-exports.callAll = callAll;
 // Delete object from array
+exports.callAll = callAll;
 var deleteFrom = function deleteFrom(array, obj) {
 	var index = array.indexOf(obj);
 	if (~index) {
@@ -368,8 +372,8 @@ var deleteFrom = function deleteFrom(array, obj) {
 	}
 };
 
-exports.deleteFrom = deleteFrom;
 // Waterfall an array of functions
+exports.deleteFrom = deleteFrom;
 var waterfall = function waterfall(value, functions) {
 	for (var i = 0; i < functions.length; i++) {
 		value = functions[i](value);
