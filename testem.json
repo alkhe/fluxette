@@ -1,12 +1,10 @@
 {
   "framework": "mocha",
-  "before_tests": "gulp npm && browserify ./test/*.js -t babelify -o ./test/testem.js",
-  "on_exit": "rm ./test/testem.js",
-  "serve_files": ["./test/testem.js"],
+  "before_tests": "gulp npm test",
+  "on_exit": "rm ./dist/testem.js",
+  "serve_files": ["./dist/testem.js"],
   "src_files": [
     "./src/*.js",
-    "./test/flux.js",
-    "./test/store.js",
-    "./test/flux.connect.js"
+    "./test/*.js"
   ]
 }

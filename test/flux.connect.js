@@ -1,3 +1,4 @@
+/* global describe beforeEach it */
 import React, { addons } from 'react/addons';
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
@@ -56,7 +57,7 @@ describe('Flux', () => {
 			Simulate.click(React.findDOMNode(c.refs.submit));
 			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
 			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
-		})
+		});
 		it('should hook component with specifier', () => {
 			@flux.connect(state => state.user)
 			class Component extends React.Component {
@@ -85,7 +86,7 @@ describe('Flux', () => {
 			Simulate.click(React.findDOMNode(c.refs.submit));
 			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
 			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
-		})
+		});
 		it('should hook component with specifier and identifier', () => {
 			@flux.connect(state => state.user, 'user')
 			class Component extends React.Component {
@@ -114,7 +115,7 @@ describe('Flux', () => {
 			Simulate.click(React.findDOMNode(c.refs.submit));
 			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
 			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
-		})
+		});
 		it('should hook component with identifier', () => {
 			@flux.connect('store')
 			class Component extends React.Component {
@@ -143,7 +144,7 @@ describe('Flux', () => {
 			Simulate.click(React.findDOMNode(c.refs.submit));
 			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
 			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
-		})
+		});
 		it('should setState only if state has changed and domain is store', () => {
 			let spy = chai.spy(() => {});
 
@@ -173,7 +174,7 @@ describe('Flux', () => {
 			React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
 			Simulate.click(React.findDOMNode(c.refs.submit));
 			expect(spy).to.have.been.called.once;
-		})
+		});
 		it('should unfortunately setState if state has changed and domain is not store', () => {
 			let spy = chai.spy(() => {});
 
@@ -203,6 +204,6 @@ describe('Flux', () => {
 			React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
 			Simulate.click(React.findDOMNode(c.refs.submit));
 			expect(spy).to.have.been.called.twice;
-		})
-	})
+		});
+	});
 });

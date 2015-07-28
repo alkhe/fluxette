@@ -1,3 +1,4 @@
+/* global describe beforeEach it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
 import { Store } from '..';
@@ -14,8 +15,8 @@ describe('Store', () => {
 	let inc, dec, store;
 
 	beforeEach(() => {
-		inc = chai.spy((state, action) => ({ ...state, num: state.num + 1, history: state.history.concat(state.num) }));
-		dec = chai.spy((state, action) => ({ ...state, num: state.num - 1, history: state.history.concat(state.num) }));
+		inc = chai.spy(state => ({ ...state, num: state.num + 1, history: state.history.concat(state.num) }));
+		dec = chai.spy(state => ({ ...state, num: state.num - 1, history: state.history.concat(state.num) }));
 
 		store = Store({ num: 0, history: [] }, {
 			[TYPES.INC]: inc,

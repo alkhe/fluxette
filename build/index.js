@@ -1,11 +1,16 @@
 let gulp = require('gulp'),
 	babel = require('gulp-babel'),
-	b = require('browserify'),
-	babelify = require('babelify'),
-	uglifyify = require('uglifyify'),
-	source = require('vinyl-source-stream');
+	webpack = require('webpack'),
+	wf = require('../webpack.factory');
 
 let src = './src/**/*.js';
+
+let wlogger = (err, stats) => {
+	if (err) {
+		throw new Error(err);
+	}
+	console.log(stats.toString());
+};
 
 gulp.task('default', ['watch']);
 gulp.task('watch', () => gulp.watch(src, 'build'));
@@ -19,22 +24,7 @@ gulp.task('npm', () =>
 
 gulp.task('browser', ['min', 'dev']);
 
-gulp.task('min', () =>
-	b({ entries: './src/index.js', standalone: 'fluxette' })
-		.transform(babelify)
-		.transform(uglifyify)
-		.external('react')
-		.bundle()
-		.pipe(source('fluxette.min.js'))
-		.pipe(gulp.dest('./dist'))
-);
+gulp.task('min', () => webpack(wf.build(true, 'fluxette.min.js'), wlogger));
+gulp.task('dev', () => webpack(wf.build(false, 'fluxette.js'), wlogger));
 
-
-gulp.task('dev', () =>
-	b({ entries: './src/index.js', standalone: 'fluxette' })
-		.transform(babelify)
-		.external('react')
-		.bundle()
-		.pipe(source('fluxette.js'))
-		.pipe(gulp.dest('./dist'))
-);
+gulp.task('test', () => webpack(wf.test(), wlogger));
