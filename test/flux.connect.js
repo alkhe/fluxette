@@ -205,5 +205,39 @@ describe('Flux', () => {
 			Simulate.click(React.findDOMNode(c.refs.submit));
 			expect(spy).to.have.been.called.twice;
 		});
+		it('should not fail on unmount', () => {
+			@flux.connect()
+			class Child extends React.Component {
+				render() {
+					return <div />;
+				}
+			}
+
+			class Component extends React.Component {
+				constructor() {
+					super();
+					this.state = {
+						show: true
+					};
+				}
+				toggle() {
+					this.setState({
+						show: !this.state.show
+					});
+				}
+				render() {
+					let toggle = <button ref='toggle' onClick={ ::this.toggle } />;
+					return this.state.show
+						? <div>
+							<Child />
+							{ toggle }
+						</div>
+						: <div>{ toggle }</div>;
+				}
+			}
+
+			let c = renderIntoDocument(<Component />);
+			Simulate.click(React.findDOMNode(c.refs.toggle));
+		});
 	});
 });

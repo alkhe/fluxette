@@ -112,3 +112,4 @@ export let waterfall = (value, functions) => {
 export let isString = val => typeof val === 'string' || val instanceof String;
 
 export let listenerKey = (typeof Symbol !== 'undefined') ? Symbol() : '@@fluxetteListener';
+export let willUnmountKey = (typeof Symbol !== 'undefined') ? Symbol() : '@@fluxetteWillUnmount';

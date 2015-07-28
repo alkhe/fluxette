@@ -1,4 +1,4 @@
-import { vectorize, normalize, derive, fluxDispatch, waterfall, isString, deleteFrom, listenerKey } from './util';
+import { vectorize, normalize, derive, fluxDispatch, waterfall, isString, deleteFrom, listenerKey, willUnmountKey } from './util';
 
 export default class {
 	constructor(stores = {}) {
@@ -50,9 +50,10 @@ export default class {
 					};
 					// Register setState
 					hooks.push(listener);
+					this[willUnmountKey] = super.componentWillUnmount || () => {};
 				}
 				componentWillUnmount(...args) {
-					super.componentWillUnmount(...args);
+					this[willUnmountKey](...args);
 					// Unregister setState
 					deleteFrom(hooks, this[listenerKey]);
 				}

@@ -246,6 +246,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.isString = isString;
 	var listenerKey = typeof Symbol !== 'undefined' ? Symbol() : '@@fluxetteListener';
 	exports.listenerKey = listenerKey;
+	var willUnmountKey = typeof Symbol !== 'undefined' ? Symbol() : '@@fluxetteWillUnmount';
+	exports.willUnmountKey = willUnmountKey;
 
 /***/ },
 /* 2 */
@@ -351,16 +353,13 @@ return /******/ (function(modules) { // webpackBootstrap
 							};
 							// Register setState
 							hooks.push(listener);
+							this[_util.willUnmountKey] = _get(Object.getPrototypeOf(_class.prototype), 'componentWillUnmount', this) || function () {};
 						}
 
 						_createClass(_class, [{
 							key: 'componentWillUnmount',
 							value: function componentWillUnmount() {
-								for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-									args[_key3] = arguments[_key3];
-								}
-
-								_get(Object.getPrototypeOf(_class.prototype), 'componentWillUnmount', this).apply(this, args);
+								this[_util.willUnmountKey].apply(this, arguments);
 								// Unregister setState
 								(0, _util.deleteFrom)(hooks, this[_util.listenerKey]);
 							}
