@@ -80,13 +80,16 @@ let $normalize = (arr, into) => {
 export let atomicDispatch = (vector, actions) => {
 	for (let i = 0; i < actions.length; i++) {
 		let action = actions[i];
+
 		if (action.type === initType) {
+			// Call the stores with a specific rehydration action
 			for (let j = 0; j < vector.length; j++) {
 				let [store, cursor] = vector[j];
 				store({ ...action, state: cursor(action.state) });
 			}
 		}
 		else {
+			// Just call the stores with the action
 			for (let j = 0; j < vector.length; j++) {
 				vector[j][0](action);
 			}

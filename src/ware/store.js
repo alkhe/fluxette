@@ -11,7 +11,7 @@ export default function(statefn = () => ({}), reducers = {}) {
 		else {
 			let { type } = action;
 			if (type === initType) {
-				// Reset the state
+				// Rehydrate
 				state = action.state !== undefined
 					? action.state : statefn();
 			}

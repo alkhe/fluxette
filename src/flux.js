@@ -6,8 +6,6 @@ export default class {
 		this.stores = stores;
 		// Optimized iteration vector
 		this.vector = vectorize(stores);
-		// let [[s, c]] = this.vector;
-		// console.log(c, s(), c(s()));
 		// Dispatcher
 		this.hooks = [];
 		// Action Stack

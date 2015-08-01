@@ -153,6 +153,32 @@ describe('Flux', () => {
 			expect(spy).to.have.been.called.twice;
 			expect(flux.history()).to.deep.equal([{ type: TYPES.A, extra: 'ex' }, { type: TYPES.B }]);
 		});
+		it('can declaratively rehydrate', () => {
+			let flux = Flux({
+				a: Store(),
+				b: { a: Store(), b: Store() }
+			}, false);
+			flux.dispatch({ ...init(),
+				state: {
+					a: 6,
+					b: { a: 7, b: 8 }
+				}
+			});
+			expect(flux.state()).to.deep.equal({
+				a: 6,
+				b: { a: 7, b: 8 }
+			});
+			flux.dispatch({ ...init(),
+				state: {
+					a: 9,
+					b: { a: 10, b: 11 }
+				}
+			});
+			expect(flux.state()).to.deep.equal({
+				a: 9,
+				b: { a: 10, b: 11 }
+			});
+		});
 	});
 
 	describe('hydrate', () => {
@@ -261,31 +287,4 @@ describe('Flux', () => {
 		});
 	});
 
-	describe('Init', () => {
-		it('can declaratively rehydrate', () => {
-			let flux = Flux({
-				a: Store(),
-				b: {
-					a: Store(),
-					b: Store()
-				}
-			}, false);
-			flux.dispatch({ ...init(),
-				state: {
-					a: 6,
-					b: {
-						a: 7,
-						b: 8
-					}
-				}
-			});
-			expect(flux.state()).to.deep.equal({
-				a: 6,
-				b: {
-					a: 7,
-					b: 8
-				}
-			});
-		});
-	});
 });
