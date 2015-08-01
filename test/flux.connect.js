@@ -13,15 +13,14 @@ const USER = {
 	SETEMAIL: 'USER_SETEMAIL'
 };
 
-
 describe('Flux', () => {
 
 	describe('connect', () => {
 		it('should hook component without specifier', () => {
 			let flux = Flux({
 				user: Store({ username: '', email: '' }, {
-					[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
-					[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
+					[USER.SETNAME]: (action, state) => ({ ...state, username: action.name }),
+					[USER.SETEMAIL]: (action, state) => ({ ...state, email: action.email })
 				})
 			});
 
@@ -64,8 +63,8 @@ describe('Flux', () => {
 		it('should hook component with specifier', () => {
 			let flux = Flux({
 				user: Store({ username: '', email: '' }, {
-					[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
-					[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
+					[USER.SETNAME]: (action, state) => ({ ...state, username: action.name }),
+					[USER.SETEMAIL]: (action, state) => ({ ...state, email: action.email })
 				})
 			});
 
@@ -110,8 +109,8 @@ describe('Flux', () => {
 			let spy = chai.spy(() => {});
 			let flux = Flux({
 				user: Store({ username: '', email: '' }, {
-					[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
-					[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
+					[USER.SETNAME]: (action, state) => ({ ...state, username: action.name }),
+					[USER.SETEMAIL]: (action, state) => ({ ...state, email: action.email })
 				})
 			});
 

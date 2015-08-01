@@ -15,8 +15,8 @@ describe('Store', () => {
 	let inc, dec, store;
 
 	beforeEach(() => {
-		inc = chai.spy(state => ({ ...state, num: state.num + 1, history: state.history.concat(state.num) }));
-		dec = chai.spy(state => ({ ...state, num: state.num - 1, history: state.history.concat(state.num) }));
+		inc = chai.spy((action, state) => ({ ...state, num: state.num + 1, history: state.history.concat(state.num) }));
+		dec = chai.spy((action, state) => ({ ...state, num: state.num - 1, history: state.history.concat(state.num) }));
 
 		store = Store({ num: 0, history: [] }, {
 			[TYPES.INC]: inc,
@@ -39,11 +39,5 @@ describe('Store', () => {
 		expect(store({ type: TYPES.INC })).to.have.property('num', 2);
 		expect(store({ type: TYPES.DEC })).to.have.property('num', 1);
 		expect(store({ type: TYPES.DEC })).to.have.property('num', 0);
-	});
-
-	it('should process array of actions in order', () => {
-		expect(store([{ type: TYPES.INC }, { type: TYPES.INC }, { type: TYPES.INC }, { type: TYPES.DEC }, { type: TYPES.DEC }, { type: TYPES.DEC }]))
-			.to.have.property('history')
-			.that.deep.equals([0, 1, 2, 3, 2, 1]);
 	});
 });

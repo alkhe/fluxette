@@ -1,4 +1,4 @@
-/* global describe beforeEach it */
+/* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
 import Flux, { Store, Mapware } from '..';
@@ -6,116 +6,111 @@ import Flux, { Store, Mapware } from '..';
 chai.use(spies);
 
 const TYPES = {
-	X: {
-		A: 'X_A',
-		B: 'X_B'
-	},
-	Y: {
-		A: 'Y_A',
-		B: 'Y_B'
-	},
-	Z: 'Z'
+	A: 'A',
+	B: 'B',
+	BOGUS: 'BOGUS'
 };
 
 describe('Flux', () => {
 
-	let flux, reflux, stores, restores,
-		listener, listener2,
-		AXA, AXB, AYA,
-		BXA, BYA, BYB;
-
-	let middleware;
-
-	let flux2;
-
-	beforeEach(() => {
-		listener = chai.spy(() => {});
-		listener2 = chai.spy(() => {});
-
-		AXA = chai.spy(state => ({ ...state, propAA: 123 }));
-		AXB = chai.spy(state => ({ ...state, propAA: 234, propAB: 'thing' }));
-		AYA = chai.spy(state => ({ ...state, propAB: 'test string' }));
-
-		BXA = chai.spy(state => ({ ...state, propBA: { num: 6 } }));
-		BYA = chai.spy(state => ({ ...state, propBB: [1, 2] }));
-		BYB = chai.spy(state => ({ ...state, propBA: { num: 9 }, propBB: ['3', '4'] }));
-
-		stores = {
-			storeA: Store({ propAA: 0, propAB: '' }, {
-				[TYPES.X.A]: AXA,
-				[TYPES.X.B]: AXB,
-				[TYPES.Y.A]: AYA
-			}),
-			storeB: Store({ propBA: {}, propBB: [] }, {
-				[TYPES.X.A]: BXA,
-				[TYPES.Y.A]: BYA,
-				[TYPES.Y.B]: BYB
-			}),
-			storeC: {
-				storeCA: Store(0, {
-					[TYPES.Y.A]: state => state + 1
-				}),
-				storeCB: {
-					storeCBA: [
-						Store(5, {
-							[TYPES.Y.A]: state => state + 1
-						}),
-						Store(7, {
-							[TYPES.Y.A]: state => state + 1
-						})
-					]
-				}
-			}
-		};
-
-		restores = {
-			storeA: Store({ propAA: 0, propAB: '' }, {
-				[TYPES.X.A]: AXA,
-				[TYPES.X.B]: AXB,
-				[TYPES.Y.A]: AYA
-			}),
-			storeB: Store({ propBA: {}, propBB: [] }, {
-				[TYPES.X.A]: BXA,
-				[TYPES.Y.A]: BYA,
-				[TYPES.Y.B]: BYB
-			}),
-			storeC: {
-				storeCA: Store(0, {
-					[TYPES.Y.A]: state => state + 1
-				}),
-				storeCB: {
-					storeCBA: [
-						Store(5, {
-							[TYPES.Y.A]: state => state + 1
-						}),
-						Store(7, {
-							[TYPES.Y.A]: state => state + 1
-						})
-					]
-				}
-			}
-		};
-
-		middleware = chai.spy(Mapware({
-			[TYPES.Z]: action => ({ ...action, extra: 'ex' })
-		}));
-
-		flux = Flux(stores);
-		reflux = Flux(restores);
-
-		flux.proxy(middleware);
-		flux.proxy(Mapware({ [TYPES.X.A]: listener2 }));
-
-		reflux.proxy(middleware);
-		reflux.proxy(Mapware({ [TYPES.X.A]: listener2 }));
-
-		flux2 = Flux(Store(0, {
-			[TYPES.X.A]: state => state + 5
-		}));
-	});
+	// let flux, reflux, stores, restores,
+	// 	listener, listener2,
+	// 	AXA, AXB, AYA,
+	// 	BXA, BYA, BYB;
+	//
+	// let middleware;
+	//
+	// let flux2;
+	//
+	// beforeEach(() => {
+	// 	listener = chai.spy(() => {});
+	// 	listener2 = chai.spy(() => {});
+	//
+	// 	AXA = chai.spy(state => ({ ...state, propAA: 123 }));
+	// 	AXB = chai.spy(state => ({ ...state, propAA: 234, propAB: 'thing' }));
+	// 	AYA = chai.spy(state => ({ ...state, propAB: 'test string' }));
+	//
+	// 	BXA = chai.spy(state => ({ ...state, propBA: { num: 6 } }));
+	// 	BYA = chai.spy(state => ({ ...state, propBB: [1, 2] }));
+	// 	BYB = chai.spy(state => ({ ...state, propBA: { num: 9 }, propBB: ['3', '4'] }));
+	//
+	// 	stores = {
+	// 		storeA: Store({ propAA: 0, propAB: '' }, {
+	// 			[TYPES.X.A]: AXA,
+	// 			[TYPES.X.B]: AXB,
+	// 			[TYPES.Y.A]: AYA
+	// 		}),
+	// 		storeB: Store({ propBA: {}, propBB: [] }, {
+	// 			[TYPES.X.A]: BXA,
+	// 			[TYPES.Y.A]: BYA,
+	// 			[TYPES.Y.B]: BYB
+	// 		}),
+	// 		storeC: {
+	// 			storeCA: Store(0, {
+	// 				[TYPES.Y.A]: state => state + 1
+	// 			}),
+	// 			storeCB: {
+	// 				storeCBA: [
+	// 					Store(5, {
+	// 						[TYPES.Y.A]: state => state + 1
+	// 					}),
+	// 					Store(7, {
+	// 						[TYPES.Y.A]: state => state + 1
+	// 					})
+	// 				]
+	// 			}
+	// 		}
+	// 	};
+	//
+	// 	restores = {
+	// 		storeA: Store({ propAA: 0, propAB: '' }, {
+	// 			[TYPES.X.A]: AXA,
+	// 			[TYPES.X.B]: AXB,
+	// 			[TYPES.Y.A]: AYA
+	// 		}),
+	// 		storeB: Store({ propBA: {}, propBB: [] }, {
+	// 			[TYPES.X.A]: BXA,
+	// 			[TYPES.Y.A]: BYA,
+	// 			[TYPES.Y.B]: BYB
+	// 		}),
+	// 		storeC: {
+	// 			storeCA: Store(0, {
+	// 				[TYPES.Y.A]: state => state + 1
+	// 			}),
+	// 			storeCB: {
+	// 				storeCBA: [
+	// 					Store(5, {
+	// 						[TYPES.Y.A]: state => state + 1
+	// 					}),
+	// 					Store(7, {
+	// 						[TYPES.Y.A]: state => state + 1
+	// 					})
+	// 				]
+	// 			}
+	// 		}
+	// 	};
+	//
+	// 	middleware = chai.spy(Mapware({
+	// 		[TYPES.Z]: action => ({ ...action, extra: 'ex' })
+	// 	}));
+	//
+	// 	flux = Flux(stores);
+	// 	reflux = Flux(restores);
+	//
+	// 	flux.proxy(middleware);
+	// 	flux.proxy(Mapware({ [TYPES.X.A]: listener2 }));
+	//
+	// 	reflux.proxy(middleware);
+	// 	reflux.proxy(Mapware({ [TYPES.X.A]: listener2 }));
+	//
+	// 	flux2 = Flux(Store(0, {
+	// 		[TYPES.X.A]: state => state + 5
+	// 	}));
+	// });
 
 	describe('factory', () => {
 		it('should properly construct flux class', () => {
+			let flux = Flux({});
 			expect(flux).to.have.property('history')
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('state')
@@ -131,137 +126,233 @@ describe('Flux', () => {
 
 	describe('state', () => {
 		it('should return state when called', () => {
+			let flux = Flux({
+				a: { a: Store(0), b: Store('') },
+				b: { a: Store({}), b: Store([]) }
+			});
 			expect(flux.state()).to.deep.equal({
-				storeA: {
-					propAA: 0,
-					propAB: ''
-				},
-				storeB: {
-					propBA: {},
-					propBB: []
-				},
-				storeC: {
-					storeCA: 0,
-					storeCB: {
-						storeCBA: [5, 7]
-					}
-				}
+				a: { a: 0, b: '' },
+				b: { a: {}, b: [] }
 			});
 
-			expect(flux2.state()).to.equal(0);
+			flux = Flux(Store(0));
+			expect(flux.state()).to.equal(0);
 		});
 		it('should stay the same between dispatches', () => {
+			let flux = Flux({
+				a: { a: Store(0), b: Store('') },
+				b: { a: Store({}), b: Store([]) }
+			});
 			expect(flux.state()).to.equal(flux.state());
 		});
 	});
 
 	describe('dispatch', () => {
 		it('should update state when called', () => {
-			flux.dispatch({ type: TYPES.X.A });
-			let state = flux.state();
-			expect(state).to.have.deep.property('storeA.propAA', 123);
-			expect(state).to.have.deep.property('storeB.propBA')
-				.that.deep.equals({ num: 6 });
-
-			flux2.dispatch({ type: TYPES.X.A });
-			expect(flux2.state()).to.equal(5);
+			let flux = Flux({
+				a: Store(0, {
+					[TYPES.A]: ($, state) => state + 1,
+					[TYPES.B]: ($, state) => state - 1
+				}),
+				b: Store('', {
+					[TYPES.A]: ($, state) => state + 'a',
+					[TYPES.B]: ($, state) => state + 'b'
+				})
+			});
+			flux.dispatch({ type: TYPES.A });
+			expect(flux.state()).to.deep.equal({
+				a: 1,
+				b: 'a'
+			});
+			flux.dispatch({ type: TYPES.B });
+			expect(flux.state()).to.deep.equal({
+				a: 0,
+				b: 'ab'
+			});
 		});
 		it('should dispatch arrays', () => {
-			flux.dispatch([{ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B }]);
-			let state = flux.state();
-			expect(state).to.have.property('storeA')
-				.that.deep.equals({ propAA: 234, propAB: 'thing' });
-			expect(state).to.have.property('storeB')
-				.that.deep.equals({ propBA: { num: 9 }, propBB: ['3', '4'] });
-
-			flux2.dispatch([{ type: TYPES.X.A }, { type: TYPES.X.A }]);
-			expect(flux2.state()).to.equal(10);
+			let flux = Flux({
+				a: Store(0, {
+					[TYPES.A]: ($, state) => state + 1,
+					[TYPES.B]: ($, state) => state - 1
+				}),
+				b: Store('', {
+					[TYPES.A]: ($, state) => state + 'a',
+					[TYPES.B]: ($, state) => state + 'b'
+				})
+			});
+			flux.dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
+			expect(flux.state()).to.deep.equal({
+				a: 0,
+				b: 'ab'
+			});
 		});
 		it('should dispatch argument lists', () => {
-			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B });
-			let state = flux.state();
-			expect(state).to.have.property('storeA')
-				.that.deep.equals({ propAA: 234, propAB: 'thing' });
-			expect(state).to.have.property('storeB')
-				.that.deep.equals({ propBA: { num: 9 }, propBB: ['3', '4'] });
+			let flux = Flux({
+				a: Store(0, {
+					[TYPES.A]: ($, state) => state + 1,
+					[TYPES.B]: ($, state) => state - 1
+				}),
+				b: Store('', {
+					[TYPES.A]: ($, state) => state + 'a',
+					[TYPES.B]: ($, state) => state + 'b'
+				})
+			});
+			flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
+			expect(flux.state()).to.deep.equal({
+				a: 0,
+				b: 'ab'
+			});
 		});
 		it('should not dispatch when nothing is passed', () => {
-			flux.hook(listener);
+			let flux = Flux({
+				a: Store(0, {
+					[TYPES.A]: ($, state) => state + 1,
+					[TYPES.B]: ($, state) => state - 1
+				}),
+				b: Store('', {
+					[TYPES.A]: ($, state) => state + 'a',
+					[TYPES.B]: ($, state) => state + 'b'
+				})
+			});
+			let spy = chai.spy(() => {});
+			flux.hook(spy);
 			flux.dispatch();
-			expect(listener).not.to.have.been.called;
+			expect(spy).not.to.have.been.called;
 		});
 		it('should not dispatch when non-Objects are passed', () => {
-			flux.hook(listener);
+			let flux = Flux({
+				a: Store(0, {
+					[TYPES.A]: ($, state) => state + 1,
+					[TYPES.B]: ($, state) => state - 1
+				}),
+				b: Store('', {
+					[TYPES.A]: ($, state) => state + 'a',
+					[TYPES.B]: ($, state) => state + 'b'
+				})
+			});
+			let spy = chai.spy(() => {});
+			flux.hook(spy);
 			flux.dispatch(undefined, [0, false, null]);
-			expect(listener).not.to.have.been.called;
+			expect(spy).not.to.have.been.called;
 		});
 		it('should call middleware when called', () => {
-			flux.dispatch({ type: TYPES.Z }, { type: TYPES.X.A });
-			expect(middleware).to.have.been.called.once;
-			expect(flux.history()).to.deep.equal([{ type: TYPES.Z, extra: 'ex' }, { type: TYPES.X.A }]);
+			let flux = Flux(Store(0, {
+				[TYPES.A]: ($, state) => state + 1,
+				[TYPES.B]: ($, state) => state - 1
+			}));
+			let spy = chai.spy(action => action.type === TYPES.A
+					? { ...action, extra: 'ex'} : action);
+			flux.proxy(spy);
+			flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
+			expect(spy).to.have.been.called.twice;
+			expect(flux.history()).to.deep.equal([{ type: TYPES.A, extra: 'ex' }, { type: TYPES.B }]);
 		});
 	});
 
 	describe('hydrate', () => {
-		it('should be recover state from history', () => {
-			flux.dispatch({ type: TYPES.Z }, { type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.A }, { type: TYPES.Y.B });
-			reflux.hydrate(flux.history());
-			expect(reflux.state()).to.deep.equal(flux.state());
+		it('should recover state from history', () => {
+			let flux = Flux(Store(0, {
+				[TYPES.A]: ($, state) => state + 1,
+				[TYPES.B]: ($, state) => state - 1
+			}));
+			flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
+			let flux2 = Flux(Store(0, {
+				[TYPES.A]: ($, state) => state + 1,
+				[TYPES.B]: ($, state) => state - 1
+			}));
+			flux2.hydrate(flux.history());
+			expect(flux2.state()).to.deep.equal(flux.state());
 		});
 	});
 
 	describe('history', () => {
 		it('should be updated on dispatch', () => {
-			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.Y.A }, { type: TYPES.Y.B });
-			expect(flux.history()).to.deep.equal([{ type: TYPES.X.A }, { type: TYPES.Y.A }, { type: TYPES.Y.B }]);
+			let flux = Flux(Store(0, {
+				[TYPES.A]: ($, state) => state + 1,
+				[TYPES.B]: ($, state) => state - 1
+			}));
+			flux.dispatch({ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS });
+			expect(flux.history()).to.deep.equal([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
 		});
 	});
 
 	describe('hook', () => {
 		it('should call listeners by the number of valid dispatches', () => {
-			flux.hook(listener);
-			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B });
+			let flux = Flux(Store(0, {
+				[TYPES.A]: ($, state) => state + 1,
+				[TYPES.B]: ($, state) => state - 1
+			}));
+			let spy = chai.spy(() => {});
+			flux.hook(spy);
+			flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
 			flux.dispatch();
-			flux.dispatch([{ type: TYPES.X.A }, { type: TYPES.X.B }], { type: TYPES.Y.B });
-			flux.dispatch({ type: TYPES.X.A });
-			expect(listener).to.have.been.called.exactly(3);
+			flux.dispatch(false, null);
+			flux.dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
+			flux.dispatch({ type: TYPES.A });
+			expect(spy).to.have.been.called.exactly(3);
 		});
 		it('should call listeners with (actions, state)', () => {
-			let hook = chai.spy((actions, state) => {
-				expect(actions).to.deep.equal([{ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B }]);
+			let flux = Flux(Store(0, {
+				[TYPES.A]: ($, state) => state + 1,
+				[TYPES.B]: ($, state) => state - 1
+			}));
+			let spy = chai.spy((actions, state) => {
+				expect(actions).to.deep.equal([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
 				expect(state).to.equal(flux.state());
 			});
-			flux.hook(hook);
-			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B });
-			expect(hook).to.have.been.called.once;
+			flux.hook(spy);
+			flux.dispatch([{ type: TYPES.A }, { type: TYPES.B }], { type: TYPES.BOGUS });
+			expect(spy).to.have.been.called.once;
 		});
 	});
 
 	describe('unhook', () => {
 		it('should not call listeners after unhook', () => {
-			flux.hook(listener);
-			flux.dispatch({ type: TYPES.X.A }, { type: TYPES.X.B }, { type: TYPES.Y.B });
+			let flux = Flux(Store(0, {
+				[TYPES.A]: ($, state) => state + 1,
+				[TYPES.B]: ($, state) => state - 1
+			}));
+			let spy = chai.spy(() => {});
+			flux.hook(spy);
+			flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
 			flux.dispatch();
-			flux.dispatch([{ type: TYPES.X.A }, { type: TYPES.X.B }], { type: TYPES.Y.B });
-			flux.unhook(listener);
-			flux.dispatch({ type: TYPES.X.A });
-			expect(listener).to.have.been.called.twice;
+			flux.dispatch(false, null);
+			flux.dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
+			flux.unhook(spy);
+			flux.dispatch({ type: TYPES.A });
+			expect(spy).to.have.been.called.twice;
 		});
 	});
 
 	describe('Mapware', () => {
 		it('can be used as middleware', () => {
-			flux.dispatch({ type: TYPES.X.A });
-			flux.dispatch({ type: TYPES.X.B });
-			expect(listener2).to.have.been.called.once;
+			let flux = Flux(Store(0, {
+				[TYPES.A]: ($, state) => state + 1,
+				[TYPES.B]: ($, state) => state - 1
+			}));
+			let ware = chai.spy(Mapware({
+				[TYPES.A]: action => ({ ...action, type: TYPES.B })
+			}));
+			flux.proxy(ware);
+			flux.dispatch({ type: TYPES.A });
+			expect(ware).to.have.been.called.once;
+			expect(flux.history()).to.deep.equal([{ type: TYPES.B }]);
 		});
 		it('can be used as a hook', () => {
-			let fn = chai.spy(() => {});
-			let ware = Mapware({ [TYPES.X.A]: fn });
+			let flux = Flux(Store(0, {
+				[TYPES.A]: ($, state) => state + 1,
+				[TYPES.B]: ($, state) => state - 1
+			}));
+			let spy = chai.spy(() => {});
+			let ware = chai.spy(Mapware({
+				[TYPES.A]: spy
+			}));
 			flux.hook(ware);
-			flux.dispatch({ type: TYPES.X.A });
-			flux.dispatch({ type: TYPES.X.B });
-			expect(fn).to.have.been.called.once;
+			flux.dispatch({ type: TYPES.A });
+			flux.dispatch({ type: TYPES.B });
+			expect(ware).to.have.been.called.twice;
+			expect(spy).to.have.been.called.once;
 		});
 	});
 });

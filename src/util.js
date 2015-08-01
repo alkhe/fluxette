@@ -101,12 +101,16 @@ export let deleteFrom = (array, obj) => {
 	}
 };
 
-// Waterfall an array of functions
-export let waterfall = (value, functions) => {
-	for (let i = 0; i < functions.length; i++) {
-		value = functions[i](value);
+// Waterfall an an array of values through an array of functions
+export let waterfall = (arr, functions) => {
+	for (let i = 0; i < arr.length; i++) {
+		let value = arr[i];
+		for (let j = 0; j < functions.length; j++) {
+			value = functions[j](value);
+		}
+		arr[i] = value;
 	}
-	return value;
+	return arr;
 };
 
 // Determine whether two arrays are functionally equivalent
@@ -143,7 +147,6 @@ export let shallowEqual = (left, right) => {
 	return true;
 };
 
-export let isString = val => typeof val === 'string' || val instanceof String;
+// export let isString = val => typeof val === 'string' || val instanceof String;
 
 export let listenerKey = (typeof Symbol !== 'undefined') ? Symbol() : '@@fluxetteListener';
-export let willUnmountKey = (typeof Symbol !== 'undefined') ? Symbol() : '@@fluxetteWillUnmount';
