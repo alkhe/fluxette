@@ -1,6 +1,6 @@
 import { same } from './util';
 
-export default (getters, deriver) => {
+export default (getters, deriver = x => x) => {
 	// Ensure Array
 	if (!(getters instanceof Array)) {
 		getters = [getters];

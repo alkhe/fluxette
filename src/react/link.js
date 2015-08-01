@@ -1,4 +1,4 @@
-import { listenerKey } from './util';
+import { listenerKey, shallowEqual } from '../util';
 import { PropTypes } from 'react';
 
 export default (selector = x => x) => {
@@ -15,7 +15,7 @@ export default (selector = x => x) => {
 				// Cacher function
 				let listener = this[listenerKey] = (actions, state) => {
 					let newState = selector(state);
-					if (this.state !== newState) {
+					if (!shallowEqual(this.state, newState)) {
 						super.setState(newState);
 					}
 				};

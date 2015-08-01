@@ -2,8 +2,9 @@ import Fluxette from './flux';
 import Store from './store';
 import Mapware from './mapware';
 
-import connect from './connect';
-import link from './link';
+import connect from './react/connect';
+import link from './react/link';
+
 import select from './select';
 
 import { deleteFrom, fluxDispatch } from './util';
