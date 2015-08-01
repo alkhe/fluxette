@@ -1,4 +1,4 @@
-import { vectorize, normalize, derive, fluxDispatch, waterfall, isString, deleteFrom, listenerKey, willUnmountKey } from './util';
+import { vectorize, normalize, derive, fluxDispatch, waterfall } from './util';
 
 export default class {
 	constructor(stores = {}) {
@@ -24,39 +24,5 @@ export default class {
 			// Dispatch
 			fluxDispatch(this, actions);
 		}
-	}
-	connect(specifier = data => data, identifier = 'flux') {
-		// typecheck
-		if (isString(specifier)) {
-			identifier = specifier;
-			specifier = data => data;
-		}
-		// decorator for React class
-		let { hooks, state } = this;
-		return Component =>
-			class extends Component {
-				constructor(...args) {
-					super(...args);
-					// Initial state
-					let lastState = specifier(state);
-					this.state = { [identifier]: lastState };
-					// Ensure the same reference of setState
-					let listener = this[listenerKey] = (actions, data) => {
-						let newState = specifier(data);
-						if (lastState !== newState) {
-							lastState = newState;
-							super.setState({ [identifier]: newState });
-						}
-					};
-					// Register setState
-					hooks.push(listener);
-					this[willUnmountKey] = super.componentWillUnmount || () => {};
-				}
-				componentWillUnmount(...args) {
-					this[willUnmountKey](...args);
-					// Unregister setState
-					deleteFrom(hooks, this[listenerKey]);
-				}
-			};
 	}
 }
