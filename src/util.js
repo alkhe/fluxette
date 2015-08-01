@@ -24,12 +24,11 @@ export let vectorize = store => {
 let $vectorize = (obj, into, cursor) => {
 	for (let i in obj) {
 		let store = obj[i];
-		cursor = [...cursor, i];
 		if (store instanceof Function) {
-			into.push([store, makeCursor(cursor)]);
+			into.push([store, makeCursor([...cursor, i])]);
 		}
 		else {
-			$vectorize(store, into, cursor);
+			$vectorize(store, into, [...cursor, i]);
 		}
 	}
 };
@@ -84,7 +83,7 @@ export let atomicDispatch = (vector, actions) => {
 		if (action.type === initType) {
 			for (let j = 0; j < vector.length; j++) {
 				let [store, cursor] = vector[j];
-				store(cursor(action.state));
+				store({ ...action, state: cursor(action.state) });
 			}
 		}
 		else {
@@ -156,11 +155,14 @@ export let shallowEqual = (left, right) => {
 	return true;
 };
 
-let makeCursor = properties =>
+export let makeCursor = properties =>
 	obj => {
 		let value = obj;
 		for (let i = 0; i < properties.length; i++) {
 			value = value[properties[i]];
+			if (!(value instanceof Object)) {
+				break;
+			}
 		}
 		return value;
 	};

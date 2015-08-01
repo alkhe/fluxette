@@ -7,20 +7,20 @@ export default function(statefn = () => ({}), reducers = {}) {
 			if (state === undefined) {
 				state = statefn();
 			}
-			return state;
 		}
 		else {
 			let { type } = action;
 			if (type === initType) {
 				// Reset the state
-				state = statefn(action);
+				state = action.state !== undefined
+					? action.state : statefn();
 			}
 			else {
 				if (state === undefined) {
 					state = statefn();
 				}
 				// Call the appropriate reducer with the state and the action
-				let reducer = reducers[action.type];
+				let reducer = reducers[type];
 				if (reducer) {
 					let redux = reducer(action, state);
 					if (redux !== undefined) {
@@ -28,7 +28,7 @@ export default function(statefn = () => ({}), reducers = {}) {
 					}
 				}
 			}
-			return state;
 		}
+		return state;
 	};
 }
