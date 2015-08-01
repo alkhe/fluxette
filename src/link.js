@@ -1,8 +1,12 @@
 import { listenerKey } from './util';
+import { PropTypes } from 'react';
 
-export default selector => {
+export default (selector = x => x) => {
 	return Component =>
 		class extends Component {
+			static contextTypes = {
+				flux: PropTypes.object.isRequired
+			}
 			constructor(...args) {
 				super(...args);
 				let { flux } = this.context;

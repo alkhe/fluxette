@@ -126,8 +126,6 @@ describe('Flux', () => {
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('unhook')
 				.that.is.an.instanceof(Function);
-			expect(flux).to.have.property('connect')
-				.that.is.an.instanceof(Function);
 		});
 	});
 

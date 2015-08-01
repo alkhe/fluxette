@@ -53,12 +53,6 @@ export default {
 		module: {
 			loaders
 		},
-		resolve,
-		plugins: [new w.optimize.UglifyJsPlugin({
-			compressor: {
-				'screw_ie8': true,
-				warnings: false
-			}
-		})]
+		resolve
 	})
 };

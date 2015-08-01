@@ -2,9 +2,13 @@ import Fluxette from './flux';
 import Store from './store';
 import Mapware from './mapware';
 
+import connect from './connect';
+import link from './link';
+import select from './select';
+
 import { deleteFrom, fluxDispatch } from './util';
 
-export { Fluxette, Store, Mapware };
+export { Fluxette, Store, Mapware, connect, link, select };
 
 export default stores => {
 	let flux = new Fluxette(stores);
@@ -16,7 +20,6 @@ export default stores => {
 		proxy: ::flux.middleware.push,
 		unproxy: fn => { deleteFrom(flux.middleware, fn); },
 		hook: ::flux.hooks.push,
-		unhook: fn => { deleteFrom(flux.hooks, fn); },
-		connect: ::flux.connect
+		unhook: fn => { deleteFrom(flux.hooks, fn); }
 	};
 };
