@@ -33,20 +33,20 @@ describe('Flux', () => {
 		it('should return state when called', () => {
 			let flux = Flux({
 				a: { a: Store(() => 0), b: Store(() => '') },
-				b: { a: Store(() => {}), b: Store(() => []) }
+				b: { a: Store(() => ({})), b: Store(() => []) }
 			});
 			expect(flux.state()).to.deep.equal({
 				a: { a: 0, b: '' },
 				b: { a: {}, b: [] }
 			});
 
-			flux = Flux(Store(0));
+			flux = Flux(Store(() => 0));
 			expect(flux.state()).to.equal(0);
 		});
 		it('should stay the same between dispatches', () => {
 			let flux = Flux({
-				a: { a: Store(0), b: Store('') },
-				b: { a: Store({}), b: Store([]) }
+				a: { a: Store(() => 0), b: Store(() => '') },
+				b: { a: Store(() => ({})), b: Store(() => []) }
 			});
 			expect(flux.state()).to.equal(flux.state());
 		});
@@ -55,11 +55,11 @@ describe('Flux', () => {
 	describe('dispatch', () => {
 		it('should update state when called', () => {
 			let flux = Flux({
-				a: Store(0, {
+				a: Store(() => 0, {
 					[TYPES.A]: ($, state) => state + 1,
 					[TYPES.B]: ($, state) => state - 1
 				}),
-				b: Store('', {
+				b: Store(() => '', {
 					[TYPES.A]: ($, state) => state + 'a',
 					[TYPES.B]: ($, state) => state + 'b'
 				})
@@ -77,11 +77,11 @@ describe('Flux', () => {
 		});
 		it('should dispatch arrays', () => {
 			let flux = Flux({
-				a: Store(0, {
+				a: Store(() => 0, {
 					[TYPES.A]: ($, state) => state + 1,
 					[TYPES.B]: ($, state) => state - 1
 				}),
-				b: Store('', {
+				b: Store(() => '', {
 					[TYPES.A]: ($, state) => state + 'a',
 					[TYPES.B]: ($, state) => state + 'b'
 				})
@@ -94,11 +94,11 @@ describe('Flux', () => {
 		});
 		it('should dispatch argument lists', () => {
 			let flux = Flux({
-				a: Store(0, {
+				a: Store(() => 0, {
 					[TYPES.A]: ($, state) => state + 1,
 					[TYPES.B]: ($, state) => state - 1
 				}),
-				b: Store('', {
+				b: Store(() => '', {
 					[TYPES.A]: ($, state) => state + 'a',
 					[TYPES.B]: ($, state) => state + 'b'
 				})
@@ -111,11 +111,11 @@ describe('Flux', () => {
 		});
 		it('should not dispatch when nothing is passed', () => {
 			let flux = Flux({
-				a: Store(0, {
+				a: Store(() => 0, {
 					[TYPES.A]: ($, state) => state + 1,
 					[TYPES.B]: ($, state) => state - 1
 				}),
-				b: Store('', {
+				b: Store(() => '', {
 					[TYPES.A]: ($, state) => state + 'a',
 					[TYPES.B]: ($, state) => state + 'b'
 				})
@@ -127,11 +127,11 @@ describe('Flux', () => {
 		});
 		it('should not dispatch when non-Objects are passed', () => {
 			let flux = Flux({
-				a: Store(0, {
+				a: Store(() => 0, {
 					[TYPES.A]: ($, state) => state + 1,
 					[TYPES.B]: ($, state) => state - 1
 				}),
-				b: Store('', {
+				b: Store(() => '', {
 					[TYPES.A]: ($, state) => state + 'a',
 					[TYPES.B]: ($, state) => state + 'b'
 				})
@@ -142,7 +142,7 @@ describe('Flux', () => {
 			expect(spy).not.to.have.been.called;
 		});
 		it('should call middleware when called', () => {
-			let flux = Flux(Store(0, {
+			let flux = Flux(Store(() => 0, {
 				[TYPES.A]: ($, state) => state + 1,
 				[TYPES.B]: ($, state) => state - 1
 			}));
@@ -157,12 +157,12 @@ describe('Flux', () => {
 
 	describe('hydrate', () => {
 		it('should recover state from history', () => {
-			let flux = Flux(Store(0, {
+			let flux = Flux(Store(() => 0, {
 				[TYPES.A]: ($, state) => state + 1,
 				[TYPES.B]: ($, state) => state - 1
 			}));
 			flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
-			let flux2 = Flux(Store(0, {
+			let flux2 = Flux(Store(() => 0, {
 				[TYPES.A]: ($, state) => state + 1,
 				[TYPES.B]: ($, state) => state - 1
 			}));
@@ -173,7 +173,7 @@ describe('Flux', () => {
 
 	describe('history', () => {
 		it('should be updated on dispatch', () => {
-			let flux = Flux(Store(0, {
+			let flux = Flux(Store(() => 0, {
 				[TYPES.A]: ($, state) => state + 1,
 				[TYPES.B]: ($, state) => state - 1
 			}));
@@ -184,7 +184,7 @@ describe('Flux', () => {
 
 	describe('hook', () => {
 		it('should call listeners by the number of valid dispatches', () => {
-			let flux = Flux(Store(0, {
+			let flux = Flux(Store(() => 0, {
 				[TYPES.A]: ($, state) => state + 1,
 				[TYPES.B]: ($, state) => state - 1
 			}));
@@ -198,7 +198,7 @@ describe('Flux', () => {
 			expect(spy).to.have.been.called.exactly(3);
 		});
 		it('should call listeners with (actions, state)', () => {
-			let flux = Flux(Store(0, {
+			let flux = Flux(Store(() => 0, {
 				[TYPES.A]: ($, state) => state + 1,
 				[TYPES.B]: ($, state) => state - 1
 			}));
@@ -214,7 +214,7 @@ describe('Flux', () => {
 
 	describe('unhook', () => {
 		it('should not call listeners after unhook', () => {
-			let flux = Flux(Store(0, {
+			let flux = Flux(Store(() => 0, {
 				[TYPES.A]: ($, state) => state + 1,
 				[TYPES.B]: ($, state) => state - 1
 			}));
@@ -232,7 +232,7 @@ describe('Flux', () => {
 
 	describe('Mapware', () => {
 		it('can be used as middleware', () => {
-			let flux = Flux(Store(0, {
+			let flux = Flux(Store(() => 0, {
 				[TYPES.A]: ($, state) => state + 1,
 				[TYPES.B]: ($, state) => state - 1
 			}));
@@ -245,7 +245,7 @@ describe('Flux', () => {
 			expect(flux.history()).to.deep.equal([{ type: TYPES.B }]);
 		});
 		it('can be used as a hook', () => {
-			let flux = Flux(Store(0, {
+			let flux = Flux(Store(() => 0, {
 				[TYPES.A]: ($, state) => state + 1,
 				[TYPES.B]: ($, state) => state - 1
 			}));

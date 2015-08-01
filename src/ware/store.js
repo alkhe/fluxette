@@ -1,17 +1,25 @@
-import { init } from '../util';
+import { initType } from '../util';
 
 export default function(statefn = () => ({}), reducers = {}) {
 	let state;
-	// Function that takes an action or array of actions
 	return action => {
-		// If no actions, just return state
-		if (action !== undefined) {
-			// Call the appropriate reducer with the state and the action
+		if (action === undefined) {
+			if (state === undefined) {
+				state = statefn();
+			}
+			return state;
+		}
+		else {
 			let { type } = action;
-			if (type === init) {
+			if (type === initType) {
+				// Reset the state
 				state = statefn(action);
 			}
 			else {
+				if (state === undefined) {
+					state = statefn();
+				}
+				// Call the appropriate reducer with the state and the action
 				let reducer = reducers[action.type];
 				if (reducer) {
 					let redux = reducer(action, state);
@@ -20,7 +28,7 @@ export default function(statefn = () => ({}), reducers = {}) {
 					}
 				}
 			}
+			return state;
 		}
-		return state;
 	};
 }
