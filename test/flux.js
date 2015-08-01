@@ -13,101 +13,6 @@ const TYPES = {
 
 describe('Flux', () => {
 
-	// let flux, reflux, stores, restores,
-	// 	listener, listener2,
-	// 	AXA, AXB, AYA,
-	// 	BXA, BYA, BYB;
-	//
-	// let middleware;
-	//
-	// let flux2;
-	//
-	// beforeEach(() => {
-	// 	listener = chai.spy(() => {});
-	// 	listener2 = chai.spy(() => {});
-	//
-	// 	AXA = chai.spy(state => ({ ...state, propAA: 123 }));
-	// 	AXB = chai.spy(state => ({ ...state, propAA: 234, propAB: 'thing' }));
-	// 	AYA = chai.spy(state => ({ ...state, propAB: 'test string' }));
-	//
-	// 	BXA = chai.spy(state => ({ ...state, propBA: { num: 6 } }));
-	// 	BYA = chai.spy(state => ({ ...state, propBB: [1, 2] }));
-	// 	BYB = chai.spy(state => ({ ...state, propBA: { num: 9 }, propBB: ['3', '4'] }));
-	//
-	// 	stores = {
-	// 		storeA: Store({ propAA: 0, propAB: '' }, {
-	// 			[TYPES.X.A]: AXA,
-	// 			[TYPES.X.B]: AXB,
-	// 			[TYPES.Y.A]: AYA
-	// 		}),
-	// 		storeB: Store({ propBA: {}, propBB: [] }, {
-	// 			[TYPES.X.A]: BXA,
-	// 			[TYPES.Y.A]: BYA,
-	// 			[TYPES.Y.B]: BYB
-	// 		}),
-	// 		storeC: {
-	// 			storeCA: Store(0, {
-	// 				[TYPES.Y.A]: state => state + 1
-	// 			}),
-	// 			storeCB: {
-	// 				storeCBA: [
-	// 					Store(5, {
-	// 						[TYPES.Y.A]: state => state + 1
-	// 					}),
-	// 					Store(7, {
-	// 						[TYPES.Y.A]: state => state + 1
-	// 					})
-	// 				]
-	// 			}
-	// 		}
-	// 	};
-	//
-	// 	restores = {
-	// 		storeA: Store({ propAA: 0, propAB: '' }, {
-	// 			[TYPES.X.A]: AXA,
-	// 			[TYPES.X.B]: AXB,
-	// 			[TYPES.Y.A]: AYA
-	// 		}),
-	// 		storeB: Store({ propBA: {}, propBB: [] }, {
-	// 			[TYPES.X.A]: BXA,
-	// 			[TYPES.Y.A]: BYA,
-	// 			[TYPES.Y.B]: BYB
-	// 		}),
-	// 		storeC: {
-	// 			storeCA: Store(0, {
-	// 				[TYPES.Y.A]: state => state + 1
-	// 			}),
-	// 			storeCB: {
-	// 				storeCBA: [
-	// 					Store(5, {
-	// 						[TYPES.Y.A]: state => state + 1
-	// 					}),
-	// 					Store(7, {
-	// 						[TYPES.Y.A]: state => state + 1
-	// 					})
-	// 				]
-	// 			}
-	// 		}
-	// 	};
-	//
-	// 	middleware = chai.spy(Mapware({
-	// 		[TYPES.Z]: action => ({ ...action, extra: 'ex' })
-	// 	}));
-	//
-	// 	flux = Flux(stores);
-	// 	reflux = Flux(restores);
-	//
-	// 	flux.proxy(middleware);
-	// 	flux.proxy(Mapware({ [TYPES.X.A]: listener2 }));
-	//
-	// 	reflux.proxy(middleware);
-	// 	reflux.proxy(Mapware({ [TYPES.X.A]: listener2 }));
-	//
-	// 	flux2 = Flux(Store(0, {
-	// 		[TYPES.X.A]: state => state + 5
-	// 	}));
-	// });
-
 	describe('factory', () => {
 		it('should properly construct flux class', () => {
 			let flux = Flux({});
@@ -127,8 +32,8 @@ describe('Flux', () => {
 	describe('state', () => {
 		it('should return state when called', () => {
 			let flux = Flux({
-				a: { a: Store(0), b: Store('') },
-				b: { a: Store({}), b: Store([]) }
+				a: { a: Store(() => 0), b: Store(() => '') },
+				b: { a: Store(() => {}), b: Store(() => []) }
 			});
 			expect(flux.state()).to.deep.equal({
 				a: { a: 0, b: '' },

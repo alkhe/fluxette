@@ -147,6 +147,5 @@ export let shallowEqual = (left, right) => {
 	return true;
 };
 
-// export let isString = val => typeof val === 'string' || val instanceof String;
-
 export let listenerKey = (typeof Symbol !== 'undefined') ? Symbol() : '@@fluxetteListener';
+export let init = '@@fluxetteInit';
