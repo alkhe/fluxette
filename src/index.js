@@ -19,8 +19,6 @@ export default stores => {
 		hydrate: actions => fluxDispatch(flux, actions),
 		state: () => flux.state,
 		history: () => flux.history,
-		proxy: ::flux.middleware.push,
-		unproxy: fn => { deleteFrom(flux.middleware, fn); },
 		hook: ::flux.hooks.push,
 		unhook: fn => { deleteFrom(flux.hooks, fn); }
 	};

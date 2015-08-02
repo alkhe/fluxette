@@ -1,4 +1,4 @@
-import { vectorize, normalize, derive, fluxDispatch, waterfall } from './util';
+import { vectorize, normalize, derive, fluxDispatch } from './util';
 
 export default class {
 	constructor(stores = {}) {
@@ -10,8 +10,6 @@ export default class {
 		this.hooks = [];
 		// Action Stack
 		this.history = [];
-		// Middleware
-		this.middleware = [];
 		// State
 		this.state = derive(this.stores);
 	}
@@ -19,8 +17,6 @@ export default class {
 		// Flatten and filter array of actions
 		actions = normalize(actions);
 		if (actions.length > 0) {
-			// Call Middleware
-			actions = waterfall(actions, this.middleware);
 			// Dispatch
 			fluxDispatch(this, actions);
 		}

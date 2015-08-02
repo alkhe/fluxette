@@ -101,18 +101,6 @@ export let deleteFrom = (array, obj) => {
 	}
 };
 
-// Waterfall an an array of values through an array of functions
-export let waterfall = (arr, functions) => {
-	for (let i = 0; i < arr.length; i++) {
-		let value = arr[i];
-		for (let j = 0; j < functions.length; j++) {
-			value = functions[j](value);
-		}
-		arr[i] = value;
-	}
-	return arr;
-};
-
 // Determine whether two arrays are functionally equivalent
 export let same = (left, right) => {
 	if (left.length !== right.length) {
