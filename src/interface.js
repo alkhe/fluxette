@@ -4,8 +4,8 @@ export default class {
 	constructor(flux) {
 		this.instance = flux;
 	}
-	dispatch(...actions) {
-		this.process(...actions);
+	dispatch(...args) {
+		this.process(...args);
 	}
 	process(...args) {
 		this.instance.process(...args);

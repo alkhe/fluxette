@@ -121,22 +121,27 @@ let getItems = () => {
 ```
 
 ## Middleware
-`fluxette` does not include any extra code for middleware support, but they are very much a part of the ecosystem. You should write your middleware as a class decorator for `Interface#process` (don't decorate methods, because that prevents the user from ordering them correctly). Because you extend the `Interface` class, you can also modify the behavior of other methods, such as the state getter, history getter, hydrator (`init`), or even add your own functions. You can even depend on other middleware and build on top of their functionality! This means that the possibilities for extending the `fluxette` API are limitless.
+Not only does `fluxette` support middleware, it bring a whole new meaning to it. `fluxette` middleware is written as a class decorator for `Interface` (don't decorate methods, because that prevents the user from ordering them correctly). If you want to do something with the actions on each dispatch, simply override the `dispatch` method and call the super to proxy the actions through. Because you extend the `Interface` class, you can modify the behavior of methods other than dispatch, such as the state getter, history getter, hydrator (`init`), or even add your own functions. You can even depend on other middleware and build on top of their functionality! This means that the possibilities for extending the `fluxette` API are limitless. See our own [`normalize` middleware](https://github.com/edge/fluxette/blob/master/src/middleware/normalize.js) for an example of how to write one.
 
+Middleware is executed in the order decorated. Middleware closest to the class is executed last.
+
+This is an example of using middleware:
 ```js
-const ware = actions => actions.map(action =>
-	action.type == ACTION_TYPE
-		? { ...action, extra: 'extra' }
-		: action);
+import { Interface, normalize } from 'fluxette';
+import stores from './stores';
+import { async, promise, thunk, thunkExtended } from './middleware';
 
-// or
-
-const ware = Mapware({
-	[ACTION_TYPE]: action => ({ ...action, extra: 'extra' })
-})
-
-flux.proxy(ware);
+let flux = new (
+	@normalize
+	@async
+	@promise('REQUEST', 'DONE', 'FAIL')
+	@thunk @thunkExtended
+	class extends Interface {}
+)(stores);
 ```
+
+### Middleware Cooperation
+`fluxette` has no convention for the arguments that any middleware function takes, as long as the final dispatch is called with an array of actions and an optional `update` boolean. However, you should try to make your middleware composable. Consider a group of middleware that work together. We'll call the first one the head, and the last one the tail. It would be best to preserve the format of `(actions, [update])`, accepted by the head and called by the tail.
 
 ## Store Dependencies
 Store dependencies in vanilla flux is handled by using `waitFor`, but `waitFor` is hard to trace, and may result in unpredictable application behavior, such as infinite loops. The `fluxette` way to handle store dependencies is to instead split an action into two semantic actions, which will be dispatched in order. This is known as action-splitting, and it allows for declarative store dependencies, simultaneously improving clarity and preventing any possibility of mutual dependencies. In most Flux implementations, this would not be a viable solution, as dispatching twice results in an extra setState on each component. Since `fluxette` allows you to dispatch arrays of actions, atomic action handling of arrays is possible, and only one setState is called once the array has been fully processed. A dependency refactor should usually not involve changing component code; you can just make the relevant action creator return an array of actions instead. If you do not want to use action-splitting, you can use the [redux way](https://gist.github.com/gaearon/d77ca812015c0356654f) as well.
