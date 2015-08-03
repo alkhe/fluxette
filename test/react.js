@@ -2,7 +2,7 @@
 import React, { addons } from 'react/addons';
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Interface, Factory, Store, Reducer, connect, link, select } from '..';
+import { Interface, Factory, Store, Reducer, connect, link, select, normalize } from '..';
 
 chai.use(spies);
 
@@ -17,7 +17,10 @@ describe('Flux', () => {
 
 	describe('connect', () => {
 
-		let flux = new Interface();
+		let flux = new (
+			@normalize
+			class extends Interface {}
+		);
 
 		it('should hook component without specifier', () => {
 			flux.instance = Factory(

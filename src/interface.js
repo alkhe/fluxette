@@ -1,11 +1,11 @@
-import { normalize, deleteFrom } from './util';
+import { deleteFrom } from './util';
 
 export default class {
 	constructor(flux) {
 		this.instance = flux;
 	}
 	dispatch(...actions) {
-		this.process(normalize(actions));
+		this.process(...actions);
 	}
 	process(...args) {
 		this.instance.process(...args);

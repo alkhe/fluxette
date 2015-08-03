@@ -1,9 +1,11 @@
 import Fluxette from './flux';
 
-import Store from './ware/store';
-import Reducer from './ware/reducer';
-import Mapware from './ware/mapware';
-import select from './ware/select';
+import Store from './factory/store';
+import Reducer from './factory/reducer';
+import Mapware from './factory/mapware';
+import select from './factory/select';
+
+import normalize from './middleware/normalize';
 
 import connect from './react/connect';
 import link from './react/link';
@@ -23,7 +25,8 @@ let Factory = (store = {}, auto = true) => {
 export {
 	Factory, Interface,
 	Store, Reducer, Mapware,
-	connect, link, select
+	connect, link, select,
+	normalize
 };
 
 export default (...args) => new Interface(Factory(...args));

@@ -1,7 +1,7 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Interface, Factory, Store, Reducer, Mapware } from '..';
+import { Interface, Factory, Store, Reducer, Mapware, normalize } from '..';
 
 chai.use(spies);
 
@@ -13,7 +13,10 @@ const TYPES = {
 
 describe('Flux', () => {
 
-	let flux = new Interface();
+	let flux = new (
+		@normalize
+		class extends Interface {}
+	);
 
 	describe('factory', () => {
 		it('should properly construct flux class', () => {
