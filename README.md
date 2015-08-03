@@ -1,8 +1,6 @@
 # fluxette
 
-`fluxette` is a minimalist yet powerful Flux implementation, inspired by ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
-
-**fluxette has just gone through a big rewrite. The docs you see here are outdated. We are working on them now. If you are using fluxette 0.12.x, refer to [this README](https://github.com/edge/fluxette/blob/6cbd757930f2d2dbb3452df879d9f3fcb7b73910/README.md).**
+`fluxette` is a minimalist yet powerful Flux implementation, inspired by the Unix philosophy as well as ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
 
 ## Table of Contents
 
@@ -23,23 +21,13 @@
 
 ## Why?
 
-Why `fluxette`? (Some buzzwords to attract you.)
+Why `fluxette`? (We used to have a list of buzzwords here.)
 
-* declarative and functional
-* minimalist
-* exhaustive
-* modular
-* isomorphic
-* faciliated rehydration
-* unopinionated
-* loosely coupled
-* unidirectional
-* inverted control
-* no boilerplate
-* no switch statements!
-* concise
-* small
-* React integration
+`fluxette` means "little flux". That's exactly what it is, coming in at 2.8 kB, minified and gzipped. But as the great Master Yoda said, *size matters not*. The goal of `fluxette` is to make your React/Flux development experience as smooth as possible. `fluxette` has many recommended practices, but, in accordance with the philosophy of Unix, it does not enforce any "one true way". `fluxette` allows you to do things in many different ways, and is extremely modular and extensible. The codebase is very simple and robust (Keep it simple, stupid!). It only relies on the simple assumption that your stores are pure functions in the form of `(state, action) => state`. As a result, our dispatcher exists as [one very beautiful line](https://github.com/edge/fluxette/blob/master/src/flux.js#L17). This also makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste from redux).
+
+`fluxette` also removes many of the headaches that you had with React, such as Store dependencies (`waitFor`), superfluous `setState`s (when did the state really change? and I'm not done dispatching yet!), listening to finer and coarser-grained updates, `Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`, and more. With two simple React class decorators, connecting your components with `fluxette` no longer requires complicated mixins.
+
+You can also easily extend the `fluxette` interface, allowing you to add your own functionality to the dispatcher (Middleware, async, thunks, Promises) at will.
 
 ## Install
 
