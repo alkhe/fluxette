@@ -5,8 +5,7 @@ export default class {
 		this.instance = flux;
 	}
 	dispatch(...actions) {
-		let { instance } = this;
-		instance.process(normalize(actions));
+		this.process(normalize(actions));
 	}
 	process(...args) {
 		this.instance.process(...args);
