@@ -2,6 +2,8 @@
 
 `fluxette` is a minimalist yet powerful Flux implementation, inspired by ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
 
+**fluxette has just gone through a big rewrite. The docs you see here are outdated. We are working on them now. If you are using fluxette 0.12.x, refer to [this README](https://github.com/edge/fluxette/blob/6cbd757930f2d2dbb3452df879d9f3fcb7b73910/README.md).**
+
 ## Table of Contents
 
 * [Why?](#why)

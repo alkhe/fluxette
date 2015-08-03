@@ -1,4 +1,4 @@
-import { listenerKey, shallowEqual } from '../util';
+import { listenerKey } from '../util';
 import { PropTypes } from 'react';
 
 export default (selector = x => x) => {
@@ -11,12 +11,12 @@ export default (selector = x => x) => {
 				super(...args);
 				let { flux } = this.context;
 				// Initial state
-				this.state = selector(flux.state());
-				// Cacher function
-				let listener = this[listenerKey] = (actions, state) => {
+				let lastState = this.state = selector(flux.state());
+				// Caching Hook
+				let listener = this[listenerKey] = state => {
 					let newState = selector(state);
-					if (!shallowEqual(this.state, newState)) {
-						super.setState(newState);
+					if (lastState !== newState) {
+						super.setState(lastState = newState);
 					}
 				};
 				// Register setState

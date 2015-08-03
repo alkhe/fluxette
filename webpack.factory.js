@@ -45,6 +45,7 @@ export default {
 		};
 	},
 	test: () => ({
+		devtool: 'eval',
 		entry: fs.readdirSync('./test').map(file => `./${ path.join('test', file) }`),
 		output: {
 			path: './dist',

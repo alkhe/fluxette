@@ -1,24 +1,30 @@
-import { vectorize, normalize, derive, fluxDispatch } from './util';
-
 export default class {
-	constructor(stores = {}) {
-		// Top-level Stores
-		this.stores = stores;
-		// Optimized iteration vector
-		this.vector = vectorize(stores);
-		// Dispatcher
+	constructor(store = x => x, state) {
+		// Store
+		this.store = store;
+		// Hooks
 		this.hooks = [];
 		// Action Stack
 		this.history = [];
 		// State
-		this.state = derive(this.stores);
+		this.state = state;
 	}
-	dispatch(...actions) {
-		// Flatten and filter array of actions
-		actions = normalize(actions);
+	process(actions, update = true) {
 		if (actions.length > 0) {
-			// Dispatch
-			fluxDispatch(this, actions);
+			// Log all actions in history
+			this.history.push(...actions);
+			// Synchronously process all actions
+			this.state = actions.reduce(this.store, this.state);
+			// Call all registered hooks
+			if (update) {
+				this.update(actions);
+			}
+		}
+	}
+	update(actions) {
+		let { hooks, state } = this;
+		for (let i = 0; i < hooks.length; i++) {
+			hooks[i](state, actions);
 		}
 	}
 }
