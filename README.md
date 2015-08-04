@@ -54,7 +54,7 @@ class Updater extends React.Component {
 	render() {
 		return (
 			<div>
-				<input onChange={ this.change.bind(this) } />
+				<input onChange={ ::this.change } />
 				<div>{ this.state.text }</div>
 			</div>
 		);
@@ -68,14 +68,10 @@ This is a simple component that shows you the text that you've typed into a text
 
 ```js
 // constants
-const UPDATE = {
-	TEXT: 'UPDATE_TEXT'
-};
+const UPDATE = { TEXT: 'UPDATE_TEXT' };
 
 // actions
-const update = {
-	text: value => ({ type: 'UPDATE_TEXT', value })
-};
+const update = { text: value => ({ type: UPDATE_TEXT, value }) };
 ```
 
 Now we'll need a Reducer to manage our state.
@@ -98,17 +94,13 @@ Then, we create an stateful interface to our reducer, which we can now integrate
 
 **Putting it all together**
 ```js
-import Flux, { Reducer, connect } from 'fluxette';
+import Flux, { Reducer, Context, connect } from 'fluxette';
 
 // constants
-const UPDATE = {
-	TEXT: 'UPDATE_TEXT'
-};
+const UPDATE = { TEXT: 'UPDATE_TEXT' };
 
 // actions
-const update = {
-	text: value => ({ type: 'UPDATE_TEXT', value })
-};
+const update = { text: value => ({ type: UPDATE_TEXT, value }) };
 
 // reducer store
 const updater = Reducer('', {
@@ -127,14 +119,19 @@ class Updater extends React.Component {
 	render() {
 		return (
 			<div>
-				<input onChange={ this.change.bind(this) } />
+				<input onChange={ ::this.change } />
 				<div>{ this.state.text }</div>
 			</div>
 		);
 	}
 }
 
-React.render(<Updater />, document.getElementById('app'));
+React.render(
+	<Context flux={ flux }>
+		{ () => <Updater /> }
+	</Context>,
+	document.getElementById('app')
+);
 ```
 
 ## Middleware
