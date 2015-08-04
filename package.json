@@ -3,6 +3,9 @@
   "version": "0.12.1",
   "description": "Minimalist, functional, and concise Flux.",
   "main": "index.js",
+  "dependencies": {
+    "react": "^0.13.3"
+  },
   "devDependencies": {
     "babel-core": "^5.8.20",
     "babel-loader": "^5.3.2",
@@ -10,7 +13,6 @@
     "chai-spies": "^0.7.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^5.2.0",
-    "react": "^0.13.3",
     "webpack": "^1.10.5"
   },
   "scripts": {

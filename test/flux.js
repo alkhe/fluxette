@@ -1,7 +1,7 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Interface, Factory, Store, Reducer, Mapware, normalize } from '..';
+import { Bridge, Interface, Factory, Fluxette, Store, Reducer, Mapware, normalize } from '..';
 
 chai.use(spies);
 
@@ -13,17 +13,18 @@ const TYPES = {
 
 describe('Flux', () => {
 
-	let flux = new (
-		@normalize
-		class extends Interface {}
-	);
+	let I = [normalize].reduceRight((i, m) => m(i), Interface());
 
 	describe('factory', () => {
 		it('should properly construct flux class', () => {
-			flux.instance = Factory();
+			let flux = Bridge(I, Factory());
+			expect(flux).to.have.property('instance')
+				.that.is.an.instanceof(Fluxette);
 			expect(flux).to.have.property('dispatch')
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('process')
+				.that.is.an.instanceof(Function);
+			expect(flux).to.have.property('update')
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('init')
 				.that.is.an.instanceof(Function);
@@ -37,16 +38,16 @@ describe('Flux', () => {
 				.that.is.an.instanceof(Function);
 		});
 		it('should take autocreate Store if object is passed', () => {
-			flux.instance = Factory({
+			let { state } = Bridge(I, Factory({
 				a: Reducer(0)
-			});
-			expect(flux.state()).to.deep.equal({ a: 0 });
+			}));
+			expect(state()).to.deep.equal({ a: 0 });
 		});
 	});
 
 	describe('state', () => {
 		it('should return state when called', () => {
-			flux.instance = Factory(Store({
+			let { state } = Bridge(I, Factory(Store({
 				a: Store({
 					a: Reducer(0),
 					b: Reducer('')
@@ -55,18 +56,19 @@ describe('Flux', () => {
 					a: Reducer({}),
 					b: Reducer([])
 				})
-			}));
+			})));
 
-			expect(flux.state()).to.deep.equal({
+			expect(state()).to.deep.equal({
 				a: { a: 0, b: '' },
 				b: { a: {}, b: [] }
 			});
-
-			flux.instance = Factory(Reducer(0));
-			expect(flux.state()).to.equal(0);
+		});
+		it('should return state when called', () => {
+			let { state } = Bridge(I, Reducer(0));
+			expect(state()).to.equal(0);
 		});
 		it('should not change when data is not modified', () => {
-			flux.instance = Factory(Store({
+			let { state } = Bridge(I, Factory(Store({
 				a: Store({
 					a: Reducer(0),
 					b: Reducer('')
@@ -75,14 +77,14 @@ describe('Flux', () => {
 					a: Reducer({}),
 					b: Reducer([])
 				})
-			}));
-			expect(flux.state()).to.equal(flux.state());
+			})));
+			expect(state()).to.equal(state());
 		});
 	});
 
 	describe('dispatch', () => {
 		it('should update state when called', () => {
-			flux.instance = Factory({
+			let { dispatch, state } = Bridge(I, Factory({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -91,21 +93,21 @@ describe('Flux', () => {
 					[TYPES.A]: state => state + 'a',
 					[TYPES.B]: state => state + 'b'
 				})
-			});
+			}));
 
-			flux.dispatch({ type: TYPES.A });
-			expect(flux.state()).to.deep.equal({
+			dispatch({ type: TYPES.A });
+			expect(state()).to.deep.equal({
 				a: 1,
 				b: 'a'
 			});
-			flux.dispatch({ type: TYPES.B });
-			expect(flux.state()).to.deep.equal({
+			dispatch({ type: TYPES.B });
+			expect(state()).to.deep.equal({
 				a: 0,
 				b: 'ab'
 			});
 		});
 		it('should dispatch arrays', () => {
-			flux.instance = Factory({
+			let { dispatch, state } = Bridge(I, Factory({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -114,16 +116,16 @@ describe('Flux', () => {
 					[TYPES.A]: state => state + 'a',
 					[TYPES.B]: state => state + 'b'
 				})
-			});
+			}));
 
-			flux.dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
-			expect(flux.state()).to.deep.equal({
+			dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
+			expect(state()).to.deep.equal({
 				a: 0,
 				b: 'ab'
 			});
 		});
 		it('should dispatch argument lists', () => {
-			flux.instance = Factory({
+			let { dispatch, state } = Bridge(I, Factory({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -132,16 +134,16 @@ describe('Flux', () => {
 					[TYPES.A]: state => state + 'a',
 					[TYPES.B]: state => state + 'b'
 				})
-			});
+			}));
 
-			flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
-			expect(flux.state()).to.deep.equal({
+			dispatch({ type: TYPES.A }, { type: TYPES.B });
+			expect(state()).to.deep.equal({
 				a: 0,
 				b: 'ab'
 			});
 		});
-		it('should not dispatch when nothing is passed', () => {
-			flux.instance = Factory({
+		it('should not call hooks when nothing is passed', () => {
+			let { dispatch, hook } = Bridge(I, Factory({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -150,15 +152,15 @@ describe('Flux', () => {
 					[TYPES.A]: state => state + 'a',
 					[TYPES.B]: state => state + 'b'
 				})
-			});
+			}));
 
 			let spy = chai.spy(() => {});
-			flux.hook(spy);
-			flux.dispatch();
+			hook(spy);
+			dispatch();
 			expect(spy).not.to.have.been.called;
 		});
-		it('should not dispatch when non-Objects are passed', () => {
-			flux.instance = Factory({
+		it('should not notify hooks when non-Objects are passed', () => {
+			let { dispatch, hook } = Bridge(I, Factory({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -167,11 +169,11 @@ describe('Flux', () => {
 					[TYPES.A]: state => state + 'a',
 					[TYPES.B]: state => state + 'b'
 				})
-			});
+			}));
 
 			let spy = chai.spy(() => {});
-			flux.hook(spy);
-			flux.dispatch(undefined, [0, false, null]);
+			hook(spy);
+			dispatch(undefined, [0, false, null]);
 			expect(spy).not.to.have.been.called;
 		});
 	});
@@ -190,17 +192,17 @@ describe('Flux', () => {
 					})
 				};
 
-				flux.instance = Factory(stores);
-				flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
+				let { dispatch, state, history } = Bridge(I, stores);
+				dispatch({ type: TYPES.A }, { type: TYPES.B });
 
-				let oldstate = flux.state(),
-					history = flux.history();
+				let lastState = state(),
+					lastHistory = history();
 
-				flux.instance = Factory(stores);
-				flux.process(history);
+				let { process, state: state2 } = Bridge(I, stores);
+				process(lastHistory);
 
-				expect(flux.state()).to.deep.equal(oldstate);
-				expect(flux.state()).not.to.equal(oldstate);
+				expect(state2()).to.deep.equal(lastState);
+				expect(state2()).not.to.equal(lastState);
 			});
 		});
 
@@ -217,96 +219,96 @@ describe('Flux', () => {
 					})
 				};
 
-				flux.instance = Factory(stores);
-				flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
+				let { dispatch, state } = Bridge(I, stores);
+				dispatch({ type: TYPES.A }, { type: TYPES.B });
 
-				let oldstate = flux.state();
+				let lastState = state();
 
-				flux.instance = Factory(stores);
-				flux.init(oldstate);
+				let { state: state2 } = Bridge(I, stores, lastState);
 
-				expect(flux.state()).to.equal(oldstate);
+				expect(state2()).to.deep.equal(lastState);
+				expect(state2()).to.equal(lastState);
 			});
 		});
 	});
 
 	describe('history', () => {
 		it('should be updated on dispatch', () => {
-			flux.instance = Factory(Reducer(0, {
+			let { dispatch, history } = Bridge(I, Factory(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
-			}));
+			})));
 
-			flux.dispatch({ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS });
-			expect(flux.history()).to.deep.equal([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
+			dispatch({ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS });
+			expect(history()).to.deep.equal([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
 		});
 	});
 
 	describe('hook', () => {
 		it('should call listeners by the number of valid dispatches', () => {
-			flux.instance = Factory(Reducer(0, {
+			let { dispatch, hook } = Bridge(I, Factory(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
-			}));
+			})));
 
 			let spy = chai.spy(() => {});
-			flux.hook(spy);
-			flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
-			flux.dispatch();
-			flux.dispatch(false, null);
-			flux.dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
-			flux.dispatch({ type: TYPES.A });
+			hook(spy);
+			dispatch({ type: TYPES.A }, { type: TYPES.B });
+			dispatch();
+			dispatch(false, null);
+			dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
+			dispatch({ type: TYPES.A });
 			expect(spy).to.have.been.called.exactly(3);
 		});
 		it('should call listeners with (state, actions)', () => {
-			flux.instance = Factory(Reducer(0, {
+			let { dispatch, state: getState, hook } = Bridge(I, Factory(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
-			}));
+			})));
 
 			let spy = chai.spy((state, actions) => {
 				expect(actions).to.deep.equal([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
-				expect(state).to.equal(flux.state());
+				expect(state).to.equal(getState());
 			});
-			flux.hook(spy);
-			flux.dispatch([{ type: TYPES.A }, { type: TYPES.B }], { type: TYPES.BOGUS });
+			hook(spy);
+			dispatch([{ type: TYPES.A }, { type: TYPES.B }], { type: TYPES.BOGUS });
 			expect(spy).to.have.been.called.once;
 		});
 	});
 
 	describe('unhook', () => {
 		it('should not call listeners after unhook', () => {
-			flux.instance = Factory(Reducer(0, {
+			let { dispatch, hook, unhook } = Bridge(I, Factory(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
-			}));
+			})));
 
 			let spy = chai.spy(() => {});
-			flux.hook(spy);
-			flux.dispatch({ type: TYPES.A }, { type: TYPES.B });
-			flux.dispatch();
-			flux.dispatch(false, null);
-			flux.dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
-			flux.unhook(spy);
-			flux.dispatch({ type: TYPES.A });
+			hook(spy);
+			dispatch({ type: TYPES.A }, { type: TYPES.B });
+			dispatch();
+			dispatch(false, null);
+			dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
+			unhook(spy);
+			dispatch({ type: TYPES.A });
 			expect(spy).to.have.been.called.twice;
 		});
 	});
 
 	describe('Mapware', () => {
 		it('can be used as a hook', () => {
-			flux.instance = Factory(Reducer(0, {
+			let { dispatch, hook } = Bridge(I, Factory(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
-			}));
+			})));
 
 			let spy = chai.spy(() => {});
 			let ware = chai.spy(Mapware({
 				[TYPES.A]: spy
 			}));
-			flux.hook(ware);
-			flux.dispatch({ type: TYPES.A });
-			flux.dispatch({ type: TYPES.B });
+			hook(ware);
+			dispatch({ type: TYPES.A });
+			dispatch({ type: TYPES.B });
 			expect(ware).to.have.been.called.twice;
 			expect(spy).to.have.been.called.once;
 		});

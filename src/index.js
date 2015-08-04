@@ -7,26 +7,38 @@ import select from './factory/select';
 
 import normalize from './middleware/normalize';
 
+import Context from './react/context';
 import connect from './react/connect';
-import link from './react/link';
 
 import Interface from './interface';
 
-let Factory = (store = {}, auto = true) => {
-	// Autocreate Store if shape is passed
+let Factory = (store = {}, state) => {
+	if (store instanceof Fluxette) {
+		if (state !== undefined) {
+			store.state = state;
+		}
+		return store;
+	}
 	if (!(store instanceof Function)) {
 		store = Store(store);
 	}
-	// If auto, initialize to default
-	// Otherwise wait for user to init
-	return new Fluxette(store, auto ? store() : undefined);
+	return new Fluxette(store, state !== undefined ? state : store());
+};
+
+let Bridge = (intf, ...args) => {
+	let I = {};
+	for (let i in intf) {
+		I[i] = intf[i].bind(I);
+	}
+	I.instance = Factory(...args);
+	return I;
 };
 
 export {
-	Factory, Interface,
+	Bridge, Interface, Factory, Fluxette,
 	Store, Reducer, Mapware,
-	connect, link, select,
+	Context, connect, select,
 	normalize
 };
 
-export default (...args) => new Interface(Factory(...args));
+export default (...args) => Bridge(Interface(), Factory(...args));

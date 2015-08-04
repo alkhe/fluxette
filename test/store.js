@@ -1,4 +1,4 @@
-/* global describe beforeEach it */
+/* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
 import { Store, Reducer } from '..';

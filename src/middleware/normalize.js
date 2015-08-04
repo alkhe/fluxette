@@ -1,8 +1,8 @@
 import { normalize } from '../util';
 
-export default Interface =>
-	class extends Interface {
-		dispatch(...actions) {
-			super.dispatch(normalize(actions));
-		}
-	};
+export default I => {
+	let { dispatch } = I;
+	return { ...I, dispatch(...args) {
+		dispatch.call(this, normalize(args));
+	}};
+};
