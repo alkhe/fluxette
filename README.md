@@ -94,13 +94,14 @@ Then, we create an stateful interface to our reducer, which we can now integrate
 
 **Putting it all together**
 ```js
+import React from 'react';
 import Flux, { Reducer, Context, connect } from 'fluxette';
 
 // constants
 const UPDATE = { TEXT: 'UPDATE_TEXT' };
 
 // actions
-const update = { text: value => ({ type: UPDATE_TEXT, value }) };
+const update = { text: value => ({ type: UPDATE.TEXT, value }) };
 
 // reducer store
 const updater = Reducer('', {
@@ -114,7 +115,7 @@ const flux = Flux(updater);
 class Updater extends React.Component {
 	change(e) {
 		let { dispatch } = this.context.flux;
-		dispatch(update.text(e.target.value));
+		dispatch([update.text(e.target.value)]);
 	}
 	render() {
 		return (
@@ -130,7 +131,7 @@ React.render(
 	<Context flux={ flux }>
 		{ () => <Updater /> }
 	</Context>,
-	document.getElementById('app')
+	document.getElementById('root')
 );
 ```
 
