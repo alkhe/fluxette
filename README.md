@@ -36,6 +36,48 @@ $ npm i --save fluxette
 ```
 Browser builds (umd) are available [here](https://github.com/edge/fluxette/tree/master/dist).
 
+## Getting Started
+
+Let's say that you have a simple React component that you want to add Flux to.
+
+```js
+class Updater extends React.Component {
+	constructor() {
+		super();
+		this.state = {
+			text: ''
+		};
+	}
+	change(e) {
+		this.setState({ text: e.target.value });
+	}
+	render() {
+		return (
+			<div>
+				<input onChange={ ::this.change } />
+				<div>{ this.state.text }</div>
+			</div>
+		);
+	}
+}
+
+React.render(<Updater />, container);
+```
+
+This is a simple component that shows you the text that you've typed into a textbox right below it. We can interpret this as an action of type `UPDATE_TEXT`, with the value of the textbox being the payload.
+
+```js
+// constants
+const UPDATE = {
+	TEXT: 'UPDATE_TEXT'
+};
+
+// actions
+let update = {
+	text: value => ({ type: 'UPDATE_TEXT', value })
+};
+```
+
 ## Middleware
 `fluxette` supports and loves middleware. The middleware system uses functional inheritance, so you can compose your interface by using monads. If you want to do something with the actions on each dispatch, simply wrap the `dispatch` method and call the super to proxy the actions through. You can modify the behavior of methods other than `dispatch`, such as the state getter, history getter, hydrator (`init`), or even add your own functions. You can even depend on other middleware and build on top of their functionality! This means that the possibilities for extending the `fluxette` API are limitless. See our own [`normalize` middleware](https://github.com/edge/fluxette/blob/master/src/middleware/normalize.js) for an example of how to write one.
 
