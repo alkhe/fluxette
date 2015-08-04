@@ -23,7 +23,7 @@
 
 Why `fluxette`? (We used to have a list of buzzwords here.)
 
-`fluxette` means "little flux". That's exactly what it is, coming in at 2.8 kB, minified and gzipped. But as the great Master Yoda said, *size matters not*. The goal of `fluxette` is to make your React/Flux development experience as smooth as possible. `fluxette` has many recommended practices, but, in accordance with the philosophy of Unix, it does not enforce any "one true way". `fluxette` allows you to do things in many different ways, and is extremely modular and extensible. The codebase is very simple and robust; there is no black magic going on anywhere [(KISS)](https://en.wikipedia.org/wiki/KISS_principle). It only relies on the simple assumption that your stores are pure functions in the form of `(state, action) => state`. As a result, our dispatcher exists as [one very beautiful line](https://github.com/edge/fluxette/blob/master/src/flux.js#L17). This also makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste from redux).
+`fluxette` means "little flux". That's exactly what it is, coming in at 2.8 kB, minified and gzipped. But as the great Master Yoda said, *size matters not*. The goal of `fluxette` is to make your React/Flux development experience as smooth as possible. `fluxette` has many recommended practices, but, in accordance with the philosophy of Unix, it does not enforce any "one true way". `fluxette` allows you to do things in many different ways, and is extremely modular and extensible. The codebase is very simple and robust; there is no black magic going on anywhere [(KISS)](https://en.wikipedia.org/wiki/KISS_principle). It only relies on the simple assumption that your stores are pure functions in the form of `(state, action) => state`. As a result, our dispatcher exists as [one very beautiful line](https://github.com/edge/fluxette/blob/master/src/flux.js#L17). `fluxette` provides factories for elements of Flux that will cover 99% of your use cases, but you can always defer to writing a custom function if the need arises. This also makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste from redux).
 
 `fluxette` also removes many of the headaches that you may have had with React and other flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("when did the state really change?" and "I'm not done dispatching yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more. With two simple React class decorators, connecting your components with `fluxette` no longer requires complicated mixins.
 
@@ -54,14 +54,14 @@ class Updater extends React.Component {
 	render() {
 		return (
 			<div>
-				<input onChange={ ::this.change } />
+				<input onChange={ this.change.bind(this) } />
 				<div>{ this.state.text }</div>
 			</div>
 		);
 	}
 }
 
-React.render(<Updater />, container);
+React.render(<Updater />, document.getElementById('app'));
 ```
 
 This is a simple component that shows you the text that you've typed into a textbox right below it. We can interpret this as an action of type `UPDATE_TEXT`, with the value of the textbox being the payload.
@@ -73,9 +73,68 @@ const UPDATE = {
 };
 
 // actions
-let update = {
+const update = {
 	text: value => ({ type: 'UPDATE_TEXT', value })
 };
+```
+
+Now we'll need a Reducer to manage our state.
+
+```js
+import Flux, { Reducer } from 'fluxette';
+
+// reducer store
+const updater = Reducer('', {
+	[UPDATE.TEXT]: (state, action) => action.value
+});
+
+// flux interface
+const flux = Flux(updater);
+```
+
+`Reducer` creates a pure function that looks at your actions and determines how to modify the state based on them. Its default value is an empty string, just like in our `Updater` component. In our case, we only listen to any actions of the type `UPDATE.TEXT`, and use the value that the action carries as our new state.
+
+Then, we create an stateful interface to our reducer, which we can now integrate into our component.
+
+**Putting it all together**
+```js
+import Flux, { Reducer, connect } from 'fluxette';
+
+// constants
+const UPDATE = {
+	TEXT: 'UPDATE_TEXT'
+};
+
+// actions
+const update = {
+	text: value => ({ type: 'UPDATE_TEXT', value })
+};
+
+// reducer store
+const updater = Reducer('', {
+	[UPDATE.TEXT]: (state, action) => action.value
+});
+
+// flux interface
+const flux = Flux(updater);
+
+@connect(state => ({ text: state }))
+class Updater extends React.Component {
+	change(e) {
+		let { dispatch } = this.context.flux;
+		dispatch(update.text(e.target.value));
+	}
+	render() {
+		return (
+			<div>
+				<input onChange={ this.change.bind(this) } />
+				<div>{ this.state.text }</div>
+			</div>
+		);
+	}
+}
+
+React.render(<Updater />, document.getElementById('app'));
 ```
 
 ## Middleware
