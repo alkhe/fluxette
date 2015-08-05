@@ -143,42 +143,42 @@ React.render(
 
 ## API
 
-### Flux(...args) => Bound Interface
+### Flux(<Factory>) => Bound
 ```js
 import Flux from 'fluxette';
 ```
 
-### Bridge(generic, ...args) => Bound Interface
+### Bridge(generic: Generic, <Factory>) => Bound
 ```js
 import { Bridge } from 'fluxette';
 ```
 
-### Interface() => Generic Interface
+### Interface() => Generic
 ```js
 import { Interface } from 'fluxette';
 ```
 
-### Factory(store, [state]) => Flux Instance
+### Factory(store: Reducer | Plain | Flux, [state: Plain]) => Flux
 ```js
-import { Reducer } from 'fluxette';
+import { Factory } from 'fluxette';
 ```
 
-### Store(shape) => Reducer
+### Store(shape: Plain) => Reducer
 ```js
 import { Store } from 'fluxette';
 ```
 
-### Reducer(initialState, reducers) => Reducer
+### Reducer(initial: Plain, reducers: Plain) => Reducer
 ```js
 import { Reducer } from 'fluxette';
 ```
 
-### Filter(types, reducer) => Reducer
+### Filter(types: Array, reducer: Reducer) => Reducer
 ```js
 import { Filter } from 'fluxette';
 ```
 
-### Mapware(listeners) => Hook
+### Mapware(listeners: Plain) => Hook
 ```js
 import { Mapware } from 'fluxette';
 ```
@@ -188,17 +188,17 @@ import { Mapware } from 'fluxette';
 import { Context } from 'fluxette';
 ```
 
-### @connect([selector]) => React.Component
+### @connect([selector: Selector]) => React.Component
 ```js
 import { connect } from 'fluxette';
 ```
 
-### select(getters, deriver) => Selector
+### select(getters: Array(Selector) | Selector, deriver: Function) => Selector
 ```js
 import { select } from 'fluxette';
 ```
 
-### $normalize(generic) => Generic Interface
+### $normalize(generic: Generic) => Generic
 ```js
 import { $normalize } from 'fluxette';
 ```
