@@ -2,10 +2,11 @@ import Fluxette from './flux';
 
 import Store from './factory/store';
 import Reducer from './factory/reducer';
+import Filter from './factory/filter';
 import Mapware from './factory/mapware';
 import select from './factory/select';
 
-import normalize from './middleware/normalize';
+import $normalize from './middleware/normalize';
 
 import Context from './react/context';
 import connect from './react/connect';
@@ -25,20 +26,20 @@ let Factory = (store = {}, state) => {
 	return new Fluxette(store, state !== undefined ? state : store());
 };
 
-let Bridge = (intf, ...args) => {
-	let I = {};
-	for (let i in intf) {
-		I[i] = intf[i].bind(I);
+let Bridge = (generic, ...args) => {
+	let bound = {};
+	for (let method in generic) {
+		bound[method] = generic[method].bind(bound);
 	}
-	I.instance = Factory(...args);
-	return I;
+	bound.instance = Factory(...args);
+	return bound;
 };
 
 export {
 	Bridge, Interface, Factory, Fluxette,
-	Store, Reducer, Mapware,
+	Store, Reducer, Filter, Mapware,
 	Context, connect, select,
-	normalize
+	$normalize
 };
 
 export default (...args) => Bridge(Interface(), Factory(...args));

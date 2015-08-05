@@ -1,5 +1,5 @@
-export default function(listeners = {}) {
-	return (state, actions) => {
+export default (listeners = {}) =>
+	(state, actions) => {
 		if (actions !== undefined) {
 			if (!(actions instanceof Array)) {
 				actions = [actions];
@@ -14,4 +14,3 @@ export default function(listeners = {}) {
 			}
 		}
 	};
-}

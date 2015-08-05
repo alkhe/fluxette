@@ -1,7 +1,7 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Bridge, Interface, Factory, Fluxette, Store, Reducer, Mapware, normalize } from '..';
+import { Bridge, Interface, Factory, Fluxette, Store, Reducer, Mapware, $normalize } from '..';
 
 chai.use(spies);
 
@@ -13,7 +13,7 @@ const TYPES = {
 
 describe('Flux', () => {
 
-	let I = [normalize].reduceRight((i, m) => m(i), Interface());
+	let I = [$normalize].reduceRight((i, m) => m(i), Interface());
 
 	describe('factory', () => {
 		it('should properly construct flux class', () => {

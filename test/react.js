@@ -2,7 +2,7 @@
 import React, { addons } from 'react/addons';
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Bridge, Interface, Reducer, Context, connect, select, normalize } from '..';
+import { Bridge, Interface, Reducer, Context, connect, select, $normalize } from '..';
 
 chai.use(spies);
 
@@ -17,7 +17,7 @@ describe('Flux', () => {
 
 	describe('connect', () => {
 
-		let I = [normalize].reduceRight((i, m) => m(i), Interface());
+		let I = [$normalize].reduceRight((i, m) => m(i), Interface());
 
 		it('should hook component without specifier', () => {
 			let flux = Bridge(I, {

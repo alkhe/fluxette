@@ -141,9 +141,67 @@ React.render(
 );
 ```
 
-# API
+## API
 
-TODO
+### Flux(...args) => Bound Interface
+```js
+import Flux from 'fluxette';
+```
+
+### Bridge(generic, ...args) => Bound Interface
+```js
+import { Bridge } from 'fluxette';
+```
+
+### Interface() => Generic Interface
+```js
+import { Interface } from 'fluxette';
+```
+
+### Factory(store, [state]) => Flux Instance
+```js
+import { Reducer } from 'fluxette';
+```
+
+### Store(shape) => Reducer
+```js
+import { Store } from 'fluxette';
+```
+
+### Reducer(initialState, reducers) => Reducer
+```js
+import { Reducer } from 'fluxette';
+```
+
+### Filter(types, reducer) => Reducer
+```js
+import { Filter } from 'fluxette';
+```
+
+### Mapware(listeners) => Hook
+```js
+import { Mapware } from 'fluxette';
+```
+
+### Context => React.Component
+```js
+import { Context } from 'fluxette';
+```
+
+### @connect([selector]) => React.Component
+```js
+import { connect } from 'fluxette';
+```
+
+### select(getters, deriver) => Selector
+```js
+import { select } from 'fluxette';
+```
+
+### $normalize(generic) => Generic Interface
+```js
+import { $normalize } from 'fluxette';
+```
 
 ## The Law of Functional Flux
 In the most general sense, Functional Flux relies on reducing actions into the state. Therefore, Stores or Reducers are pure functions with the signature `(State, Action) => State`. If a Store processes an action that it listens to, which results in a different state, it must return a value or reference different from what it was called with (i.e. `Old !== New`). This recursively cascades down to the root of the state tree. At the end of the dispatch, all listeners are called. Any of which that depend on data that could have possibly changed are called with new values or references, meaning that listeners can simply maintain an old reference to compare with the new one to determine whether the state has changed.
@@ -166,25 +224,25 @@ We'll take a look at what each part of it does.
 Separating Interfaces from instances of Flux allows for advanced multiplexing and cooperation techniques.
 
 ## Middleware
-`fluxette` supports and loves middleware. The middleware system uses functional inheritance, meaning that Generic Interfaces are enhanced by using monads. If you want to do something with the actions on each dispatch, simply wrap the `dispatch` method and proxy the actions through. You can define the behavior of methods other than `dispatch`, such as the state getter, history getter, hydrator (`init`), or even your own functions. You can also depend on other middleware and build on top of their functionality! This means that the possibilities for extending the API are limitless. See our own [`normalize` middleware](https://github.com/edge/fluxette/blob/master/src/middleware/normalize.js) for an example of how to write one.
+`fluxette` supports and loves middleware. The middleware system uses functional inheritance, meaning that Generic Interfaces are enhanced by using monads. If you want to do something with the actions on each dispatch, simply wrap the `dispatch` method and proxy the actions through. You can define the behavior of methods other than `dispatch`, such as the state getter, history getter, hydrator (`init`), or even your own functions. You can also depend on other middleware and build on top of their functionality! This means that the possibilities for extending the API are limitless. See our own [`$normalize` middleware](https://github.com/edge/fluxette/blob/master/src/middleware/normalize.js) for an example of how to write one.
 
 When you use just a few middleware, you'd probably want to compose them normally.
 
 ```js
-import { Interface, normalize } from 'fluxette';
+import { Interface, $normalize } from 'fluxette';
 import { $async } from './middleware';
 
-let I = normalize($async(Interface()));
+let I = $normalize($async(Interface()));
 ```
 
 If you have lots of middleware, it's nice to reduce an array of them to make them easier to trace.
 
 ```js
-import { Interface, normalize } from 'fluxette';
+import { Interface, $normalize } from 'fluxette';
 import { $async, $promise, $thunk, $thunkExt } from './middleware';
 
 let I = [
-	normalize,
+	$normalize,
 	$async,
 	$promise('REQUEST', 'DONE', 'FAIL'),
 	$thunk, $thunkExt

@@ -1,5 +1,5 @@
-export default function(shape) {
-	return (state = {}, action) => {
+export default shape =>
+	(state = {}, action) => {
 		let changed = false,
 			changes = {};
 		for (let i in shape) {
@@ -16,4 +16,3 @@ export default function(shape) {
 		}
 		return state;
 	};
-}

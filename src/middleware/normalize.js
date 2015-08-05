@@ -1,8 +1,8 @@
 import { normalize } from '../util';
 
-export default I => {
-	let { dispatch } = I;
-	return { ...I, dispatch(...args) {
+export default generic => {
+	let { dispatch } = generic;
+	return { ...generic, dispatch(...args) {
 		dispatch.call(this, normalize(args));
 	}};
 };
