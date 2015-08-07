@@ -1,4 +1,4 @@
-// Flatten array and filter Objects
+// Flatten array and filter Actions
 export let normalize = arr => {
 	if (arr.length > 0) {
 		let norm = [];
@@ -43,27 +43,6 @@ export let same = (left, right) => {
 		}
 	}
 	return true;
-};
-
-// export let shallowEqual = (left, right) => {
-// 	if ((left === right) || Object.is(left, right)) {
-// 		return true;
-// 	}
-//
-// 	let keys = Object.keys(left);
-//
-// 	if (!same(keys, Object.keys(right))) {
-// 		return false;
-// 	}
-//
-// 	for (let i in keys) {
-// 		let key = keys[i];
-// 		if (left[key] !== right[key]) {
-// 			return false;
-// 		}
-// 	}
-//
-// 	return true;
-// };
+}
 
 export let listenerKey = (typeof Symbol !== 'undefined') ? Symbol() : '@@fluxetteListener';

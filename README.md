@@ -8,8 +8,10 @@
 * [Install](#install)
 * [Getting Started](#getting-started)
 * [API](#api)
-* [The Law of Functional Flux](the-law-of-functional-flux)
-* [Isomorphic Objects](isomorphic-objects)
+* [Types](#types)
+* [The Law of Functional Flux](#the-law-of-functional-flux)
+* [Isomorphic Objects](#isomorphic-objects)
+* [Reducer Archetype](#reducer-archetype)
 * [Middleware](#middleware)
 * [Rehydration](#rehydration)
 * [Debugging](#debugging)
@@ -141,64 +143,88 @@ React.render(
 );
 ```
 
+## Types
+
+In lack of a better type annotation system, I drafted [taxon](https://github.com/edge/taxon), which will be used here. It is similar to Flow.
+
+```js
+State: any
+
+Action: { type: String, ...payload: Any }
+
+Reducer: (state: State, action: Action) => State
+
+Selector: Monad<State>
+
+Listener: ([state: State, [actions: Array<Action>]]) => Void
+
+Deriver: (...properties: State) => State
+
+Flux: Fluxette
+
+Generic: Shallow<Function>
+
+Bound: { #Shallow<Function>, instance: Flux }
+```
+
 ## API
 
-### Flux(<Factory>) => Bound
+### [Flux]: (#Factory) => Bound
 ```js
 import Flux from 'fluxette';
 ```
 
-### Bridge(generic: Generic, <Factory>) => Bound
+### [Bridge]: (generic: Generic, #Factory) => Bound
 ```js
 import { Bridge } from 'fluxette';
 ```
 
-### Interface() => Generic
+### [Interface]: () => Generic
 ```js
 import { Interface } from 'fluxette';
 ```
 
-### Factory(store: Reducer | Plain | Flux, [state: Plain]) => Flux
+### [Factory]: (store: Reducer | Shallow<Function> | Flux, [state: State]) => Flux
 ```js
 import { Factory } from 'fluxette';
 ```
 
-### Store(shape: Plain) => Reducer
+### [Store]: (shape: Shallow<Reducer>) => Reducer
 ```js
 import { Store } from 'fluxette';
 ```
 
-### Reducer(initial: Plain, reducers: Plain) => Reducer
+### [Reducer]: (initial: State, reducers: Shallow<Reducer>) => Reducer
 ```js
 import { Reducer } from 'fluxette';
 ```
 
-### Filter(types: Array, reducer: Reducer) => Reducer
+### [Filter]: (types: Array<Action>, reducer: Reducer) => Reducer
 ```js
 import { Filter } from 'fluxette';
 ```
 
-### Mapware(listeners: Plain) => Hook
+### [Mapware]: (listeners: Shallow<Function>) => Hook
 ```js
 import { Mapware } from 'fluxette';
 ```
 
-### Context => React.Component
+### [Context]: React.Component
 ```js
 import { Context } from 'fluxette';
 ```
 
-### @connect([selector: Selector]) => React.Component
+### [connect]: ([selector: Selector]) => React.Component
 ```js
 import { connect } from 'fluxette';
 ```
 
-### select(getters: Array(Selector) | Selector, deriver: Function) => Selector
+### [select]: (getters: Array<Selector> | Selector, deriver: Deriver) => Selector
 ```js
 import { select } from 'fluxette';
 ```
 
-### $normalize(generic: Generic) => Generic
+### [$normalize]: Monad<Generic>
 ```js
 import { $normalize } from 'fluxette';
 ```
@@ -222,6 +248,21 @@ We'll take a look at what each part of it does.
 `Bridge` takes a Generic Interface and a Flux instance, creating a Bound Interface. Bound Interfaces are used to interact with your Flux instances, and they are what you will become most familiar with. There may be multiple Bound Interfaces created from different Generic Interfaces acting on a single instance.
 
 Separating Interfaces from instances of Flux allows for advanced multiplexing and cooperation techniques.
+
+## Reducer Archetype
+
+```js
+import subreducers from ...;
+
+let reducer = (state = {}, action) => {
+	if (action !== undefined) {
+		for (let sub of subreducers) {
+			state = sub(state, action);
+		}
+	}
+	return state;
+}
+```
 
 ## Middleware
 `fluxette` supports and loves middleware. The middleware system uses functional inheritance, meaning that Generic Interfaces are enhanced by using monads. If you want to do something with the actions on each dispatch, simply wrap the `dispatch` method and proxy the actions through. You can define the behavior of methods other than `dispatch`, such as the state getter, history getter, hydrator (`init`), or even your own functions. You can also depend on other middleware and build on top of their functionality! This means that the possibilities for extending the API are limitless. See our own [`$normalize` middleware](https://github.com/edge/fluxette/blob/master/src/middleware/normalize.js) for an example of how to write one.

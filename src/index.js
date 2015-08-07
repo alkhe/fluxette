@@ -6,40 +6,44 @@ import Filter from './factory/filter';
 import Mapware from './factory/mapware';
 import select from './factory/select';
 
-import $normalize from './middleware/normalize';
-
 import Context from './react/context';
 import connect from './react/connect';
 
 import Interface from './interface';
 
-let Factory = (store = {}, state) => {
-	if (store instanceof Fluxette) {
+let Factory = (store, state) => {
+	if (Fluxette.isPrototypeOf(store)) {
 		if (state !== undefined) {
 			store.state = state;
 		}
 		return store;
 	}
-	if (!(store instanceof Function)) {
-		store = Store(store);
-	}
-	return new Fluxette(store, state !== undefined ? state : store());
+	let instance = Object.create(Fluxette);
+	instance.store = store;
+	instance.state = state !== undefined ? state : store();
+	instance.hooks = [];
+	instance.history = [];
+	return instance;
 };
 
 let Bridge = (generic, ...args) => {
-	let bound = {};
-	for (let method in generic) {
-		bound[method] = generic[method].bind(bound);
+	let bound = Object.create(generic);
+	for (let method in bound) {
+		let fn = bound[method];
+		if (fn instanceof Function) {
+			bound[method] = bound::fn;
+		}
 	}
 	bound.instance = Factory(...args);
 	return bound;
 };
 
 export {
-	Bridge, Interface, Factory, Fluxette,
+	Bridge, Interface, Factory,
 	Store, Reducer, Filter, Mapware,
-	Context, connect, select,
-	$normalize
+	Context, connect, select
 };
 
-export default (...args) => Bridge(Interface(), Factory(...args));
+export { Fluxette }; // debugging
+
+export default (...args) => Bridge(Interface, Factory(...args));

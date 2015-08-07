@@ -1,11 +1,20 @@
-import { deleteFrom } from './util';
+import { normalize, deleteFrom } from './util';
 
-export default () => ({
+export default {
 	dispatch(...args) {
+		this.middle(normalize(args));
+	},
+	middle(...args) {
 		this.process(...args);
 	},
-	process(...args) {
-		this.instance.process(...args);
+	process(actions, update = true) {
+		if (actions.length > 0) {
+			let { instance } = this;
+			instance.process(actions);
+			if (update) {
+				instance.update(actions);
+			}
+		}
 	},
 	update(...args) {
 		this.instance.update(...args);
@@ -27,4 +36,4 @@ export default () => ({
 	unhook(fn) {
 		deleteFrom(this.instance.hooks, fn);
 	}
-});
+};

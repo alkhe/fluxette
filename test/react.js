@@ -2,7 +2,7 @@
 import React, { addons } from 'react/addons';
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Bridge, Interface, Reducer, Context, connect, select, $normalize } from '..';
+import { Bridge, Interface, Store, Reducer, Context, connect, select } from '..';
 
 chai.use(spies);
 
@@ -13,238 +13,235 @@ const USER = {
 	SETEMAIL: 'USER_SETEMAIL'
 };
 
-describe('Flux', () => {
+describe('React', () => {
 
-	describe('connect', () => {
+	let I = Interface;
 
-		let I = [$normalize].reduceRight((i, m) => m(i), Interface());
+	it('should hook component without specifier', () => {
+		let flux = Bridge(I, Store({
+			user: Reducer({ username: '', email: '' }, {
+				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
+				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
+			})
+		}));
 
-		it('should hook component without specifier', () => {
-			let flux = Bridge(I, {
-				user: Reducer({ username: '', email: '' }, {
-					[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
-					[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
-				})
-			});
-
-			@connect()
-			class Component extends React.Component {
-				submit() {
-					let { dispatch } = this.context.flux;
-					let username = React.findDOMNode(this.refs.username).value;
-					let email = React.findDOMNode(this.refs.email).value;
-					dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
-				}
-				render() {
-					let { user } = this.state;
-					return (
-						<div>
-							<input ref='username' />
-							<input ref='email' />
-							<button ref='submit' onClick={ ::this.submit } />
-							Username: <span ref='username_label'>{ user.username }</span>
-							Email: <span ref='email_label'>{ user.email }</span>
-						</div>
-					);
-				}
+		@connect()
+		class Component extends React.Component {
+			submit() {
+				let { dispatch } = this.context.flux;
+				let username = React.findDOMNode(this.refs.username).value;
+				let email = React.findDOMNode(this.refs.email).value;
+				dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
 			}
-
-			let tree = renderIntoDocument(
-				<Context flux={ flux }>
-					{ () => <Component /> }
-				</Context>
-			);
-			let c = findRenderedComponentWithType(tree, Component);
-			React.findDOMNode(c.refs.username).value = 'fluxette';
-			React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
-			Simulate.click(React.findDOMNode(c.refs.submit));
-			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
-			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
-		});
-		it('should hook component with specifier', () => {
-			let flux = Bridge(I, {
-				user: Reducer({ username: '', email: '' }, {
-					[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
-					[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
-				})
-			});
-
-			@connect(state => state.user)
-			class Component extends React.Component {
-				submit() {
-					let { dispatch } = this.context.flux;
-					let username = React.findDOMNode(this.refs.username).value;
-					let email = React.findDOMNode(this.refs.email).value;
-					dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
-				}
-				render() {
-					let user = this.state;
-					return (
-						<div>
-							<input ref='username' />
-							<input ref='email' />
-							<button ref='submit' onClick={ ::this.submit } />
-							Username: <span ref='username_label'>{ user.username }</span>
-							Email: <span ref='email_label'>{ user.email }</span>
-						</div>
-					);
-				}
+			render() {
+				let { user } = this.state;
+				return (
+					<div>
+						<input ref='username' />
+						<input ref='email' />
+						<button ref='submit' onClick={ ::this.submit } />
+						Username: <span ref='username_label'>{ user.username }</span>
+						Email: <span ref='email_label'>{ user.email }</span>
+					</div>
+				);
 			}
+		}
 
-			let tree = renderIntoDocument(
-				<Context flux={ flux }>
-					{ () => <Component /> }
-				</Context>
-			);
-			let c = findRenderedComponentWithType(tree, Component);
-			React.findDOMNode(c.refs.username).value = 'fluxette';
-			React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
-			Simulate.click(React.findDOMNode(c.refs.submit));
-			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
-			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
-		});
+		let tree = renderIntoDocument(
+			<Context flux={ flux }>
+				{ () => <Component /> }
+			</Context>
+		);
+		let c = findRenderedComponentWithType(tree, Component);
+		React.findDOMNode(c.refs.username).value = 'fluxette';
+		React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
+		Simulate.click(React.findDOMNode(c.refs.submit));
+		expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
+		expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
+	});
+	it('should hook component with specifier', () => {
+		let flux = Bridge(I, Store({
+			user: Reducer({ username: '', email: '' }, {
+				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
+				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
+			})
+		}));
 
-		it('should not rerender if data has not changed', () => {
-			let spy = chai.spy(() => {});
-			let flux = Bridge(I, {
-				user: Reducer({ username: '', email: '' }, {
-					[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
-					[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
-				})
-			});
-
-			@connect()
-			class Component extends React.Component {
-				submit() {
-					let { dispatch } = this.context.flux;
-					let username = React.findDOMNode(this.refs.username).value;
-					let email = React.findDOMNode(this.refs.email).value;
-					dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
-				}
-				render() {
-					spy();
-					let { user } = this.state;
-					return (
-						<div>
-							<input ref='username' />
-							<input ref='email' />
-							<button ref='submit' onClick={ ::this.submit } />
-							Username: <span ref='username_label'>{ user.username }</span>
-							Email: <span ref='email_label'>{ user.email }</span>
-						</div>
-					);
-				}
+		@connect(state => state.user)
+		class Component extends React.Component {
+			submit() {
+				let { dispatch } = this.context.flux;
+				let username = React.findDOMNode(this.refs.username).value;
+				let email = React.findDOMNode(this.refs.email).value;
+				dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
 			}
-
-			let tree = renderIntoDocument(
-				<Context flux={ flux }>
-					{ () => <Component /> }
-				</Context>
-			);
-			let c = findRenderedComponentWithType(tree, Component);
-			React.findDOMNode(c.refs.username).value = 'fluxette';
-			React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
-			Simulate.click(React.findDOMNode(c.refs.submit));
-			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
-			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
-			expect(spy).to.have.been.called.twice;
-			flux.dispatch({ type: 'bogus-type' });
-			expect(spy).to.have.been.called.twice;
-		});
-
-		it('should not rerender if data has not changed with selector', () => {
-			let spy = chai.spy(() => {});
-			let flux = Bridge(I, {
-				user: Reducer({ username: '', email: '' }, {
-					[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
-					[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
-				})
-			});
-
-			@connect(select(
-				state => state.user,
-				user => {
-					return { user };
-				}
-			))
-			class Component extends React.Component {
-				submit() {
-					let { dispatch } = this.context.flux;
-					let username = React.findDOMNode(this.refs.username).value;
-					let email = React.findDOMNode(this.refs.email).value;
-					dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
-				}
-				render() {
-					spy();
-					let { user } = this.state;
-					return (
-						<div>
-							<input ref='username' />
-							<input ref='email' />
-							<button ref='submit' onClick={ ::this.submit } />
-							Username: <span ref='username_label'>{ user.username }</span>
-							Email: <span ref='email_label'>{ user.email }</span>
-						</div>
-					);
-				}
+			render() {
+				let user = this.state;
+				return (
+					<div>
+						<input ref='username' />
+						<input ref='email' />
+						<button ref='submit' onClick={ ::this.submit } />
+						Username: <span ref='username_label'>{ user.username }</span>
+						Email: <span ref='email_label'>{ user.email }</span>
+					</div>
+				);
 			}
+		}
 
-			let tree = renderIntoDocument(
-				<Context flux={ flux }>
-					{ () => <Component /> }
-				</Context>
-			);
-			let c = findRenderedComponentWithType(tree, Component);
-			React.findDOMNode(c.refs.username).value = 'fluxette';
-			React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
-			Simulate.click(React.findDOMNode(c.refs.submit));
-			expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
-			expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
-			expect(spy).to.have.been.called.twice;
-			flux.dispatch({ type: 'bogus-type' });
-			expect(spy).to.have.been.called.twice;
-		});
+		let tree = renderIntoDocument(
+			<Context flux={ flux }>
+				{ () => <Component /> }
+			</Context>
+		);
+		let c = findRenderedComponentWithType(tree, Component);
+		React.findDOMNode(c.refs.username).value = 'fluxette';
+		React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
+		Simulate.click(React.findDOMNode(c.refs.submit));
+		expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
+		expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
+	});
 
-		it('should not fail on unmount', () => {
-			let flux = Bridge(I);
+	it('should not rerender if data has not changed', () => {
+		let spy = chai.spy(() => {});
+		let flux = Bridge(I, Store({
+			user: Reducer({ username: '', email: '' }, {
+				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
+				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
+			})
+		}));
 
-			class Component extends React.Component {
-				constructor() {
-					super();
-					this.state = {
-						show: true
-					};
-				}
-				toggle() {
-					this.setState({
-						show: !this.state.show
-					});
-				}
-				render() {
-					let toggle = <button ref='toggle' onClick={ ::this.toggle } />;
-					return this.state.show
-						? <div>
-							<Child />
-							{ toggle }
-						</div>
-						: <div>{ toggle }</div>;
-				}
+		@connect()
+		class Component extends React.Component {
+			submit() {
+				let { dispatch } = this.context.flux;
+				let username = React.findDOMNode(this.refs.username).value;
+				let email = React.findDOMNode(this.refs.email).value;
+				dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
 			}
-
-			@connect()
-			class Child extends React.Component {
-				render() {
-					return <div />;
-				}
+			render() {
+				spy();
+				let { user } = this.state;
+				return (
+					<div>
+						<input ref='username' />
+						<input ref='email' />
+						<button ref='submit' onClick={ ::this.submit } />
+						Username: <span ref='username_label'>{ user.username }</span>
+						Email: <span ref='email_label'>{ user.email }</span>
+					</div>
+				);
 			}
+		}
 
-			let tree = renderIntoDocument(
-				<Context flux={ flux }>
-					{ () => <Component /> }
-				</Context>
-			);
-			let c = findRenderedComponentWithType(tree, Component);
-			Simulate.click(React.findDOMNode(c.refs.toggle));
-		});
+		let tree = renderIntoDocument(
+			<Context flux={ flux }>
+				{ () => <Component /> }
+			</Context>
+		);
+		let c = findRenderedComponentWithType(tree, Component);
+		React.findDOMNode(c.refs.username).value = 'fluxette';
+		React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
+		Simulate.click(React.findDOMNode(c.refs.submit));
+		expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
+		expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
+		expect(spy).to.have.been.called.twice;
+		flux.dispatch({ type: 'bogus-type' });
+		expect(spy).to.have.been.called.twice;
+	});
+
+	it('should not rerender if data has not changed with selector', () => {
+		let spy = chai.spy(() => {});
+		let flux = Bridge(I, Store({
+			user: Reducer({ username: '', email: '' }, {
+				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
+				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
+			})
+		}));
+
+		@connect(select(
+			state => state.user,
+			user => {
+				return { user };
+			}
+		))
+		class Component extends React.Component {
+			submit() {
+				let { dispatch } = this.context.flux;
+				let username = React.findDOMNode(this.refs.username).value;
+				let email = React.findDOMNode(this.refs.email).value;
+				dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
+			}
+			render() {
+				spy();
+				let { user } = this.state;
+				return (
+					<div>
+						<input ref='username' />
+						<input ref='email' />
+						<button ref='submit' onClick={ ::this.submit } />
+						Username: <span ref='username_label'>{ user.username }</span>
+						Email: <span ref='email_label'>{ user.email }</span>
+					</div>
+				);
+			}
+		}
+
+		let tree = renderIntoDocument(
+			<Context flux={ flux }>
+				{ () => <Component /> }
+			</Context>
+		);
+		let c = findRenderedComponentWithType(tree, Component);
+		React.findDOMNode(c.refs.username).value = 'fluxette';
+		React.findDOMNode(c.refs.email).value = 'fluxette@fluxette.github.io';
+		Simulate.click(React.findDOMNode(c.refs.submit));
+		expect(React.findDOMNode(c.refs.email_label).innerHTML).to.equal('fluxette@fluxette.github.io');
+		expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
+		expect(spy).to.have.been.called.twice;
+		flux.dispatch({ type: 'bogus-type' });
+		expect(spy).to.have.been.called.twice;
+	});
+
+	it('should not fail on unmount', () => {
+		let flux = Bridge(I, Store());
+
+		class Component extends React.Component {
+			constructor() {
+				super();
+				this.state = {
+					show: true
+				};
+			}
+			toggle() {
+				this.setState({
+					show: !this.state.show
+				});
+			}
+			render() {
+				let toggle = <button ref='toggle' onClick={ ::this.toggle } />;
+				return this.state.show
+					? <div>
+						<Child />
+						{ toggle }
+					</div>
+					: <div>{ toggle }</div>;
+			}
+		}
+
+		@connect()
+		class Child extends React.Component {
+			render() {
+				return <div />;
+			}
+		}
+
+		let tree = renderIntoDocument(
+			<Context flux={ flux }>
+				{ () => <Component /> }
+			</Context>
+		);
+		let c = findRenderedComponentWithType(tree, Component);
+		Simulate.click(React.findDOMNode(c.refs.toggle));
 	});
 });

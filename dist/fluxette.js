@@ -62,29 +62,29 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _flux = __webpack_require__(7);
+	var _flux = __webpack_require__(8);
 
 	var _flux2 = _interopRequireDefault(_flux);
 
-	var _factoryStore = __webpack_require__(6);
+	var _factoryStore = __webpack_require__(7);
 
 	var _factoryStore2 = _interopRequireDefault(_factoryStore);
 
-	var _factoryReducer = __webpack_require__(4);
+	var _factoryReducer = __webpack_require__(5);
 
 	var _factoryReducer2 = _interopRequireDefault(_factoryReducer);
 
-	var _factoryMapware = __webpack_require__(3);
+	var _factoryFilter = __webpack_require__(3);
+
+	var _factoryFilter2 = _interopRequireDefault(_factoryFilter);
+
+	var _factoryMapware = __webpack_require__(4);
 
 	var _factoryMapware2 = _interopRequireDefault(_factoryMapware);
 
-	var _factorySelect = __webpack_require__(5);
+	var _factorySelect = __webpack_require__(6);
 
 	var _factorySelect2 = _interopRequireDefault(_factorySelect);
-
-	var _middlewareNormalize = __webpack_require__(9);
-
-	var _middlewareNormalize2 = _interopRequireDefault(_middlewareNormalize);
 
 	var _reactContext = __webpack_require__(11);
 
@@ -94,59 +94,63 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _reactConnect2 = _interopRequireDefault(_reactConnect);
 
-	var _interface = __webpack_require__(8);
+	var _interface = __webpack_require__(9);
 
 	var _interface2 = _interopRequireDefault(_interface);
 
 	var Factory = function Factory(store, state) {
-		if (store === undefined) store = {};
-
-		if (store instanceof _flux2['default']) {
+		if (_flux2['default'].isPrototypeOf(store)) {
 			if (state !== undefined) {
 				store.state = state;
 			}
 			return store;
 		}
-		if (!(store instanceof Function)) {
-			store = (0, _factoryStore2['default'])(store);
-		}
-		return new _flux2['default'](store, state !== undefined ? state : store());
+		var instance = Object.create(_flux2['default']);
+		instance.store = store;
+		instance.state = state !== undefined ? state : store();
+		instance.hooks = [];
+		instance.history = [];
+		return instance;
 	};
 
-	var Bridge = function Bridge(intf) {
+	var Bridge = function Bridge(generic) {
 		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 			args[_key - 1] = arguments[_key];
 		}
 
-		var I = {};
-		for (var i in intf) {
-			I[i] = intf[i].bind(I);
+		var bound = Object.create(generic);
+		for (var method in bound) {
+			var fn = bound[method];
+			if (fn instanceof Function) {
+				bound[method] = fn.bind(bound);
+			}
 		}
-		I.instance = Factory.apply(undefined, args);
-		return I;
+		bound.instance = Factory.apply(undefined, args);
+		return bound;
 	};
 
 	exports.Bridge = Bridge;
 	exports.Interface = _interface2['default'];
 	exports.Factory = Factory;
-	exports.Fluxette = _flux2['default'];
 	exports.Store = _factoryStore2['default'];
 	exports.Reducer = _factoryReducer2['default'];
+	exports.Filter = _factoryFilter2['default'];
 	exports.Mapware = _factoryMapware2['default'];
 	exports.Context = _reactContext2['default'];
 	exports.connect = _reactConnect2['default'];
 	exports.select = _factorySelect2['default'];
-	exports.normalize = _middlewareNormalize2['default'];
+	exports.Fluxette = _flux2['default'];
+	// debugging
 
 	exports['default'] = function () {
-		return Bridge((0, _interface2['default'])(), Factory.apply(undefined, arguments));
+		return Bridge(_interface2['default'], Factory.apply(undefined, arguments));
 	};
 
 /***/ },
 /* 1 */
 /***/ function(module, exports) {
 
-	// Flatten array and filter Objects
+	// Flatten array and filter Actions
 	'use strict';
 
 	Object.defineProperty(exports, '__esModule', {
@@ -198,27 +202,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		return true;
 	};
 
-	// export let shallowEqual = (left, right) => {
-	// 	if ((left === right) || Object.is(left, right)) {
-	// 		return true;
-	// 	}
-	//
-	// 	let keys = Object.keys(left);
-	//
-	// 	if (!same(keys, Object.keys(right))) {
-	// 		return false;
-	// 	}
-	//
-	// 	for (let i in keys) {
-	// 		let key = keys[i];
-	// 		if (left[key] !== right[key]) {
-	// 			return false;
-	// 		}
-	// 	}
-	//
-	// 	return true;
-	// };
-
 	exports.same = same;
 	var listenerKey = typeof Symbol !== 'undefined' ? Symbol() : '@@fluxetteListener';
 	exports.listenerKey = listenerKey;
@@ -239,9 +222,26 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
+	exports["default"] = function (types, reducer) {
+		return function (state, action) {
+			return types.indexOf(action.type) !== -1 ? reducer(state, action) : reducer(state);
+		};
+	};
+
+	module.exports = exports["default"];
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
 	exports["default"] = function () {
 		var listeners = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
 		return function (state, actions) {
 			if (actions !== undefined) {
 				if (!(actions instanceof Array)) {
@@ -262,7 +262,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -273,7 +273,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports["default"] = function (initial, reducers) {
 		if (initial === undefined) initial = {};
-
 		return function (state, action) {
 			if (state === undefined) state = initial;
 
@@ -295,7 +294,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -336,7 +335,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -361,18 +360,14 @@ return /******/ (function(modules) { // webpackBootstrap
 					changes[i] = next;
 				}
 			}
-			if (changed) {
-				// Overwrite changes onto new reference
-				state = _extends({}, state, changes);
-			}
-			return state;
+			return changed ? _extends({}, state, changes) : state;
 		};
 	};
 
 	module.exports = exports["default"];
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -381,117 +376,28 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	exports["default"] = {
+		process: function process(actions) {
+			var _history;
 
-	var _default = (function () {
-		function _default(store, state) {
-			if (store === undefined) store = function (x) {
-				return x;
-			};
+			// Log all actions in history
+			(_history = this.history).push.apply(_history, _toConsumableArray(actions));
+			// Synchronously process all actions
+			this.state = actions.reduce(this.store, this.state);
+		},
+		update: function update(actions) {
+			var hooks = this.hooks;
 
-			_classCallCheck(this, _default);
-
-			// Store
-			this.store = store;
-			// Hooks
-			this.hooks = [];
-			// Action Stack
-			this.history = [];
-			// State
-			this.state = state;
+			// Call all registered hooks
+			var state = this.state;
+			for (var i = 0; i < hooks.length; i++) {
+				hooks[i](state, actions);
+			}
 		}
-
-		_createClass(_default, [{
-			key: "process",
-			value: function process(actions) {
-				var update = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
-
-				if (actions.length > 0) {
-					var _history;
-
-					// Log all actions in history
-					(_history = this.history).push.apply(_history, _toConsumableArray(actions));
-					// Synchronously process all actions
-					this.state = actions.reduce(this.store, this.state);
-					// Call all registered hooks
-					if (update) {
-						this.update(actions);
-					}
-				}
-			}
-		}, {
-			key: "update",
-			value: function update(actions) {
-				var hooks = this.hooks;
-				var state = this.state;
-
-				for (var i = 0; i < hooks.length; i++) {
-					hooks[i](state, actions);
-				}
-			}
-		}]);
-
-		return _default;
-	})();
-
-	exports["default"] = _default;
-	module.exports = exports["default"];
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-		value: true
-	});
-
-	var _util = __webpack_require__(1);
-
-	exports['default'] = function () {
-		return {
-			dispatch: function dispatch() {
-				this.process.apply(this, arguments);
-			},
-			process: function process() {
-				var _instance;
-
-				(_instance = this.instance).process.apply(_instance, arguments);
-			},
-			update: function update() {
-				var _instance2;
-
-				(_instance2 = this.instance).update.apply(_instance2, arguments);
-			},
-			init: function init(state) {
-				var instance = this.instance;
-
-				instance.history = [];
-				instance.state = state !== undefined ? state : instance.store();
-			},
-			state: function state() {
-				return this.instance.state;
-			},
-			history: function history() {
-				return this.instance.history;
-			},
-			hook: function hook() {
-				var _instance$hooks;
-
-				(_instance$hooks = this.instance.hooks).push.apply(_instance$hooks, arguments);
-			},
-			unhook: function unhook(fn) {
-				(0, _util.deleteFrom)(this.instance.hooks, fn);
-			}
-		};
 	};
-
-	module.exports = exports['default'];
+	module.exports = exports["default"];
 
 /***/ },
 /* 9 */
@@ -503,22 +409,57 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 	var _util = __webpack_require__(1);
 
-	exports['default'] = function (I) {
-		var _dispatch = I.dispatch;
+	exports['default'] = {
+		dispatch: function dispatch() {
+			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+				args[_key] = arguments[_key];
+			}
 
-		return _extends({}, I, { dispatch: function dispatch() {
-				for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-					args[_key] = arguments[_key];
+			this.middle((0, _util.normalize)(args));
+		},
+		middle: function middle() {
+			this.process.apply(this, arguments);
+		},
+		process: function process(actions) {
+			var update = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+
+			if (actions.length > 0) {
+				var instance = this.instance;
+
+				instance.process(actions);
+				if (update) {
+					instance.update(actions);
 				}
+			}
+		},
+		update: function update() {
+			var _instance;
 
-				_dispatch.call(this, (0, _util.normalize)(args));
-			} });
+			(_instance = this.instance).update.apply(_instance, arguments);
+		},
+		init: function init(state) {
+			var instance = this.instance;
+
+			instance.history = [];
+			instance.state = state !== undefined ? state : instance.store();
+		},
+		state: function state() {
+			return this.instance.state;
+		},
+		history: function history() {
+			return this.instance.history;
+		},
+		hook: function hook() {
+			var _instance$hooks;
+
+			(_instance$hooks = this.instance.hooks).push.apply(_instance$hooks, arguments);
+		},
+		unhook: function unhook(fn) {
+			(0, _util.deleteFrom)(this.instance.hooks, fn);
+		}
 	};
-
 	module.exports = exports['default'];
 
 /***/ },

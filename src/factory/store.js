@@ -10,9 +10,5 @@ export default shape =>
 				changes[i] = next;
 			}
 		}
-		if (changed) {
-			// Overwrite changes onto new reference
-			state = { ...state, ...changes };
-		}
-		return state;
+		return changed ? { ...state, ...changes } : state;
 	};
