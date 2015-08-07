@@ -1,15 +1,3 @@
-// Flatten array and filter Actions
-export let normalize = arr => {
-	if (arr.length > 0) {
-		let norm = [];
-		$normalize(arr, norm);
-		return norm;
-	}
-	else {
-		return arr;
-	}
-};
-
 let $normalize = (arr, into) => {
 	for (let i = 0; i < arr.length; i++) {
 		let val = arr[i];
@@ -24,8 +12,34 @@ let $normalize = (arr, into) => {
 	}
 };
 
+export let normalize = arr => {
+	if (arr.length > 0) {
+		let norm = [];
+		$normalize(arr, norm);
+		return norm;
+	}
+	else {
+		return arr;
+	}
+};
+
+let writeMethods = (o, arr) => {
+	for (let i = 1; i < arr.length; i++) {
+		o[arr[i]] = 0;
+	}
+};
+
+export let methods = Class => {
+	let last = Object.__proto__;
+	let m = {};
+	do {
+		writeMethods(m, Object.getOwnPropertyNames(Class.prototype));
+	} while ((Class = Class.__proto__) !== last);
+	return m;
+};
+
 // Delete object from array
-export let deleteFrom = (array, obj) => {
+export let remove = (array, obj) => {
 	let index = array.indexOf(obj);
 	if (index !== -1) {
 		array.splice(index, 1);
@@ -44,5 +58,3 @@ export let same = (left, right) => {
 	}
 	return true;
 }
-
-export let listenerKey = (typeof Symbol !== 'undefined') ? Symbol() : '@@fluxetteListener';

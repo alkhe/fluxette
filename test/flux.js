@@ -1,7 +1,7 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Bridge, Interface, Fluxette, Store, Reducer, Mapware } from '..';
+import { Bridge, Interface, Fluxette, Store, Reducer } from '..';
 
 chai.use(spies);
 
@@ -19,10 +19,10 @@ describe('Flux', () => {
 		it('should properly construct flux class', () => {
 			let flux = Bridge(I, Store());
 			expect(flux).to.have.property('instance');
-			expect(Fluxette.isPrototypeOf(flux.instance));
+			expect(flux.instance instanceof Fluxette).to.be.true;
 			expect(flux).to.have.property('dispatch')
 				.that.is.an.instanceof(Function);
-			expect(flux).to.have.property('middle')
+			expect(flux).to.have.property('interop')
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('process')
 				.that.is.an.instanceof(Function);
@@ -291,37 +291,19 @@ describe('Flux', () => {
 		});
 	});
 
-	describe('Mapware', () => {
-		it('can be used as a hook', () => {
-			let { dispatch, hook } = Bridge(I, Reducer(0, {
-				[TYPES.A]: state => state + 1,
-				[TYPES.B]: state => state - 1
-			}));
-
-			let spy = chai.spy(() => {});
-			let ware = chai.spy(Mapware({
-				[TYPES.A]: spy
-			}));
-			hook(ware);
-			dispatch({ type: TYPES.A });
-			dispatch({ type: TYPES.B });
-			expect(ware).to.have.been.called.twice;
-			expect(spy).to.have.been.called.once;
-		});
-	});
-
 	describe('middleware', () => {
 		it('should extend Interface', () => {
-			let mw = base => {
-				let { middle } = base;
-				let generic = Object.create(base);
-				generic.mwhistory = [];
-				generic.middle = function(actions) {
-					this.mwhistory.push(actions);
-					this::middle(actions);
-				}
-				return generic;
-			}
+			let mw = Generic =>
+				class extends Generic {
+					constructor(...args) {
+						super(...args);
+						this.mwhistory = [];
+					}
+					interop(actions) {
+						this.mwhistory.push(actions);
+						super.interop(actions);
+					}
+				};
 			let G = mw(I);
 			let flux = Bridge(G, Store());
 
@@ -330,30 +312,33 @@ describe('Flux', () => {
 
 			expect(flux.mwhistory).to.deep.equal([[{ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' }], [{ type: 'action-a' }, { type: 'action-b' }, { type: 'action-c' }]]);
 
-			expect(I.isPrototypeOf(G));
+			expect(I.isPrototypeOf(G)).to.be.true;
 		});
 		it('should be composable', () => {
-			let mw = base => {
-				let { middle } = base;
-				let generic = Object.create(base);
-				generic.mwhistory = [];
-				generic.middle = function(actions) {
-					this.mwhistory.push(actions);
-					this::middle(actions);
-				}
-				return generic;
-			}
-			let mw2 = base => {
-				let { middle } = base;
-				let generic = Object.create(base);
-				generic.mwhistory2 = [];
-				generic.middle = function(actions) {
-					this.mwhistory.push('x');
-					this.mwhistory2.push(...actions);
-					this::middle(actions);
-				}
-				return generic;
-			}
+			let mw = Generic =>
+				class extends Generic {
+					constructor(...args) {
+						super(...args);
+						this.mwhistory = [];
+					}
+					interop(actions) {
+						this.mwhistory.push(actions);
+						super.interop(actions);
+					}
+				};
+			let mw2 = Generic =>
+				class extends Generic {
+					constructor(...args) {
+						super(...args);
+						this.mwhistory2 = [];
+					}
+					interop(actions) {
+						this.mwhistory.push('x');
+						this.mwhistory2.push(...actions);
+						super.interop(actions);
+					}
+				};
+
 			let G = mw2(mw(I));
 			let flux = Bridge(mw2(mw(I)), Store());
 
@@ -363,7 +348,29 @@ describe('Flux', () => {
 			expect(flux.mwhistory).to.deep.equal(['x', [{ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' }], 'x', [{ type: 'action-a' }, { type: 'action-b' }, { type: 'action-c' }]]);
 			expect(flux.mwhistory2).to.deep.equal([{ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' }, { type: 'action-a' }, { type: 'action-b' }, { type: 'action-c' }]);
 
-			expect(I.isPrototypeOf(G));
+			expect(I.isPrototypeOf(G)).to.be.true;
+		});
+		it('should be isolated from other interfaces', () => {
+			let mw = Generic =>
+				class extends Generic {
+					constructor(...args) {
+						super(...args);
+						this.mwhistory = [];
+					}
+					interop(actions) {
+						this.mwhistory.push(actions);
+						super.interop(actions);
+					}
+				};
+			let G = mw(I);
+			let flux = Bridge(G, Store());
+
+			flux.dispatch({ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' });
+			flux.dispatch({ type: 'action-a' }, [{ type: 'action-b' }], { type: 'action-c' });
+
+			flux = Bridge(G, Store());
+			expect(flux.mwhistory).to.deep.equal([]);
 		});
 	});
+
 });

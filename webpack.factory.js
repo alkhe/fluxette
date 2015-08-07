@@ -15,7 +15,10 @@ let resolve = {
 
 export default {
 	build: (minify, filename) => {
-		let plugins = [new w.optimize.OccurenceOrderPlugin()];
+		let plugins = [
+			new w.optimize.DedupePlugin(),
+			new w.optimize.OccurenceOrderPlugin()
+		];
 		if (minify) {
 			plugins.push(
 				new w.optimize.UglifyJsPlugin({
@@ -23,7 +26,8 @@ export default {
 						'screw_ie8': true,
 						warnings: false
 					}
-				})
+				}),
+				new w.optimize.AggressiveMergingPlugin()
 			);
 		}
 		return {

@@ -39,11 +39,11 @@ You can also extend the fluxette interface, allowing you to add your own functio
 ```sh
 $ npm i --save fluxette
 ```
-Browser builds (umd) are available [here](https://github.com/edge/fluxette/tree/master/dist).
+[Browser builds (umd) are also available. ](https://github.com/edge/fluxette/tree/master/dist).
 
 ## Getting Started
 
-Let's say that you have a simple React component that you want to refactor with Flux.
+Say you have a simple React component that you want to refactor with Flux:
 
 ```js
 class Updater extends React.Component {
@@ -66,7 +66,7 @@ class Updater extends React.Component {
 	}
 }
 
-React.render(<Updater />, document.getElementById('app'));
+React.render(<Updater />, document.getElementById('root'));
 ```
 
 This is a simple component that shows you the text that you've typed into a textbox right below it. We can interpret each event as an action of type `UPDATE` that carries the value of the textbox.
@@ -123,7 +123,7 @@ const flux = Flux(updater);
 class Updater extends React.Component {
 	change(e) {
 		let { dispatch } = this.context.flux;
-		dispatch(update.text(e.target.value));
+		dispatch(update(e.target.value));
 	}
 	render() {
 		return (
@@ -139,95 +139,93 @@ React.render(
 	<Context flux={ flux }>
 		{ () => <Updater /> }
 	</Context>,
-	document.getElementById('app')
+	document.getElementById('root')
 );
-```
-
-## Types
-
-In lack of a better type annotation system, I drafted [taxon](https://github.com/edge/taxon), which will be used here. It is similar to Flow.
-
-```js
-State: any
-
-Action: { type: String, ...payload: Any }
-
-Reducer: (state: State, action: Action) => State
-
-Selector: Monad<State>
-
-Listener: ([state: State, [actions: Array<Action>]]) => Void
-
-Deriver: (...properties: State) => State
-
-Flux: Fluxette
-
-Generic: Shallow<Function>
-
-Bound: { #Shallow<Function>, instance: Flux }
 ```
 
 ## API
 
-### [Flux]: (#Factory) => Bound
+### Flux(reducerOrInstance: Reducer | Flux) => Bound
 ```js
 import Flux from 'fluxette';
 ```
 
-### [Bridge]: (generic: Generic, #Factory) => Bound
+### Bridge(generic: Generic, reducerOrInstance: Reducer | Flux) => Bound
 ```js
 import { Bridge } from 'fluxette';
 ```
 
-### [Interface]: () => Generic
+### Interface() => Generic
 ```js
 import { Interface } from 'fluxette';
 ```
 
-### [Factory]: (store: Reducer | Shallow<Function> | Flux, [state: State]) => Flux
+### Factory(reducerOrInstance: Reducer | Flux, state: ?State) => Flux
 ```js
 import { Factory } from 'fluxette';
 ```
 
-### [Store]: (shape: Shallow<Reducer>) => Reducer
+### Store(shape: Shape) => Reducer
 ```js
 import { Store } from 'fluxette';
 ```
 
-### [Reducer]: (initial: State, reducers: Shallow<Reducer>) => Reducer
+### Reducer(initial: State, reducers: Bulletin) => Reducer
 ```js
 import { Reducer } from 'fluxette';
 ```
 
-### [Filter]: (types: Array<Action>, reducer: Reducer) => Reducer
+### Filter(types: Array<Action>, reducer: Reducer) => Reducer
 ```js
 import { Filter } from 'fluxette';
 ```
 
-### [Mapware]: (listeners: Shallow<Function>) => Hook
-```js
-import { Mapware } from 'fluxette';
-```
-
-### [Context]: React.Component
+### Context => React.Component
 ```js
 import { Context } from 'fluxette';
 ```
 
-### [connect]: ([selector: Selector]) => React.Component
+### connect([selector: Selector]) => React.Component
 ```js
 import { connect } from 'fluxette';
 ```
 
-### [select]: (getters: Array<Selector> | Selector, deriver: Deriver) => Selector
+### select(getters: Array<Selector> | Selector, deriver: Deriver) => Selector
 ```js
 import { select } from 'fluxette';
 ```
 
-### [$normalize]: Monad<Generic>
-```js
-import { $normalize } from 'fluxette';
-```
+## Glossary
+
+**State**
+A *State* is any value that is representative of your application. It can be a primitive, Object, Array, or anything else. If you wish to implement de/rehydration, you may want to keep JSON serialization in mind.
+
+**Action**
+An *Action* is an Object that contains information on how to update the state. Customarily, they have a `type` property, along with any other data that your stores may need to operate on the state.
+
+**Action Creator**
+*Action Creators* are not internally known by fluxette, but are usually used in Flux applications to parametrize actions. By the norm of Functional Flux, they are functions that return *Actions*.
+
+**Reducer**
+A *Reducer* (or *Store*) is a pure function that accepts a state and an action, which it combines, or *reduces*, to create a new state. All Reducers should have the signature `(State, Action) => State`. The `Store`, `Reducer`, and `Filter` facilities all return a Reducer.
+
+**Shallow<Type>**
+A *Shallow* object is an object that shallowly contains a *Type* on each property.
+
+**Shape: Shallow<Reducer>**
+The *Shape* is a concept specific to the `Store` facility. It contains a Reducer on each property, reflecting how it will be stored on the state.
+
+**Bulletin: Shallow<Reducer>**
+The *Bulletin* is a concept specific to the `Reducer` facility. It differs from a Shape only in that instead of carrying properties respective to the desired shape of the state, each property maps an action type to a Reducer.
+
+**Hook**
+*Hooks* (or *Listeners*) are functions that respond to a change in the state. They have a wide spectrum of uses; they are similar to the `change` event listeners of a traditional MVC framework. They have a signature of `(?State, ?Array<Action>) => void`. The `connect` decorator uses a hook to subscribe your components to state changes.
+
+**Selector**
+A *Selector* is a function that takes a state and makes it more specific. Selectors are very useful in React components, to keep your `render` method DRY and orthogonal, and to take advantage of caching features. For more advanced caching, you can use the `select` facility, which also returns a Selector. Selectors have the signature `(State) => State`.
+
+**Deriver**
+The *Deriver* is an concept specific to the `select` facility. `select` takes a Selector or an array of Selectors, and passes the results of each to the deriver to create a logical (as opposed to raw) data object that your application uses. Derivers are functions that expect the results of Selectors and returns a State.
 
 ## The Law of Functional Flux
 In the most general sense, Functional Flux relies on reducing actions into the state. Therefore, Stores or Reducers are pure functions with the signature `(State, Action) => State`. If a Store processes an action that it listens to, which results in a different state, it must return a value or reference different from what it was called with (i.e. `Old !== New`). This recursively cascades down to the root of the state tree. At the end of the dispatch, all listeners are called. Any of which that depend on data that could have possibly changed are called with new values or references, meaning that listeners can simply maintain an old reference to compare with the new one to determine whether the state has changed.

@@ -1,10 +1,16 @@
-export default {
+export default class {
+	constructor(store, state) {
+		this.store = store;
+		this.state = state;
+		this.history = [];
+		this.hooks = [];
+	}
 	process(actions) {
 		// Log all actions in history
 		this.history.push(...actions);
 		// Synchronously process all actions
 		this.state = actions.reduce(this.store, this.state);
-	},
+	}
 	update(actions) {
 		let { hooks, state } = this;
 		// Call all registered hooks

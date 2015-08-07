@@ -1,5 +1,6 @@
-import { listenerKey } from '../util';
 import { PropTypes } from 'react';
+
+let listenerKey = (typeof Symbol !== 'undefined') ? Symbol() : '@@fluxetteListener';
 
 export default (selector = x => x) => {
 	return Component =>

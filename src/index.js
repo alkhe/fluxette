@@ -3,7 +3,6 @@ import Fluxette from './flux';
 import Store from './factory/store';
 import Reducer from './factory/reducer';
 import Filter from './factory/filter';
-import Mapware from './factory/mapware';
 import select from './factory/select';
 
 import Context from './react/context';
@@ -11,36 +10,30 @@ import connect from './react/connect';
 
 import Interface from './interface';
 
+import { methods } from './util';
+
 let Factory = (store, state) => {
-	if (Fluxette.isPrototypeOf(store)) {
+	if (store instanceof Fluxette) {
 		if (state !== undefined) {
 			store.state = state;
 		}
 		return store;
 	}
-	let instance = Object.create(Fluxette);
-	instance.store = store;
-	instance.state = state !== undefined ? state : store();
-	instance.hooks = [];
-	instance.history = [];
-	return instance;
+	return new Fluxette(store, state !== undefined ? state : store());
 };
 
-let Bridge = (generic, ...args) => {
-	let bound = Object.create(generic);
-	for (let method in bound) {
-		let fn = bound[method];
-		if (fn instanceof Function) {
-			bound[method] = bound::fn;
-		}
+let Bridge = (Generic, ...args) => {
+	let bound = new Generic(Factory(...args));
+	let m = methods(Generic);
+	for (let i in m) {
+		bound[i] = ::bound[i];
 	}
-	bound.instance = Factory(...args);
 	return bound;
-};
+}
 
 export {
 	Bridge, Interface, Factory,
-	Store, Reducer, Filter, Mapware,
+	Store, Reducer, Filter,
 	Context, connect, select
 };
 

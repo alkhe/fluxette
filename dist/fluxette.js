@@ -62,15 +62,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _flux = __webpack_require__(8);
+	var _flux = __webpack_require__(7);
 
 	var _flux2 = _interopRequireDefault(_flux);
 
-	var _factoryStore = __webpack_require__(7);
+	var _factoryStore = __webpack_require__(6);
 
 	var _factoryStore2 = _interopRequireDefault(_factoryStore);
 
-	var _factoryReducer = __webpack_require__(5);
+	var _factoryReducer = __webpack_require__(4);
 
 	var _factoryReducer2 = _interopRequireDefault(_factoryReducer);
 
@@ -78,54 +78,44 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _factoryFilter2 = _interopRequireDefault(_factoryFilter);
 
-	var _factoryMapware = __webpack_require__(4);
-
-	var _factoryMapware2 = _interopRequireDefault(_factoryMapware);
-
-	var _factorySelect = __webpack_require__(6);
+	var _factorySelect = __webpack_require__(5);
 
 	var _factorySelect2 = _interopRequireDefault(_factorySelect);
 
-	var _reactContext = __webpack_require__(11);
+	var _reactContext = __webpack_require__(10);
 
 	var _reactContext2 = _interopRequireDefault(_reactContext);
 
-	var _reactConnect = __webpack_require__(10);
+	var _reactConnect = __webpack_require__(9);
 
 	var _reactConnect2 = _interopRequireDefault(_reactConnect);
 
-	var _interface = __webpack_require__(9);
+	var _interface = __webpack_require__(8);
 
 	var _interface2 = _interopRequireDefault(_interface);
 
+	var _util = __webpack_require__(1);
+
 	var Factory = function Factory(store, state) {
-		if (_flux2['default'].isPrototypeOf(store)) {
+		if (store instanceof _flux2['default']) {
 			if (state !== undefined) {
 				store.state = state;
 			}
 			return store;
 		}
-		var instance = Object.create(_flux2['default']);
-		instance.store = store;
-		instance.state = state !== undefined ? state : store();
-		instance.hooks = [];
-		instance.history = [];
-		return instance;
+		return new _flux2['default'](store, state !== undefined ? state : store());
 	};
 
-	var Bridge = function Bridge(generic) {
+	var Bridge = function Bridge(Generic) {
 		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 			args[_key - 1] = arguments[_key];
 		}
 
-		var bound = Object.create(generic);
-		for (var method in bound) {
-			var fn = bound[method];
-			if (fn instanceof Function) {
-				bound[method] = fn.bind(bound);
-			}
+		var bound = new Generic(Factory.apply(undefined, args));
+		var m = (0, _util.methods)(Generic);
+		for (var i in m) {
+			bound[i] = bound[i].bind(bound);
 		}
-		bound.instance = Factory.apply(undefined, args);
 		return bound;
 	};
 
@@ -135,7 +125,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Store = _factoryStore2['default'];
 	exports.Reducer = _factoryReducer2['default'];
 	exports.Filter = _factoryFilter2['default'];
-	exports.Mapware = _factoryMapware2['default'];
 	exports.Context = _reactContext2['default'];
 	exports.connect = _reactConnect2['default'];
 	exports.select = _factorySelect2['default'];
@@ -150,23 +139,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports) {
 
-	// Flatten array and filter Actions
-	'use strict';
+	"use strict";
 
-	Object.defineProperty(exports, '__esModule', {
+	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	var normalize = function normalize(arr) {
-		if (arr.length > 0) {
-			var norm = [];
-			$normalize(arr, norm);
-			return norm;
-		} else {
-			return arr;
-		}
-	};
-
-	exports.normalize = normalize;
 	var $normalize = function $normalize(arr, into) {
 		for (var i = 0; i < arr.length; i++) {
 			var val = arr[i];
@@ -180,8 +157,35 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 	};
 
+	var normalize = function normalize(arr) {
+		if (arr.length > 0) {
+			var norm = [];
+			$normalize(arr, norm);
+			return norm;
+		} else {
+			return arr;
+		}
+	};
+
+	exports.normalize = normalize;
+	var writeMethods = function writeMethods(o, arr) {
+		for (var i = 1; i < arr.length; i++) {
+			o[arr[i]] = 0;
+		}
+	};
+
+	var methods = function methods(Class) {
+		var last = Object.__proto__;
+		var m = {};
+		do {
+			writeMethods(m, Object.getOwnPropertyNames(Class.prototype));
+		} while ((Class = Class.__proto__) !== last);
+		return m;
+	};
+
 	// Delete object from array
-	var deleteFrom = function deleteFrom(array, obj) {
+	exports.methods = methods;
+	var remove = function remove(array, obj) {
 		var index = array.indexOf(obj);
 		if (index !== -1) {
 			array.splice(index, 1);
@@ -189,7 +193,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	// Determine whether two arrays are functionally equivalent
-	exports.deleteFrom = deleteFrom;
+	exports.remove = remove;
 	var same = function same(left, right) {
 		if (left.length !== right.length) {
 			return false;
@@ -201,10 +205,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return true;
 	};
-
 	exports.same = same;
-	var listenerKey = typeof Symbol !== 'undefined' ? Symbol() : '@@fluxetteListener';
-	exports.listenerKey = listenerKey;
 
 /***/ },
 /* 2 */
@@ -240,37 +241,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
-	exports["default"] = function () {
-		var listeners = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-		return function (state, actions) {
-			if (actions !== undefined) {
-				if (!(actions instanceof Array)) {
-					actions = [actions];
-				}
-				// Call the appropriate listener by type
-				for (var i = 0; i < actions.length; i++) {
-					var action = actions[i];
-					var listener = listeners[action.type];
-					if (listener) {
-						listener(action);
-					}
-				}
-			}
-		};
-	};
-
-	module.exports = exports["default"];
-
-/***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
 	exports["default"] = function (initial, reducers) {
 		if (initial === undefined) initial = {};
 		return function (state, action) {
@@ -294,7 +264,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -335,7 +305,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -367,7 +337,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -376,31 +346,54 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
-	exports["default"] = {
-		process: function process(actions) {
-			var _history;
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-			// Log all actions in history
-			(_history = this.history).push.apply(_history, _toConsumableArray(actions));
-			// Synchronously process all actions
-			this.state = actions.reduce(this.store, this.state);
-		},
-		update: function update(actions) {
-			var hooks = this.hooks;
+	var _default = (function () {
+		function _default(store, state) {
+			_classCallCheck(this, _default);
 
-			// Call all registered hooks
-			var state = this.state;
-			for (var i = 0; i < hooks.length; i++) {
-				hooks[i](state, actions);
-			}
+			this.store = store;
+			this.state = state;
+			this.history = [];
+			this.hooks = [];
 		}
-	};
+
+		_createClass(_default, [{
+			key: "process",
+			value: function process(actions) {
+				var _history;
+
+				// Log all actions in history
+				(_history = this.history).push.apply(_history, _toConsumableArray(actions));
+				// Synchronously process all actions
+				this.state = actions.reduce(this.store, this.state);
+			}
+		}, {
+			key: "update",
+			value: function update(actions) {
+				var hooks = this.hooks;
+
+				// Call all registered hooks
+				var state = this.state;
+				for (var i = 0; i < hooks.length; i++) {
+					hooks[i](state, actions);
+				}
+			}
+		}]);
+
+		return _default;
+	})();
+
+	exports["default"] = _default;
+	;
 	module.exports = exports["default"];
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -409,61 +402,95 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
 	var _util = __webpack_require__(1);
 
-	exports['default'] = {
-		dispatch: function dispatch() {
-			for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-				args[_key] = arguments[_key];
+	var _default = (function () {
+		function _default(instance) {
+			_classCallCheck(this, _default);
+
+			this.instance = instance;
+		}
+
+		_createClass(_default, [{
+			key: 'dispatch',
+			value: function dispatch() {
+				for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+					args[_key] = arguments[_key];
+				}
+
+				this.interop((0, _util.normalize)(args));
 			}
+		}, {
+			key: 'interop',
+			value: function interop() {
+				this.process.apply(this, arguments);
+			}
+		}, {
+			key: 'process',
+			value: function process(actions) {
+				var update = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
 
-			this.middle((0, _util.normalize)(args));
-		},
-		middle: function middle() {
-			this.process.apply(this, arguments);
-		},
-		process: function process(actions) {
-			var update = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+				if (actions.length > 0) {
+					var instance = this.instance;
 
-			if (actions.length > 0) {
-				var instance = this.instance;
-
-				instance.process(actions);
-				if (update) {
-					instance.update(actions);
+					instance.process(actions);
+					if (update) {
+						instance.update(actions);
+					}
 				}
 			}
-		},
-		update: function update() {
-			var _instance;
+		}, {
+			key: 'update',
+			value: function update() {
+				var _instance;
 
-			(_instance = this.instance).update.apply(_instance, arguments);
-		},
-		init: function init(state) {
-			var instance = this.instance;
+				(_instance = this.instance).update.apply(_instance, arguments);
+			}
+		}, {
+			key: 'init',
+			value: function init(state) {
+				var instance = this.instance;
 
-			instance.history = [];
-			instance.state = state !== undefined ? state : instance.store();
-		},
-		state: function state() {
-			return this.instance.state;
-		},
-		history: function history() {
-			return this.instance.history;
-		},
-		hook: function hook() {
-			var _instance$hooks;
+				instance.history = [];
+				instance.state = state !== undefined ? state : instance.store();
+			}
+		}, {
+			key: 'state',
+			value: function state() {
+				return this.instance.state;
+			}
+		}, {
+			key: 'history',
+			value: function history() {
+				return this.instance.history;
+			}
+		}, {
+			key: 'hook',
+			value: function hook() {
+				var _instance$hooks;
 
-			(_instance$hooks = this.instance.hooks).push.apply(_instance$hooks, arguments);
-		},
-		unhook: function unhook(fn) {
-			(0, _util.deleteFrom)(this.instance.hooks, fn);
-		}
-	};
+				(_instance$hooks = this.instance.hooks).push.apply(_instance$hooks, arguments);
+			}
+		}, {
+			key: 'unhook',
+			value: function unhook(fn) {
+				(0, _util.remove)(this.instance.hooks, fn);
+			}
+		}]);
+
+		return _default;
+	})();
+
+	exports['default'] = _default;
+	;
 	module.exports = exports['default'];
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -480,9 +507,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var _util = __webpack_require__(1);
-
 	var _react = __webpack_require__(2);
+
+	var listenerKey = typeof Symbol !== 'undefined' ? Symbol() : '@@fluxetteListener';
 
 	exports['default'] = function () {
 		var selector = arguments.length <= 0 || arguments[0] === undefined ? function (x) {
@@ -516,7 +543,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					// Initial state
 					var lastState = this.state = selector(flux.state());
 					// Caching Hook
-					var listener = this[_util.listenerKey] = function (state) {
+					var listener = this[listenerKey] = function (state) {
 						var newState = selector(state);
 						if (lastState !== newState) {
 							_get(Object.getPrototypeOf(Connect.prototype), 'setState', _this).call(_this, lastState = newState);
@@ -537,7 +564,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							_get(Object.getPrototypeOf(Connect.prototype), 'componentWillUnmount', this).apply(this, args);
 						}
 						// Unregister setState
-						this.context.flux.unhook(this[_util.listenerKey]);
+						this.context.flux.unhook(this[listenerKey]);
 					}
 				}]);
 
@@ -549,7 +576,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
