@@ -1,6 +1,6 @@
 # fluxette
 
-`fluxette` is a minimalist yet powerful Flux implementation, inspired by ideas from the Unix philosophy and [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
+`fluxette` is a minimalist yet powerful Flux implementation, inspired by ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
 
 ## Table of Contents
 
@@ -26,13 +26,13 @@
 
 ## Why?
 
-Why `fluxette`? (We used to have a list of buzzwords and a Yoda quote here.)
+Why fluxette? (We used to have a list of buzzwords here.)
 
-`fluxette` means "little flux". That's exactly what it is, coming in at 2.8 kB, minified and gzipped. As much as `fluxette` is a library, it is also a concept. Through simplified rules, very advanced design patterns can be created. The goal of `fluxette` is to make your React/Flux development experience as smooth as possible. `fluxette` does not enforce any "one true way". The codebase is very simple and robust; there is no black magic going on anywhere. It only relies on the simple convention that your stores are pure functions in the form of `(State, Action) => State` (read [The Law of Functional Flux](#the-law-of-functional-flux) for more information). As a result, our dispatcher exists as [one very beautiful line](https://github.com/edge/fluxette/blob/master/src/flux.js#L17). `fluxette` provides factories for elements of Flux that will cover 99% of your use cases, but you can always defer to writing a custom function if the need arises. This also makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste from redux).
+"fluxette" means "little flux". That's exactly what it is, coming in at ~3 kB, minified and gzipped. As much as it is a library, it is also a concept, combining the advantages of orthogonal code with the robust design of Facebook Flux. Through only simple rules, it allows the creation and exploitation of very advanced design patterns. It relies only on the basic convention that your stores are pure functions in the form of `(State, Action) => State` (see [The Law of Functional Flux](#the-law-of-functional-flux)). As a result, its dispatcher exists as [one very beautiful line](https://github.com/edge/fluxette/blob/master/src/flux.js#L6). fluxette provides facilities for elements of Functional Flux that will cover 99% of your use cases, but you can always defer to writing a custom function if the need arises. This also makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste from redux).
 
-`fluxette` also removes many of the headaches that you may have had with React and other flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("when did the state really change?" and "I'm not done dispatching yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more. With just a top-level wrapper and a React class decorator, connecting your components with `fluxette` no longer requires complicated mixins or lots of boilerplate.
+fluxette removes many of the headaches that you may have had with React and other flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("did the state really change?" and "I'm not done dispatching yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more. With just a top-level wrapper and a React class decorator, integrating Flux into your components no longer requires complicated mixins or lots of boilerplate.
 
-You can also easily extend the `fluxette` interface, allowing you to add your own functionality to the dispatcher (Middleware for async, thunks, Promises) at will.
+You can also extend the fluxette interface, allowing you to add your own functionality to the dispatcher (Middleware for async, thunks, Promises, advanced de/rehydration).
 
 ## Install
 
@@ -43,7 +43,7 @@ Browser builds (umd) are available [here](https://github.com/edge/fluxette/tree/
 
 ## Getting Started
 
-Let's say that you have a simple React component that you want to refactor into Flux.
+Let's say that you have a simple React component that you want to refactor with Flux.
 
 ```js
 class Updater extends React.Component {
@@ -69,7 +69,7 @@ class Updater extends React.Component {
 React.render(<Updater />, document.getElementById('app'));
 ```
 
-This is a simple component that shows you the text that you've typed into a textbox right below it. We can interpret this as an action of type `UPDATE`, which carries the value of the textbox.
+This is a simple component that shows you the text that you've typed into a textbox right below it. We can interpret each event as an action of type `UPDATE` that carries the value of the textbox.
 
 ```js
 // constants
@@ -79,7 +79,7 @@ const UPDATE = 'UPDATE';
 const update = value => ({ type: UPDATE, value });
 ```
 
-Now we'll need a Reducer to manage our state.
+We'll also need a Reducer to manage our state.
 
 ```js
 import Flux, { Reducer } from 'fluxette';
@@ -93,13 +93,13 @@ const updater = Reducer('', {
 const flux = Flux(updater);
 ```
 
-`Reducer` creates a pure function that looks at your actions and determines how to modify the state based on them. Its default value is an empty string, just like in our `Updater` component. In our case, we only listen to any actions of the type `UPDATE.TEXT`, and use the value that the action carries as our new state.
+`Reducer` creates a pure function that looks at your actions and uses them to determine how to operate on the state. Our Reducer's default value is an empty string, just like in our `Updater` component. It listens to any actions of the type `UPDATE`, and uses the value that the action carries as our new state.
 
-Then, we create a stateful interface to our reducer, which we can now integrate into our component.
+We also create a stateful interface bound to our reducer, which we can now integrate into our component.
 
 **Putting it all together**
 
-Here we import two more things: the `@connect` decorator and the `Context` component. `Context` provides flux on the context to all of its children, which `@connect` then utilizes to integrate your component.
+Here we import two things: the `@connect` decorator and the `Context` component. `Context` provides flux on the context to all of its children, which `@connect` then utilizes to manage listeners on your component.
 
 ```js
 import React from 'react';
@@ -123,7 +123,7 @@ const flux = Flux(updater);
 class Updater extends React.Component {
 	change(e) {
 		let { dispatch } = this.context.flux;
-		dispatch([update.text(e.target.value)]);
+		dispatch(update.text(e.target.value));
 	}
 	render() {
 		return (
