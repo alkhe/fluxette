@@ -409,6 +409,14 @@ flux.process(history);
 ```
 
 ## Debugging
+
+### Raw Dispatch
+Extend your interface from the top with a class containing a method that logs the actions.
+
+### Pre Dispatch
+Extend your interface at the bottom with a class containing a method that logs the actions.
+
+### Post Dispatch
 Pass your logger/debugger to `hook` when you want to process state changes and dispatches, and `unhook` when you're done.
 
 ```js
