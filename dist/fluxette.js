@@ -183,8 +183,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		return m;
 	};
 
-	// Delete object from array
 	exports.methods = methods;
+	// Delete object from array
 	var remove = function remove(array, obj) {
 		var index = array.indexOf(obj);
 		if (index !== -1) {
@@ -192,8 +192,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 	};
 
-	// Determine whether two arrays are functionally equivalent
 	exports.remove = remove;
+	// Determine whether two arrays are functionally equivalent
 	var same = function same(left, right) {
 		if (left.length !== right.length) {
 			return false;
@@ -376,9 +376,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			key: "update",
 			value: function update(actions) {
 				var hooks = this.hooks;
+				var state = this.state;
 
 				// Call all registered hooks
-				var state = this.state;
 				for (var i = 0; i < hooks.length; i++) {
 					hooks[i](state, actions);
 				}
