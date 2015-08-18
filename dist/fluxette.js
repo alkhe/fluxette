@@ -62,35 +62,39 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _flux = __webpack_require__(7);
+	var _flux = __webpack_require__(4);
 
 	var _flux2 = _interopRequireDefault(_flux);
 
-	var _factoryStore = __webpack_require__(6);
+	var _reducerStore = __webpack_require__(11);
 
-	var _factoryStore2 = _interopRequireDefault(_factoryStore);
+	var _reducerStore2 = _interopRequireDefault(_reducerStore);
 
-	var _factoryReducer = __webpack_require__(4);
+	var _reducerReducer = __webpack_require__(10);
 
-	var _factoryReducer2 = _interopRequireDefault(_factoryReducer);
+	var _reducerReducer2 = _interopRequireDefault(_reducerReducer);
 
-	var _factoryFilter = __webpack_require__(3);
+	var _reducerFilter = __webpack_require__(8);
 
-	var _factoryFilter2 = _interopRequireDefault(_factoryFilter);
+	var _reducerFilter2 = _interopRequireDefault(_reducerFilter);
 
-	var _factorySelect = __webpack_require__(5);
+	var _reducerFor = __webpack_require__(9);
 
-	var _factorySelect2 = _interopRequireDefault(_factorySelect);
+	var _reducerFor2 = _interopRequireDefault(_reducerFor);
 
-	var _reactContext = __webpack_require__(10);
+	var _reactContext = __webpack_require__(7);
 
 	var _reactContext2 = _interopRequireDefault(_reactContext);
 
-	var _reactConnect = __webpack_require__(9);
+	var _reactConnect = __webpack_require__(6);
 
 	var _reactConnect2 = _interopRequireDefault(_reactConnect);
 
-	var _interface = __webpack_require__(8);
+	var _factorySelect = __webpack_require__(3);
+
+	var _factorySelect2 = _interopRequireDefault(_factorySelect);
+
+	var _interface = __webpack_require__(5);
 
 	var _interface2 = _interopRequireDefault(_interface);
 
@@ -122,9 +126,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Bridge = Bridge;
 	exports.Interface = _interface2['default'];
 	exports.Factory = Factory;
-	exports.Store = _factoryStore2['default'];
-	exports.Reducer = _factoryReducer2['default'];
-	exports.Filter = _factoryFilter2['default'];
+	exports.Store = _reducerStore2['default'];
+	exports.Reducer = _reducerReducer2['default'];
+	exports.Filter = _reducerFilter2['default'];
+	exports.For = _reducerFor2['default'];
 	exports.Context = _reactContext2['default'];
 	exports.connect = _reactConnect2['default'];
 	exports.select = _factorySelect2['default'];
@@ -169,11 +174,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports.normalize = normalize;
 	var writeMethods = function writeMethods(o, arr) {
+		// skip constructor
 		for (var i = 1; i < arr.length; i++) {
 			o[arr[i]] = 0;
 		}
 	};
 
+	// Get object mirroring all instance methods of Class
 	var methods = function methods(Class) {
 		var last = Object.__proto__;
 		var m = {};
@@ -215,56 +222,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 3 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
-	exports["default"] = function (types, reducer) {
-		return function (state, action) {
-			return types.indexOf(action.type) !== -1 ? reducer(state, action) : reducer(state);
-		};
-	};
-
-	module.exports = exports["default"];
-
-/***/ },
-/* 4 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
-	exports["default"] = function (initial, reducers) {
-		if (initial === undefined) initial = {};
-		return function (state, action) {
-			if (state === undefined) state = initial;
-
-			// If no actions, just return state
-			if (action !== undefined) {
-				// Call the appropriate reducer by type
-				var reducer = reducers[action.type];
-				if (reducer) {
-					var redux = reducer(state, action);
-					if (redux !== undefined) {
-						state = redux;
-					}
-				}
-			}
-			return state;
-		};
-	};
-
-	module.exports = exports["default"];
-
-/***/ },
-/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -305,39 +262,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	exports["default"] = function (shape) {
-		return function (state, action) {
-			if (state === undefined) state = {};
-
-			var changed = false,
-			    changes = {};
-			for (var i in shape) {
-				var last = state[i];
-				var next = shape[i](last, action);
-				if (last !== next) {
-					changed = true;
-					changes[i] = next;
-				}
-			}
-			return changed ? _extends({}, state, changes) : state;
-		};
-	};
-
-	module.exports = exports["default"];
-
-/***/ },
-/* 7 */
+/* 4 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -393,7 +318,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 8 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -490,7 +415,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 9 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -576,7 +501,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 10 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -627,6 +552,107 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	exports['default'] = Context;
 	module.exports = exports['default'];
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	exports["default"] = function (types, reducer) {
+		return function (state, action) {
+			return types.indexOf(action.type) !== -1 ? reducer(state, action) : reducer(state);
+		};
+	};
+
+	module.exports = exports["default"];
+
+/***/ },
+/* 9 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	exports["default"] = function (reducer) {
+		var partial = function partial(a) {
+			return reducer(state, a);
+		};
+		return function (state, actions) {
+			return actions.map(partial);
+		};
+	};
+
+	module.exports = exports["default"];
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	exports["default"] = function (initial, reducers) {
+		if (initial === undefined) initial = {};
+		return function (state, action) {
+			if (state === undefined) state = initial;
+
+			// If no actions, just return state
+			if (action !== undefined) {
+				// Call the appropriate reducer by type
+				var reducer = reducers[action.type];
+				if (reducer) {
+					state = reducer(state, action);
+				}
+			}
+			return state;
+		};
+	};
+
+	module.exports = exports["default"];
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	exports["default"] = function (shape) {
+		return function (state, action) {
+			if (state === undefined) state = {};
+
+			var changed = false,
+			    changes = {};
+			for (var i in shape) {
+				var last = state[i],
+				    next = shape[i](last, action);
+				if (last !== next) {
+					// queue change if different
+					changed = true;
+					changes[i] = next;
+				}
+			}
+			return changed ? _extends({}, state, changes) : state;
+		};
+	};
+
+	module.exports = exports["default"];
 
 /***/ }
 /******/ ])

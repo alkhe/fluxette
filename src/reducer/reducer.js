@@ -5,10 +5,7 @@ export default (initial = {}, reducers) =>
 			// Call the appropriate reducer by type
 			let reducer = reducers[action.type];
 			if (reducer) {
-				let redux = reducer(state, action);
-				if (redux !== undefined) {
-					state = redux;
-				}
+				state = reducer(state, action);
 			}
 		}
 		return state;

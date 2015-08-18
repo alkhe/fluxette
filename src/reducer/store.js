@@ -3,9 +3,10 @@ export default shape =>
 		let changed = false,
 			changes = {};
 		for (let i in shape) {
-			let last = state[i];
-			let next = shape[i](last, action);
+			let last = state[i],
+				next = shape[i](last, action);
 			if (last !== next) {
+				// queue change if different
 				changed = true;
 				changes[i] = next;
 			}

@@ -1,12 +1,13 @@
 import Fluxette from './flux';
 
-import Store from './factory/store';
-import Reducer from './factory/reducer';
-import Filter from './factory/filter';
-import select from './factory/select';
+import Store from './reducer/store';
+import Reducer from './reducer/reducer';
+import Filter from './reducer/filter';
+import For from './reducer/for';
 
 import Context from './react/context';
 import connect from './react/connect';
+import select from './factory/select';
 
 import Interface from './interface';
 
@@ -33,7 +34,7 @@ let Bridge = (Generic, ...args) => {
 
 export {
 	Bridge, Interface, Factory,
-	Store, Reducer, Filter,
+	Store, Reducer, Filter, For,
 	Context, connect, select
 };
 
