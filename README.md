@@ -212,6 +212,30 @@ import { USER } from './types';
 let user = Filter([USER.LOGIN, USER.LOGOUT, USER.CHAT], reducer);
 ```
 
+### For(reducer: Reducer) => Reducer
+```js
+import { For, Filter } from 'fluxette';
+import { API } from './types';
+
+flux.hook(For(Filter(
+	[API.DONE],
+	(state, action) => {
+		console.log(`Success: ${ action.message }`);
+	}
+)));
+
+// roughly equal to
+
+flux.hook((state, actions) => {
+    actions.forEach(action => {
+        if (action.type === API.DONE) {
+            console.log(`Success: ${ action.message }`);
+        }
+    });
+});
+
+```
+
 ### Context => React.Component
 ```js
 import { Context } from 'fluxette';
