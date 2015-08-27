@@ -2,8 +2,6 @@
 
 `fluxette` is a minimalist yet powerful Flux implementation, inspired by ideas from [Dan Abramov (@gaearon)'s talk on Redux](https://www.youtube.com/watch?v=xsSnOQynTHs).
 
-**fluxette's middleware system has been revamped. Please refer to the [old docs](https://github.com/edge/fluxette/blob/df5e7b938825bee54739fbc0ba4397282965ef98/README.md) if you are using fluxette <= 0.14.x. These docs are a work in progress.**
-
 ## Table of Contents
 
 * [Why?](#why)
@@ -29,11 +27,9 @@
 
 Why fluxette? (We used to have a list of buzzwords here.)
 
-"fluxette" means "little flux". That's exactly what it is, coming in at ~3 kB, minified and gzipped. As much as it is a library, it is also a concept, combining the advantages of orthogonal code with the robust design of Facebook Flux. Through only simple rules, it allows the creation and exploitation of very advanced design patterns. It relies only on the basic convention that your stores are pure functions in the form of `(State, Action) => State` (see [The Law of Functional Flux](#the-law-of-functional-flux)). As a result, its dispatcher exists as [one very beautiful line](https://github.com/edge/fluxette/blob/master/src/flux.js#L6). fluxette provides facilities for elements of Functional Flux that will cover most of your use cases, but it is always possible to defer to writing a custom function if the need arises. This also makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste from redux).
+"fluxette" means "little flux". That's exactly what it is, coming in at ~3 kB, minified and gzipped. It is a library that combines the advantages of orthogonal code with the robust design of Facebook Flux. Through simple rules, it allows for the creation and exploitation of very advanced design patterns. It relies only on the basic convention that your stores are pure functions in the form of `(State, Action) => State` (see [The Law of Functional Flux](#the-law-of-functional-flux)). As a result, its dispatcher exists as [one simple line](https://github.com/edge/fluxette/blob/master/src/flux.js#L32). fluxette provides facilities for elements of Functional Flux that will cover most of your use cases, but it is always possible to defer to writing a custom function if the need arises. This also makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste from redux).
 
-fluxette removes many of the headaches that you may have had with React and other flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("did the state really change?" and "I'm not done dispatching yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more. With just a top-level wrapper and a React class decorator, integrating Flux into your components no longer requires complicated mixins or lots of boilerplate.
-
-You can also extend the fluxette interface, allowing you to add your own functionality to the dispatcher (Middleware for async, thunks, Promises, advanced de/rehydration).
+fluxette removes many of the headaches that you may have had with React and other flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("did the state really change?" and "I'm not done dispatching yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more. With two React helpers, integrating Flux into your components no longer requires complicated mixins or lots of boilerplate.
 
 ## Install
 
@@ -96,11 +92,11 @@ const flux = Flux(updater);
 
 `Reducer` creates a pure function that looks at your actions and uses them to determine how to operate on the state. Our Reducer's default value is an empty string, just like in our `Updater` component. It listens to any actions of the type `UPDATE`, and uses the value that the action carries as our new state.
 
-We also create a stateful interface bound to our reducer, which we can now integrate into our component.
+We also create a stateful interface to our reducer, which we can now integrate into our component.
 
 **Putting it all together**
 
-Here we import two things: the `@connect` decorator and the `Context` component. `Context` provides flux on the context to all of its children, which `@connect` then utilizes to manage listeners on your component.
+Here we import two things: the `@connect` decorator and the `Context` component. `Context` provides flux on `this.context` to all of its children, which `@connect` then utilizes to manage listeners on your component.
 
 ```js
 import React from 'react';
@@ -146,7 +142,9 @@ React.render(
 
 ## API
 
-### Flux(reducerOrInstance: Reducer | Flux) => Bound
+**Flux(reducer)**
+Creates your central Flux object that manages the dispatcher and state. Its methods can be called anonymously.
+
 ```js
 import Flux from 'fluxette';
 import stores from './stores';
@@ -154,46 +152,101 @@ import stores from './stores';
 const flux = Flux(stores);
 ```
 
-### Bridge(generic: Generic, reducerOrInstance: Reducer | Flux) => Bound
-```js
-import { Bridge } from 'fluxette';
-import I from './interface';
-import stores from './stores';
+**flux.init(state)**
+Resets the Flux object with `state`, or uses the default state returned by the store if `state` is undefined. This is used for things like time travel and declarative rehydration.
 
-const flux = Bridge(Interface, stores);
+```js
+flux.init(getStateFromServer());
 ```
 
-### Interface() => Generic
-```js
-import { Interface } from 'fluxette';
-import { $middleware } from './middleware';
+**flux.dispatch(...actions)**
+Processes `actions` and calls all listeners. `actions` can be any Object, array of Objects, or argument list of Objects. If you use middleware, that includes Functions, Promises, and others.
 
-@$middleware
-class I extends Interface {}
+```js
+flux.dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
+
+// thunks
+import { thunk } from 'fluxette';
+flux.use([thunk]);
+flux.dispatch(({ dispatch }) => {
+	// useful if this function came from somewhere else
+	dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
+})
 ```
 
-### Factory(reducerOrInstance: Reducer | Flux, state: ?State) => Flux
+**flux.process(actions, [normalized])**
+Processes `actions`, but doesn't call listeners. `actions` are in the same format that `dispatch` uses. If you are sure that `actions` is a flat array of actions, you can pass `true` as the second argument. This is useful for time travel and buffered updates.
+
 ```js
-import { Factory } from 'fluxette';
-import stores from './stores';
-
-let instance = Factory(stores);
-
-instance = Factory(stores, getLastState());
+flux.process([action1, action2, action3], true);
 ```
 
-### Store(shape: Shape) => Reducer
-```js
-import { Store } from 'fluxette';
-import { aReducer, bReducer } from './reducers';
+**flux.update()**
+Calls all listeners that are `hook`ed. `dispatch` uses this.
 
-let store = Store({
-	a: aReducer,
-	b: bReducer
+```js
+flux.update();
+```
+
+**flux.use(middleware)**
+Takes an array of middleware and folds them over the internal dispatcher function. This can be called multiple times.
+
+```js
+flux.use([thunk, promise]);
+```
+
+**flux.state()**
+Returns the state.
+
+```js
+flux.state();
+```
+
+**flux.history()**
+Returns all actions that have been processed by the reducers.
+
+```js
+flux.history();
+```
+
+**flux.hook(fn)**
+Register a function as a listener.
+
+```js
+flux.hook((state, actions) => {
+	console.log(state, actions);
 });
 ```
 
-### Reducer(initial: State, reducers: Bulletin) => Reducer
+**flux.unhook(fn)**
+Deregister a function that was previously registered as a listener.
+
+```js
+let fn = (state, actions) => {
+	console.log(state, actions);
+};
+
+flux.hook(fn);
+
+flux.unhook(fn);
+```
+
+**Shape(shape)**
+Creates a reducer that holds more reducers on each of its properties. The property names reflect how they will appear on the state.
+
+```js
+import { Shape } from 'fluxette';
+import { stock, cart } from './reducers';
+
+let store = Shape({ stock, cart });
+
+user()
+// { stock: stock(), cart: cart() }
+```
+
+**Reducer(initial, reducers)**
+Creates a reducer that applies its reducers to a state respective to the type of the action provided, using `initial` as the initial state.
+
 ```js
 import { Reducer } from 'fluxette';
 import { API } from './types';
@@ -205,40 +258,19 @@ let request = Reducer({ status: 'ready' }, {
 });
 ```
 
-### Filter(types: Array<Action>, reducer: Reducer) => Reducer
+**Filter(types, reducer)**
+Creates a reducer that proxies its action to its reducers only if the action's type matches one of its types.
+
 ```js
 import { Filter } from 'fluxette';
-import reducer from './reducer';
 import { USER } from './types';
 
-let user = Filter([USER.LOGIN, USER.LOGOUT, USER.CHAT], reducer);
+user = Filter([USER.LOGIN, USER.LOGOUT, USER.CHAT], user);
 ```
 
-### For(reducer: Reducer) => Reducer
-```js
-import { For, Filter } from 'fluxette';
-import { API } from './types';
+**Context**
+Extends a React component to provide a Flux object on the context to all of its children.
 
-flux.hook(For(Filter(
-	[API.DONE],
-	(state, action) => {
-		console.log(`Success: ${ action.message }`);
-	}
-)));
-
-// roughly equal to
-
-flux.hook((state, actions) => {
-    actions.forEach(action => {
-        if (action.type === API.DONE) {
-            console.log(`Success: ${ action.message }`);
-        }
-    });
-});
-
-```
-
-### Context => React.Component
 ```js
 import { Context } from 'fluxette';
 import App from './app';
@@ -252,9 +284,11 @@ React.render(
 );
 ```
 
-### connect([selector: Selector]) => React.Component
+**connect([selectors])**
+Extends a Component to manage listeners to the Flux object on `this.context`, and performs a `setState` when the state changes. It also takes an optional selector or array of selectors, which make the state more specific. It will only update when the selector returns a new value.
+
 ```js
-import { connect, select } from 'fluxette';
+import { connect } from 'fluxette';
 import { details } from './creators';
 
 @connect(state => state.details)
@@ -279,7 +313,9 @@ class Component extends React.Component {
 }
 ```
 
-### select(getters: Array<Selector> | Selector, deriver: Deriver) => Selector
+**select(getters, deriver)**
+Creates a selector that caches the results of the `getters` array, which are applied to `deriver` as an argument list. It only returns a new value when the getters have returned new data, which is useful for data computations that would break equality checks otherwise.
+
 ```js
 import { select } from 'fluxette';
 
@@ -307,16 +343,7 @@ An *Action* is an Object that contains information on how to update the state. C
 *Action Creators* are not internally known by fluxette, but are usually used in Flux applications to parametrize actions. By the norm of Functional Flux, they are functions that return *Actions*.
 
 **Reducer**
-A *Reducer* (or *Store*) is a pure function that accepts a state and an action, which it combines, or *reduces*, to create a new state. All Reducers should have the signature `(State, Action) => State`. The `Store`, `Reducer`, and `Filter` facilities all return a Reducer.
-
-**Shallow<Type>**
-A *Shallow* object is an object that shallowly contains a *Type* on each property.
-
-**Shape: Shallow<Reducer>**
-The *Shape* is a concept specific to the `Store` facility. It contains a Reducer on each property, reflecting how it will be stored on the state.
-
-**Bulletin: Shallow<Reducer>**
-The *Bulletin* is a concept specific to the `Reducer` facility. It differs from a Shape only in that instead of carrying properties respective to the desired shape of the state, each property maps an action type to a Reducer.
+A *Reducer* (or *Store*) is a pure function that accepts a state and an action, which it combines, or *reduces*, to create a new state. All Reducers should have the signature `(State, Action) => State`. The `Shape`, `Reducer`, and `Filter` facilities all return a Reducer.
 
 **Hook**
 *Hooks* (or *Listeners*) are functions that respond to a change in the state. They have a wide spectrum of uses; they are similar to the `change` event listeners of a traditional MVC framework. They have a signature of `(?State, ?Array<Action>) => void`. The `connect` decorator uses a hook to subscribe your components to state changes.
@@ -327,70 +354,20 @@ A *Selector* is a function that takes a state and makes it more specific. Select
 **Deriver**
 The *Deriver* is an concept specific to the `select` facility. `select` takes a Selector or an array of Selectors, and passes the results of each to the deriver to create a logical (as opposed to raw) data object that your application uses. Derivers are functions that expect the results of Selectors and returns a State.
 
-**Generic Interface**
-The `Interface` class and any subclasses of it are considered *Generic Interfaces* They are the definitions for *Bound Interfaces* that your application will use.
-
-**Bound Interface**
-A *Bound Interface* is an instance of a Generic Interface that contains an instance of Flux. Most of your interactions will be with Bound Interfaces.
-
 ## The Law of Functional Flux
-In the most general sense, Functional Flux relies on reducing actions into the state. Therefore, Stores or Reducers are pure functions with the signature `(State, Action) => State`. If a Store processes an action that it listens to, which results in a different state, it returns a value or reference that differes from what it was called with. This recursively cascades down to the root of the state tree. At the end of the dispatch, all listeners are called. Any of which that depend on data that could have possibly changed are called with new values or references, meaning that listeners can simply maintain an old reference to compare with the new one to determine whether the state has changed.
-
-## Isomorphic Objects
-Isomorphic Objects were initially created to support Server-Side Rendering, but are capable of much more. They are an important part of fluxette, as they are used in many elements like Middleware and Isomorphic Flux. They may be a little confusing at first, but are extremely useful once you understand them.
-
-The default export of fluxette is a thin factory function:
-```js
-export default (...args) => Bridge(Interface, Factory(...args));
-```
-We'll take a look at what each part of it does.
-
-`Interface` is a Generic Interface, which can be extended by middleware. Generic Interfaces are the classes that specify how you interact with your Flux instance. You can use multiple Generic Interfaces to accommodate different design patterns.
-
-`Factory` creates an instance of `Fluxette`, which is the minimal internal class that contains the history, state, hooks, and a reference to the Store that it uses. We will just refer to these as "Flux instances".
-
-`Bridge` takes a Generic Interface and a Flux instance, creating a Bound Interface. Bound Interfaces are used to interact with your Flux instances, and they are what you will become most familiar with. There may be multiple Bound Interfaces instantiated from different Generic Interfaces acting on a single instance.
-
-Separating Interfaces from instances of Flux allows for advanced multiplexing and cooperation techniques.
+In the most general sense, Functional Flux relies on reducing actions into the state. Therefore, Stores or Reducers are pure functions with the signature `(State, Action) => State`. If a Store processes an action that it listens to, which results in a different state, it returns a value or reference that differs from the state that it was called with. This recursively cascades down to the root of the state tree. At the end of the dispatch, all listeners are called. Any of which that depend on data that could have possibly changed are called with new values or references. Thus, listeners can simply maintain a reference to the old state and compare with the new one to determine whether the state has changed.
 
 ## Middleware
-fluxette supports middleware through a system of inheritance; you may extend the `Interface` and modify methods or add your own. There is a special method for modifying the dispatch pipeline: `interop`. It is a function that takes `(action, [update])`, preceded by `dispatch`, and succeeded by `process`. If you want to do something with the actions on each dispatch, simply wrap the `interop` method and proxy the actions through. You can also depend on other middleware and build on top of their functionality.
-
-Middleware are class monads `(Class => Class)`. This conveniently allows you to use them either as decorators or as plain functions.
+Middleware can extend the functionality of the dispatcher by accommodating functions, Promises, and other data structures, allowing for advanced asynchronous and multiplexing functionality. Middleware do not require knowledge of other middleware, which makes them easily composable. To use middleware, pass an array of them to `flux.use`.
 
 ```js
-import { Interface } from 'fluxette';
-import { $async, $thunk } from './middleware';
+import { thunk, promise } from 'fluxette';
 
-let I = $async($thunk(Interface));
-// or
-@$async
-@$thunk
-class I extends Interface {}
+flux.use([thunk, promise]);
 ```
 
-If you have lots of middleware, it's nice to reduce an array of them if you're using them as functions, or group them if you're using them as decorators.
-
-```js
-import { Interface } from 'fluxette';
-import { $async, $promise, $thunk, $thunkExt } from './middleware';
-
-let I = [
-	$normalize,
-	$async,
-	$promise('REQUEST', 'DONE', 'FAIL'),
-	$thunk, $thunkExt
-].reduceRight((i, m) => m(i), Interface);
-// or
-@$normalize
-@$async
-@$promise('REQUEST', 'DONE', 'FAIL')
-@$thunk @$thunkExt
-class I extends Interface {}
-```
-
-### Cooperation
-`fluxette` has no convention for the arguments that any middleware function takes, as long as the final Interface#method is called with arguments that it expects. However, you should try to make your middleware composable. For example, if you are writing some middleware that you expect to be used in a chain, you can branch off onto a different method at the head, and call a common method at the end of your middleware chain. Certain middleware, such as possible async and promise implementations, may not propagate to the next middleware at all, deferring dispatches to later.
+### Writing Middleware
+Middleware is implemented as a *creator* function that takes a `next` argument, which returns a *dispatcher* function that takes an `action` argument. The middleware is bound to the Flux object, so methods such as `dispatch` are available on `this`. To accommodate this, a *creator* cannot be an arrow function. Unless you need to break the dispatch pipeline, you should call `next` to pass the action on to the next *dispatcher* function. A valid breakage of the pipeline can be seen in the Promise middleware, where it passes `this.dispatch` to the `Promise#then`. It is good practice to return the value of your last call, whether it may be a `next`, `then`, or other call.
 
 ## Rehydration
 `fluxette` supports both imperative and declarative rehydration. You may pick whichever suits your needs more.
@@ -436,17 +413,41 @@ flux.process(history);
 
 ## Debugging
 
-### Raw Dispatch
-Extend your interface from the top with a class containing a method that logs the actions.
+**To log all actions in raw form, as `dispatch` is directly called with:**
+Add a logger to the beginning of your middleware chain. This will log all actions before they are possibly transformed by other middleware.
 
-### Pre Dispatch
-Extend your interface at the bottom with a class containing a method that logs the actions.
+```js
+flux.use([
+	function(next) {
+		return action => {
+			console.log(this.state(), action);
+			next(action);
+		}
+	},
+	...middleware
+]);
+```
 
-### Post Dispatch
-Pass your logger/debugger to `hook` when you want to process state changes and dispatches, and `unhook` when you're done.
+**To log all actions just before the store reduces them:** Add a logger to the end of your middleware chain. This will log only actions that the stores see, and will be logged to the history.
+
+```js
+flux.use([
+	...middleware,
+	function(next) {
+		return action => {
+			console.log(this.state(), action);
+			next(action);
+		}
+	}
+]);
+```
+
+
+**To log all actions after they are reduced into the stores:** Pass your logger/debugger to `hook` and `unhook` when you're done.
 
 ```js
 let logger = (state, actions) => {
+	console.log(state, actions);
 	sendToDashboard(state);
 	alertTimeMachine(actions);
 }
@@ -457,15 +458,15 @@ flux.unhook(logger);
 ```
 
 ## SSR
-Universal flux is very easy. Because `fluxette` doesn't force you to use use singletons, you can create new instances on the fly. Creating new instances of `Fluxette` is extremely cheap.
+Universal flux is very easy. Because `fluxette` doesn't force you to use use singletons, you can create new instances on the fly.
 
 ```js
-import { Bridge, Interface, Context } from 'fluxette';
+import Flux from 'fluxette';
 import stores from './stores';
 import App from './views';
 
 server.route('/', (req, res) => {
-	let flux = Bridge(Interface, stores);
+	let flux = Flux(stores);
 	res.end(React.renderToString(
 		<Context flux={ flux }>
 			{ () => <App /> }
@@ -475,11 +476,14 @@ server.route('/', (req, res) => {
 ```
 
 ## Asynchronous
-fluxette is completely synchronous, and does not support asynchronous functionality out of the box. It is still easy to implement, however, and there are many ways to do so.
+fluxette is completely synchronous, but asynchronous functionality is also supported. `thunk` and `promise` middlewares are provided for you to use.
 
-For your classic request/success/failure behaviors, this would be the vanilla solution:
+One way to use the thunk middleware is to use an async action that combines actions:
 ```js
-let { dispatch } = flux;
+import { thunk } from 'fluxette';
+
+let { dispatch, use } = flux;
+use([thunk]);
 
 // actions
 let resource = {
@@ -488,23 +492,49 @@ let resource = {
 	fail: err => { type: RESOURCE.FAIL, err }
 };
 
-// async helper
+// async action
 let getResource = (data) => {
-	dispatch(resource.request());
-	asyncRequest(data.url, (err, res) => {
-		if (err) {
-			dispatch(resource.fail(err));
-		}
-		else {
-			dispatch(resource.done(res));
-		}
-	});
+	({ dispatch }) => {
+		dispatch(resource.request());
+		asyncRequest(data.url, (err, res) => {
+			if (err) {
+				dispatch(resource.fail(err));
+			}
+			else {
+				dispatch(resource.done(res));
+			}
+		});
+	}
 }
 
-getResource(data);
+dispatch(getResource(data));
 ```
 
-If you find yourself writing a lot of async helpers, you can write yourself an async or Promise middleware.
+Another way is to return an array of actions directly from the action creator:
+```js
+import { thunk } from 'fluxette';
+
+let { dispatch, use } = flux;
+use([thunk]);
+
+// actions
+let resource = data => [
+	{ type: RESOURCE.REQUEST },
+	({ dispatch }) => {
+		asyncRequest(data.url, (err, data) => {
+			if (err) {
+				dispatch({ type: RESOURCE.FAIL, err });
+			}
+			else {
+				dispatch({ type: RESOURCE.SUCCESS, data });
+			}
+		});
+	}
+];
+
+dispatch(getResource(data));
+```
+
 
 ## Store Dependencies
 Store dependencies in vanilla flux is handled by using `waitFor`, but `waitFor` is hard to trace, and may result in unpredictable application behavior, such as infinite loops. The fluxette way to handle store dependencies is to instead split an action into two semantic actions, which will be dispatched in order. This is known as action splitting, and it allows for declarative store dependencies, simultaneously improving clarity and preventing any possibility of mutual locks. In most Flux implementations, this would not be a viable solution, as dispatching twice results in an extra setState on each component. Since fluxette allows you to dispatch arrays of actions, atomic action handling is possible, and only one setState is called once the array has been fully processed. A dependency refactor usually should not involve changing component code; you can just make the relevant action creator return an array of actions instead. If you do not want to use action splitting, you can implement a short custom Store instead (see [Store Composition](#store-composition)).
@@ -539,13 +569,13 @@ let game = (state = { left: {}, right: {} }, action) => {
 For simpler use cases, just plug Stores into other Stores.
 
 ```js
-import { Store } from 'fluxette';
+import { Shape } from 'fluxette';
 
 let users = {};
 
 let dispatchCount = (state = 0) => state + 1;
 
-let store = Store(users);
+let store = Shape(users);
 
 // user_029347 joined
 users['user_029347'] = dispatchCount;
