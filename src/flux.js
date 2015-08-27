@@ -1,42 +1,53 @@
-import { normalize, remove } from './util';
+import { normalize, remove, constructMiddleware } from './util';
 
 export default (store, initial) => {
 	let state, history, buffer,
-		hooks = [];
+		hooks = [],
+		status = 0;
 
-	let flux = {
-		init: s => {
+	let reduce = action => {
+			history.push(action);
+			buffer.push(action);
+			state = store(state, action);
+		},
+		init = s => {
 			history = [];
 			buffer = [];
 			state = s !== undefined ? s : store();
 		},
-		dispatch: (...actions) => {
+		dispatch = (...actions) => {
 			actions = normalize(actions);
 			if (actions.length > 0) {
-				flux.process(actions);
-				flux.update();
+				process(actions, true);
+				if (status === 0) {
+					update();
+				}
 			}
 		},
-		process: actions => {
-			// Log all actions in history
-			history.push(...actions);
-			buffer.push(...actions);
-			// Synchronously process all actions
-			state = actions.reduce(store, state);
+		process = (actions, normalized) => {
+			if (!normalized) {
+				actions = normalize(actions);
+			}
+			status++;
+			actions.forEach(reduce);
+			status--;
 		},
-		update: () => {
+		update = () => {
 			for (let i = 0; i < hooks.length; i++) {
 				hooks[i](state, buffer);
 			}
 			buffer = [];
-		},
+		};
+
+	init(initial);
+
+	let flux = {
+		init, dispatch, process, update,
+		use: middleware => { reduce = constructMiddleware(flux, middleware, reduce); },
 		state: () => state,
 		history: () => history,
 		hook: ::hooks.push,
 		unhook: fn => { remove(hooks, fn); }
-	}
-
-	flux.init(initial);
-
+	};
 	return flux;
 }

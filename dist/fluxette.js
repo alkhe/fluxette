@@ -157,7 +157,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return true;
 	};
+
 	exports.same = same;
+	var constructMiddleware = function constructMiddleware(flux, mw, dispatch) {
+		return mw.reduceRight(function (next, ware) {
+			return ware.call(flux, next);
+		}, dispatch);
+	};
+	exports.constructMiddleware = constructMiddleware;
 
 /***/ },
 /* 2 */
@@ -169,13 +176,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 	var _util = __webpack_require__(1);
 
@@ -183,39 +188,53 @@ return /******/ (function(modules) { // webpackBootstrap
 		var _state = undefined,
 		    _history = undefined,
 		    buffer = undefined,
-		    hooks = [];
+		    hooks = [],
+		    status = 0;
+
+		var reduce = function reduce(action) {
+			_history.push(action);
+			buffer.push(action);
+			_state = store(_state, action);
+		},
+		    init = function init(s) {
+			_history = [];
+			buffer = [];
+			_state = s !== undefined ? s : store();
+		},
+		    dispatch = function dispatch() {
+			for (var _len = arguments.length, actions = Array(_len), _key = 0; _key < _len; _key++) {
+				actions[_key] = arguments[_key];
+			}
+
+			actions = (0, _util.normalize)(actions);
+			if (actions.length > 0) {
+				process(actions, true);
+				if (status === 0) {
+					update();
+				}
+			}
+		},
+		    process = function process(actions, normalized) {
+			if (!normalized) {
+				actions = (0, _util.normalize)(actions);
+			}
+			status++;
+			actions.forEach(reduce);
+			status--;
+		},
+		    update = function update() {
+			for (var i = 0; i < hooks.length; i++) {
+				hooks[i](_state, buffer);
+			}
+			buffer = [];
+		};
+
+		init(initial);
 
 		var flux = {
-			init: function init(s) {
-				_history = [];
-				buffer = [];
-				_state = s !== undefined ? s : store();
-			},
-			dispatch: function dispatch() {
-				for (var _len = arguments.length, actions = Array(_len), _key = 0; _key < _len; _key++) {
-					actions[_key] = arguments[_key];
-				}
-
-				actions = (0, _util.normalize)(actions);
-				if (actions.length > 0) {
-					flux.process(actions);
-					flux.update();
-				}
-			},
-			process: function process(actions) {
-				var _history2, _buffer;
-
-				// Log all actions in history
-				(_history2 = _history).push.apply(_history2, _toConsumableArray(actions));
-				(_buffer = buffer).push.apply(_buffer, _toConsumableArray(actions));
-				// Synchronously process all actions
-				_state = actions.reduce(store, _state);
-			},
-			update: function update() {
-				for (var i = 0; i < hooks.length; i++) {
-					hooks[i](_state, buffer);
-				}
-				buffer = [];
+			init: init, dispatch: dispatch, process: process, update: update,
+			use: function use(middleware) {
+				reduce = (0, _util.constructMiddleware)(flux, middleware, reduce);
 			},
 			state: function state() {
 				return _state;
@@ -228,13 +247,11 @@ return /******/ (function(modules) { // webpackBootstrap
 				(0, _util.remove)(hooks, fn);
 			}
 		};
-
-		flux.init(initial);
-
 		return flux;
 	};
 
 	module.exports = exports['default'];
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ },
 /* 4 */
@@ -470,13 +487,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		return function (state, action) {
 			if (state === undefined) state = initial;
 
-			// If no actions, just return state
-			if (action !== undefined) {
-				// Call the appropriate reducer by type
-				var reducer = reducers[action.type];
-				if (reducer) {
-					state = reducer(state, action);
-				}
+			// Call the appropriate reducer by type
+			if (action !== undefined && action.type in reducers) {
+				state = reducers[action.type](state, action);
 			}
 			return state;
 		};
@@ -516,6 +529,102 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = exports["default"];
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	// shim for using process in browser
+
+	var process = module.exports = {};
+	var queue = [];
+	var draining = false;
+	var currentQueue;
+	var queueIndex = -1;
+
+	function cleanUpNextTick() {
+	    draining = false;
+	    if (currentQueue.length) {
+	        queue = currentQueue.concat(queue);
+	    } else {
+	        queueIndex = -1;
+	    }
+	    if (queue.length) {
+	        drainQueue();
+	    }
+	}
+
+	function drainQueue() {
+	    if (draining) {
+	        return;
+	    }
+	    var timeout = setTimeout(cleanUpNextTick);
+	    draining = true;
+
+	    var len = queue.length;
+	    while(len) {
+	        currentQueue = queue;
+	        queue = [];
+	        while (++queueIndex < len) {
+	            currentQueue[queueIndex].run();
+	        }
+	        queueIndex = -1;
+	        len = queue.length;
+	    }
+	    currentQueue = null;
+	    draining = false;
+	    clearTimeout(timeout);
+	}
+
+	process.nextTick = function (fun) {
+	    var args = new Array(arguments.length - 1);
+	    if (arguments.length > 1) {
+	        for (var i = 1; i < arguments.length; i++) {
+	            args[i - 1] = arguments[i];
+	        }
+	    }
+	    queue.push(new Item(fun, args));
+	    if (queue.length === 1 && !draining) {
+	        setTimeout(drainQueue, 0);
+	    }
+	};
+
+	// v8 likes predictible objects
+	function Item(fun, array) {
+	    this.fun = fun;
+	    this.array = array;
+	}
+	Item.prototype.run = function () {
+	    this.fun.apply(null, this.array);
+	};
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	process.version = ''; // empty string to avoid regexp issues
+	process.versions = {};
+
+	function noop() {}
+
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	};
+
+	// TODO(shtylman)
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+	process.umask = function() { return 0; };
+
 
 /***/ }
 /******/ ])
