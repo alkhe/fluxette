@@ -66,27 +66,27 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _flux2 = _interopRequireDefault(_flux);
 
-	var _reducerStore = __webpack_require__(11);
+	var _reducerStore = __webpack_require__(10);
 
 	var _reducerStore2 = _interopRequireDefault(_reducerStore);
 
-	var _reducerReducer = __webpack_require__(10);
+	var _reducerReducer = __webpack_require__(9);
 
 	var _reducerReducer2 = _interopRequireDefault(_reducerReducer);
 
-	var _reducerFilter = __webpack_require__(8);
+	var _reducerFilter = __webpack_require__(7);
 
 	var _reducerFilter2 = _interopRequireDefault(_reducerFilter);
 
-	var _reducerFor = __webpack_require__(9);
+	var _reducerFor = __webpack_require__(8);
 
 	var _reducerFor2 = _interopRequireDefault(_reducerFor);
 
-	var _reactContext = __webpack_require__(7);
+	var _reactContext = __webpack_require__(6);
 
 	var _reactContext2 = _interopRequireDefault(_reactContext);
 
-	var _reactConnect = __webpack_require__(6);
+	var _reactConnect = __webpack_require__(5);
 
 	var _reactConnect2 = _interopRequireDefault(_reactConnect);
 
@@ -94,38 +94,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _factorySelect2 = _interopRequireDefault(_factorySelect);
 
-	var _interface = __webpack_require__(5);
-
-	var _interface2 = _interopRequireDefault(_interface);
-
-	var _util = __webpack_require__(1);
-
-	var Factory = function Factory(store, state) {
-		if (store instanceof _flux2['default']) {
-			if (state !== undefined) {
-				store.state = state;
-			}
-			return store;
-		}
-		return new _flux2['default'](store, state !== undefined ? state : store());
-	};
-
-	var Bridge = function Bridge(Generic) {
-		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-			args[_key - 1] = arguments[_key];
-		}
-
-		var bound = new Generic(Factory.apply(undefined, args));
-		var m = (0, _util.methods)(Generic);
-		for (var i in m) {
-			bound[i] = bound[i].bind(bound);
-		}
-		return bound;
-	};
-
-	exports.Bridge = Bridge;
-	exports.Interface = _interface2['default'];
-	exports.Factory = Factory;
 	exports.Store = _reducerStore2['default'];
 	exports.Reducer = _reducerReducer2['default'];
 	exports.Filter = _reducerFilter2['default'];
@@ -133,12 +101,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Context = _reactContext2['default'];
 	exports.connect = _reactConnect2['default'];
 	exports.select = _factorySelect2['default'];
-	exports.Fluxette = _flux2['default'];
+	exports.Fluxette = Fluxette;
 	// debugging
 
-	exports['default'] = function () {
-		return Bridge(_interface2['default'], Factory.apply(undefined, arguments));
-	};
+	exports['default'] = _flux2['default'];
 
 /***/ },
 /* 1 */
@@ -173,24 +139,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	exports.normalize = normalize;
-	var writeMethods = function writeMethods(o, arr) {
-		// skip constructor
-		for (var i = 1; i < arr.length; i++) {
-			o[arr[i]] = 0;
-		}
-	};
-
-	// Get object mirroring all instance methods of Class
-	var methods = function methods(Class) {
-		var last = Object.__proto__;
-		var m = {};
-		do {
-			writeMethods(m, Object.getOwnPropertyNames(Class.prototype));
-		} while ((Class = Class.__proto__) !== last);
-		return m;
-	};
-
-	exports.methods = methods;
 	// Delete object from array
 	var remove = function remove(array, obj) {
 		var index = array.indexOf(obj);
@@ -263,62 +211,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 4 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var _default = (function () {
-		function _default(store, state) {
-			_classCallCheck(this, _default);
-
-			this.store = store;
-			this.state = state;
-			this.history = [];
-			this.hooks = [];
-		}
-
-		_createClass(_default, [{
-			key: "process",
-			value: function process(actions) {
-				var _history;
-
-				// Log all actions in history
-				(_history = this.history).push.apply(_history, _toConsumableArray(actions));
-				// Synchronously process all actions
-				this.state = actions.reduce(this.store, this.state);
-			}
-		}, {
-			key: "update",
-			value: function update(actions) {
-				var hooks = this.hooks;
-				var state = this.state;
-
-				// Call all registered hooks
-				for (var i = 0; i < hooks.length; i++) {
-					hooks[i](state, actions);
-				}
-			}
-		}]);
-
-		return _default;
-	})();
-
-	exports["default"] = _default;
-	;
-	module.exports = exports["default"];
-
-/***/ },
-/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -327,95 +219,64 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 	var _util = __webpack_require__(1);
 
-	var _default = (function () {
-		function _default(instance) {
-			_classCallCheck(this, _default);
+	exports['default'] = function (store, initial) {
+		var _state = undefined,
+		    _history = undefined,
+		    buffer = undefined,
+		    hooks = [];
 
-			this.instance = instance;
-		}
-
-		_createClass(_default, [{
-			key: 'dispatch',
-			value: function dispatch() {
-				for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-					args[_key] = arguments[_key];
-				}
-
-				this.interop((0, _util.normalize)(args));
-			}
-		}, {
-			key: 'interop',
-			value: function interop() {
-				this.process.apply(this, arguments);
-			}
-		}, {
-			key: 'process',
-			value: function process(actions) {
-				var update = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
-
+		var flux = {
+			init: function init(s) {
+				_history = [];
+				buffer = [];
+				_state = s !== undefined ? s : store();
+			},
+			dispatch: function dispatch() {
+				flux.process((0, _util.normalize)(args));
+				flux.update();
+			},
+			process: function process(actions) {
 				if (actions.length > 0) {
-					var instance = this.instance;
+					var _history2, _buffer;
 
-					instance.process(actions);
-					if (update) {
-						instance.update(actions);
-					}
+					// Log all actions in history
+					(_history2 = _history).push.apply(_history2, _toConsumableArray(actions));
+					(_buffer = buffer).push.apply(_buffer, _toConsumableArray(actions));
+					// Synchronously process all actions
+					_state = actions.reduce(store, _state);
 				}
+			},
+			update: function update() {
+				for (var i = 0; i < hooks.length; i++) {
+					hooks[i].apply(hooks, [_state].concat(_toConsumableArray(buffer)));
+				}
+				buffer = [];
+			},
+			state: function state() {
+				return _state;
+			},
+			history: function history() {
+				return _history;
+			},
+			hook: hooks.push.bind(hooks),
+			unhook: function unhook(fn) {
+				(0, _util.remove)(hooks, fn);
 			}
-		}, {
-			key: 'update',
-			value: function update() {
-				var _instance;
+		};
 
-				(_instance = this.instance).update.apply(_instance, arguments);
-			}
-		}, {
-			key: 'init',
-			value: function init(state) {
-				var instance = this.instance;
+		flux.init(initial);
 
-				instance.history = [];
-				instance.state = state !== undefined ? state : instance.store();
-			}
-		}, {
-			key: 'state',
-			value: function state() {
-				return this.instance.state;
-			}
-		}, {
-			key: 'history',
-			value: function history() {
-				return this.instance.history;
-			}
-		}, {
-			key: 'hook',
-			value: function hook() {
-				var _instance$hooks;
+		return flux;
+	};
 
-				(_instance$hooks = this.instance.hooks).push.apply(_instance$hooks, arguments);
-			}
-		}, {
-			key: 'unhook',
-			value: function unhook(fn) {
-				(0, _util.remove)(this.instance.hooks, fn);
-			}
-		}]);
-
-		return _default;
-	})();
-
-	exports['default'] = _default;
-	;
 	module.exports = exports['default'];
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -501,7 +362,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -554,7 +415,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -572,7 +433,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -593,7 +454,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -622,7 +483,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports) {
 
 	"use strict";

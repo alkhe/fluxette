@@ -1,7 +1,7 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Bridge, Interface, Fluxette, Store, Reducer } from '..';
+import Flux, { Store, Reducer } from '..';
 
 chai.use(spies);
 
@@ -13,16 +13,10 @@ const TYPES = {
 
 describe('Flux', () => {
 
-	let I = Interface;
-
 	describe('default', () => {
 		it('should properly construct flux class', () => {
-			let flux = Bridge(I, Store());
-			expect(flux).to.have.property('instance');
-			expect(flux.instance instanceof Fluxette).to.be.true;
+			let flux = Flux(Store());
 			expect(flux).to.have.property('dispatch')
-				.that.is.an.instanceof(Function);
-			expect(flux).to.have.property('interop')
 				.that.is.an.instanceof(Function);
 			expect(flux).to.have.property('process')
 				.that.is.an.instanceof(Function);
@@ -43,7 +37,7 @@ describe('Flux', () => {
 
 	describe('state', () => {
 		it('should return state when called', () => {
-			let { state } = Bridge(I, Store({
+			let { state } = Flux(Store({
 				a: Store({
 					a: Reducer(0),
 					b: Reducer('')
@@ -60,11 +54,11 @@ describe('Flux', () => {
 			});
 		});
 		it('should return state when called', () => {
-			let { state } = Bridge(I, Reducer(0));
+			let { state } = Flux(Reducer(0));
 			expect(state()).to.equal(0);
 		});
 		it('should not change when data is not modified', () => {
-			let { state } = Bridge(I, Store({
+			let { state } = Flux(Store({
 				a: Store({
 					a: Reducer(0),
 					b: Reducer('')
@@ -80,7 +74,7 @@ describe('Flux', () => {
 
 	describe('dispatch', () => {
 		it('should update state when called', () => {
-			let { dispatch, state } = Bridge(I, Store({
+			let { dispatch, state } = Flux(Store({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -103,7 +97,7 @@ describe('Flux', () => {
 			});
 		});
 		it('should dispatch arrays', () => {
-			let { dispatch, state } = Bridge(I, Store({
+			let { dispatch, state } = Flux(Store({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -121,7 +115,7 @@ describe('Flux', () => {
 			});
 		});
 		it('should dispatch argument lists', () => {
-			let { dispatch, state } = Bridge(I, Store({
+			let { dispatch, state } = Flux(Store({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -139,7 +133,7 @@ describe('Flux', () => {
 			});
 		});
 		it('should not call hooks when nothing is passed', () => {
-			let { dispatch, hook } = Bridge(I, Store({
+			let { dispatch, hook } = Flux(Store({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -156,7 +150,7 @@ describe('Flux', () => {
 			expect(spy).not.to.have.been.called;
 		});
 		it('should not notify hooks when non-Objects are passed', () => {
-			let { dispatch, hook } = Bridge(I, Store({
+			let { dispatch, hook } = Flux(Store({
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -188,13 +182,13 @@ describe('Flux', () => {
 					})
 				};
 
-				let { dispatch, state, history } = Bridge(I, Store(stores));
+				let { dispatch, state, history } = Flux(Store(stores));
 				dispatch({ type: TYPES.A }, { type: TYPES.B });
 
 				let lastState = state(),
 					lastHistory = history();
 
-				let { process, state: state2 } = Bridge(I, Store(stores));
+				let { process, state: state2 } = Flux(Store(stores));
 				process(lastHistory);
 
 				expect(state2()).to.deep.equal(lastState);
@@ -215,12 +209,12 @@ describe('Flux', () => {
 					})
 				};
 
-				let { dispatch, state } = Bridge(I, Store(stores));
+				let { dispatch, state } = Flux(Store(stores));
 				dispatch({ type: TYPES.A }, { type: TYPES.B });
 
 				let lastState = state();
 
-				let { state: state2 } = Bridge(I, stores, lastState);
+				let { state: state2 } = Flux(stores, lastState);
 
 				expect(state2()).to.deep.equal(lastState);
 				expect(state2()).to.equal(lastState);
@@ -230,7 +224,7 @@ describe('Flux', () => {
 
 	describe('history', () => {
 		it('should be updated on dispatch', () => {
-			let { dispatch, history } = Bridge(I, Reducer(0, {
+			let { dispatch, history } = Flux(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}));
@@ -242,7 +236,7 @@ describe('Flux', () => {
 
 	describe('hook', () => {
 		it('should call listeners by the number of valid dispatches', () => {
-			let { dispatch, hook } = Bridge(I, Reducer(0, {
+			let { dispatch, hook } = Flux(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}));
@@ -257,7 +251,7 @@ describe('Flux', () => {
 			expect(spy).to.have.been.called.exactly(3);
 		});
 		it('should call listeners with (state, actions)', () => {
-			let { dispatch, state: getState, hook } = Bridge(I, Reducer(0, {
+			let { dispatch, state: getState, hook } = Flux(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}));
@@ -274,7 +268,7 @@ describe('Flux', () => {
 
 	describe('unhook', () => {
 		it('should not call listeners after unhook', () => {
-			let { dispatch, hook, unhook } = Bridge(I, Reducer(0, {
+			let { dispatch, hook, unhook } = Flux(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}));
@@ -288,88 +282,6 @@ describe('Flux', () => {
 			unhook(spy);
 			dispatch({ type: TYPES.A });
 			expect(spy).to.have.been.called.twice;
-		});
-	});
-
-	describe('middleware', () => {
-		it('should extend Interface', () => {
-			let mw = Generic =>
-				class extends Generic {
-					constructor(...args) {
-						super(...args);
-						this.mwhistory = [];
-					}
-					interop(actions) {
-						this.mwhistory.push(actions);
-						super.interop(actions);
-					}
-				};
-			let G = mw(I);
-			let flux = Bridge(G, Store());
-
-			flux.dispatch({ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' });
-			flux.dispatch({ type: 'action-a' }, [{ type: 'action-b' }], { type: 'action-c' });
-
-			expect(flux.mwhistory).to.deep.equal([[{ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' }], [{ type: 'action-a' }, { type: 'action-b' }, { type: 'action-c' }]]);
-
-			expect(I.isPrototypeOf(G)).to.be.true;
-		});
-		it('should be composable', () => {
-			let mw = Generic =>
-				class extends Generic {
-					constructor(...args) {
-						super(...args);
-						this.mwhistory = [];
-					}
-					interop(actions) {
-						this.mwhistory.push(actions);
-						super.interop(actions);
-					}
-				};
-			let mw2 = Generic =>
-				class extends Generic {
-					constructor(...args) {
-						super(...args);
-						this.mwhistory2 = [];
-					}
-					interop(actions) {
-						this.mwhistory.push('x');
-						this.mwhistory2.push(...actions);
-						super.interop(actions);
-					}
-				};
-
-			let G = mw2(mw(I));
-			let flux = Bridge(mw2(mw(I)), Store());
-
-			flux.dispatch({ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' });
-			flux.dispatch({ type: 'action-a' }, [{ type: 'action-b' }], { type: 'action-c' });
-
-			expect(flux.mwhistory).to.deep.equal(['x', [{ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' }], 'x', [{ type: 'action-a' }, { type: 'action-b' }, { type: 'action-c' }]]);
-			expect(flux.mwhistory2).to.deep.equal([{ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' }, { type: 'action-a' }, { type: 'action-b' }, { type: 'action-c' }]);
-
-			expect(I.isPrototypeOf(G)).to.be.true;
-		});
-		it('should be isolated from other interfaces', () => {
-			let mw = Generic =>
-				class extends Generic {
-					constructor(...args) {
-						super(...args);
-						this.mwhistory = [];
-					}
-					interop(actions) {
-						this.mwhistory.push(actions);
-						super.interop(actions);
-					}
-				};
-			let G = mw(I);
-			let flux = Bridge(G, Store());
-
-			flux.dispatch({ type: 'action-x' }, { type: 'action-y' }, { type: 'action-z' });
-			flux.dispatch({ type: 'action-a' }, [{ type: 'action-b' }], { type: 'action-c' });
-
-			flux = Bridge(G, Store());
-			expect(flux.mwhistory).to.deep.equal([]);
 		});
 	});
 

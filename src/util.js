@@ -23,23 +23,6 @@ export let normalize = arr => {
 	}
 };
 
-let writeMethods = (o, arr) => {
-	// skip constructor
-	for (let i = 1; i < arr.length; i++) {
-		o[arr[i]] = 0;
-	}
-};
-
-// Get object mirroring all instance methods of Class
-export let methods = Class => {
-	let last = Object.__proto__;
-	let m = {};
-	do {
-		writeMethods(m, Object.getOwnPropertyNames(Class.prototype));
-	} while ((Class = Class.__proto__) !== last);
-	return m;
-};
-
 // Delete object from array
 export let remove = (array, obj) => {
 	let index = array.indexOf(obj);

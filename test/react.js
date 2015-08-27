@@ -2,7 +2,7 @@
 import React, { addons } from 'react/addons';
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Bridge, Interface, Store, Reducer, Context, connect, select } from '..';
+import Flux, { Store, Reducer, Context, connect, select } from '..';
 
 chai.use(spies);
 
@@ -15,10 +15,8 @@ const USER = {
 
 describe('React', () => {
 
-	let I = Interface;
-
 	it('should hook component without specifier', () => {
-		let flux = Bridge(I, Store({
+		let flux = Flux(Store({
 			user: Reducer({ username: '', email: '' }, {
 				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
@@ -60,7 +58,7 @@ describe('React', () => {
 		expect(React.findDOMNode(c.refs.username_label).innerHTML).to.equal('fluxette');
 	});
 	it('should hook component with specifier', () => {
-		let flux = Bridge(I, Store({
+		let flux = Flux(Store({
 			user: Reducer({ username: '', email: '' }, {
 				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
@@ -104,7 +102,7 @@ describe('React', () => {
 
 	it('should not rerender if data has not changed', () => {
 		let spy = chai.spy(() => {});
-		let flux = Bridge(I, Store({
+		let flux = Flux(Store({
 			user: Reducer({ username: '', email: '' }, {
 				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
@@ -152,7 +150,7 @@ describe('React', () => {
 
 	it('should not rerender if data has not changed with selector', () => {
 		let spy = chai.spy(() => {});
-		let flux = Bridge(I, Store({
+		let flux = Flux(Store({
 			user: Reducer({ username: '', email: '' }, {
 				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
@@ -204,7 +202,7 @@ describe('React', () => {
 	});
 
 	it('should not fail on unmount', () => {
-		let flux = Bridge(I, Store());
+		let flux = Flux(Store());
 
 		class Component extends React.Component {
 			constructor() {
