@@ -128,7 +128,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (val instanceof Array) {
 				$normalize(val, into);
 			} else {
-				if (val instanceof Object && val.type) {
+				if (val instanceof Object) {
 					into.push(val);
 				}
 			}
