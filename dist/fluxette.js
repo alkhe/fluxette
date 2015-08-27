@@ -513,11 +513,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 	exports["default"] = function (reducer) {
-		var partial = function partial(a) {
-			return reducer(state, a);
-		};
 		return function (state, actions) {
-			return actions.map(partial);
+			return actions.map(function (a) {
+				return reducer(state, a);
+			});
 		};
 	};
 
