@@ -35,7 +35,7 @@ fluxette removes many of the headaches that you may have had with React and othe
 ```sh
 $ npm i --save fluxette
 ```
-[Browser builds (umd) are also available. ](https://github.com/edge/fluxette/tree/master/dist).
+[Browser builds (umd) are also available.](https://github.com/edge/fluxette/tree/master/dist)
 
 ## Getting Started
 
