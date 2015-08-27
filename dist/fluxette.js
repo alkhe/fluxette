@@ -66,21 +66,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _flux2 = _interopRequireDefault(_flux);
 
-	var _reducerShape = __webpack_require__(12);
+	var _reducerShape = __webpack_require__(11);
 
 	var _reducerShape2 = _interopRequireDefault(_reducerShape);
 
-	var _reducerReducer = __webpack_require__(11);
+	var _reducerReducer = __webpack_require__(10);
 
 	var _reducerReducer2 = _interopRequireDefault(_reducerReducer);
 
 	var _reducerFilter = __webpack_require__(9);
 
 	var _reducerFilter2 = _interopRequireDefault(_reducerFilter);
-
-	var _reducerFor = __webpack_require__(10);
-
-	var _reducerFor2 = _interopRequireDefault(_reducerFor);
 
 	var _reactContext = __webpack_require__(7);
 
@@ -105,7 +101,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Shape = _reducerShape2['default'];
 	exports.Reducer = _reducerReducer2['default'];
 	exports.Filter = _reducerFilter2['default'];
-	exports.For = _reducerFor2['default'];
 	exports.Context = _reactContext2['default'];
 	exports.connect = _reactConnect2['default'];
 	exports.select = _reactSelect2['default'];
@@ -169,12 +164,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	exports.same = same;
-	var constructMiddleware = function constructMiddleware(flux, mw, dispatch) {
+	var middle = function middle(flux, mw, dispatch) {
 		return mw.reduceRight(function (next, ware) {
 			return ware.call(flux, next);
 		}, dispatch);
 	};
-	exports.constructMiddleware = constructMiddleware;
+	exports.middle = middle;
 
 /***/ },
 /* 2 */
@@ -244,7 +239,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		var flux = {
 			init: init, dispatch: dispatch, process: process, update: update,
 			use: function use(middleware) {
-				reduce = (0, _util.constructMiddleware)(flux, middleware, reduce);
+				reduce = (0, _util.middle)(flux, middleware, reduce);
 			},
 			state: function state() {
 				return _state;
@@ -261,7 +256,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = exports['default'];
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
 
 /***/ },
 /* 4 */
@@ -512,26 +507,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
-	exports["default"] = function (reducer) {
-		return function (state, actions) {
-			return actions.map(function (a) {
-				return reducer(state, a);
-			});
-		};
-	};
-
-	module.exports = exports["default"];
-
-/***/ },
-/* 11 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-
 	exports["default"] = function () {
 		var initial = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 		var reducers = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -549,7 +524,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -582,7 +557,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser

@@ -1,4 +1,4 @@
-import { normalize, remove, constructMiddleware } from './util';
+import { normalize, remove, middle } from './util';
 
 export default (store, initial) => {
 	let state, history, buffer,
@@ -43,7 +43,7 @@ export default (store, initial) => {
 
 	let flux = {
 		init, dispatch, process, update,
-		use: middleware => { reduce = constructMiddleware(flux, middleware, reduce); },
+		use: middleware => { reduce = middle(flux, middleware, reduce); },
 		state: () => state,
 		history: () => history,
 		hook: ::hooks.push,
