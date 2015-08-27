@@ -10,7 +10,6 @@
 * [API](#api)
 * [Glossary](#glossary)
 * [The Law of Functional Flux](#the-law-of-functional-flux)
-* [Isomorphic Objects](#isomorphic-objects)
 * [Middleware](#middleware)
 * [Rehydration](#rehydration)
 * [Debugging](#debugging)
