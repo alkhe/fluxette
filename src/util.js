@@ -5,7 +5,7 @@ let $normalize = (arr, into) => {
 			$normalize(val, into);
 		}
 		else {
-			if (val instanceof Object && val.type) {
+			if (val instanceof Object) {
 				into.push(val);
 			}
 		}
