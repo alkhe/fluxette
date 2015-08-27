@@ -62,7 +62,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _flux = __webpack_require__(4);
+	var _flux = __webpack_require__(3);
 
 	var _flux2 = _interopRequireDefault(_flux);
 
@@ -82,17 +82,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _reducerFor2 = _interopRequireDefault(_reducerFor);
 
-	var _reactContext = __webpack_require__(6);
+	var _reactContext = __webpack_require__(5);
 
 	var _reactContext2 = _interopRequireDefault(_reactContext);
 
-	var _reactConnect = __webpack_require__(5);
+	var _reactConnect = __webpack_require__(4);
 
 	var _reactConnect2 = _interopRequireDefault(_reactConnect);
 
-	var _factorySelect = __webpack_require__(3);
+	var _reactSelect = __webpack_require__(6);
 
-	var _factorySelect2 = _interopRequireDefault(_factorySelect);
+	var _reactSelect2 = _interopRequireDefault(_reactSelect);
 
 	exports.Store = _reducerStore2['default'];
 	exports.Reducer = _reducerReducer2['default'];
@@ -100,10 +100,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.For = _reducerFor2['default'];
 	exports.Context = _reactContext2['default'];
 	exports.connect = _reactConnect2['default'];
-	exports.select = _factorySelect2['default'];
-	exports.Fluxette = Fluxette;
-	// debugging
-
+	exports.select = _reactSelect2['default'];
 	exports['default'] = _flux2['default'];
 
 /***/ },
@@ -182,47 +179,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _util = __webpack_require__(1);
 
-	exports['default'] = function (getters) {
-		var deriver = arguments.length <= 1 || arguments[1] === undefined ? function (x) {
-			return x;
-		} : arguments[1];
-
-		if (!(getters instanceof Array)) {
-			getters = [getters];
-		}
-		// Caches
-		var lastGets = [],
-		    derived = {};
-		return function (state) {
-			// New selections
-			var gets = getters.map(function (fn) {
-				return fn(state);
-			});
-			// If selections are different, invalidate
-			if (!(0, _util.same)(lastGets, gets)) {
-				derived = deriver.apply(undefined, _toConsumableArray(gets));
-				lastGets = gets;
-			}
-			return derived;
-		};
-	};
-
-	module.exports = exports['default'];
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-		value: true
-	});
-
-	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
-
-	var _util = __webpack_require__(1);
-
 	exports['default'] = function (store, initial) {
 		var _state = undefined,
 		    _history = undefined,
@@ -236,23 +192,28 @@ return /******/ (function(modules) { // webpackBootstrap
 				_state = s !== undefined ? s : store();
 			},
 			dispatch: function dispatch() {
-				flux.process((0, _util.normalize)(args));
-				flux.update();
+				for (var _len = arguments.length, actions = Array(_len), _key = 0; _key < _len; _key++) {
+					actions[_key] = arguments[_key];
+				}
+
+				actions = (0, _util.normalize)(actions);
+				if (actions.length > 0) {
+					flux.process(actions);
+					flux.update();
+				}
 			},
 			process: function process(actions) {
-				if (actions.length > 0) {
-					var _history2, _buffer;
+				var _history2, _buffer;
 
-					// Log all actions in history
-					(_history2 = _history).push.apply(_history2, _toConsumableArray(actions));
-					(_buffer = buffer).push.apply(_buffer, _toConsumableArray(actions));
-					// Synchronously process all actions
-					_state = actions.reduce(store, _state);
-				}
+				// Log all actions in history
+				(_history2 = _history).push.apply(_history2, _toConsumableArray(actions));
+				(_buffer = buffer).push.apply(_buffer, _toConsumableArray(actions));
+				// Synchronously process all actions
+				_state = actions.reduce(store, _state);
 			},
 			update: function update() {
 				for (var i = 0; i < hooks.length; i++) {
-					hooks[i].apply(hooks, [_state].concat(_toConsumableArray(buffer)));
+					hooks[i](_state, buffer);
 				}
 				buffer = [];
 			},
@@ -276,7 +237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -362,7 +323,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -412,6 +373,47 @@ return /******/ (function(modules) { // webpackBootstrap
 	})(_react.Component);
 
 	exports['default'] = Context;
+	module.exports = exports['default'];
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+		value: true
+	});
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+	var _util = __webpack_require__(1);
+
+	exports['default'] = function (getters) {
+		var deriver = arguments.length <= 1 || arguments[1] === undefined ? function (x) {
+			return x;
+		} : arguments[1];
+
+		if (!(getters instanceof Array)) {
+			getters = [getters];
+		}
+		// Caches
+		var lastGets = [],
+		    derived = {};
+		return function (state) {
+			// New selections
+			var gets = getters.map(function (fn) {
+				return fn(state);
+			});
+			// If selections are different, invalidate
+			if (!(0, _util.same)(lastGets, gets)) {
+				derived = deriver.apply(undefined, _toConsumableArray(gets));
+				lastGets = gets;
+			}
+			return derived;
+		};
+	};
+
 	module.exports = exports['default'];
 
 /***/ },
