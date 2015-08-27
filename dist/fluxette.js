@@ -66,41 +66,51 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _flux2 = _interopRequireDefault(_flux);
 
-	var _reducerStore = __webpack_require__(10);
+	var _reducerShape = __webpack_require__(12);
 
-	var _reducerStore2 = _interopRequireDefault(_reducerStore);
+	var _reducerShape2 = _interopRequireDefault(_reducerShape);
 
-	var _reducerReducer = __webpack_require__(9);
+	var _reducerReducer = __webpack_require__(11);
 
 	var _reducerReducer2 = _interopRequireDefault(_reducerReducer);
 
-	var _reducerFilter = __webpack_require__(7);
+	var _reducerFilter = __webpack_require__(9);
 
 	var _reducerFilter2 = _interopRequireDefault(_reducerFilter);
 
-	var _reducerFor = __webpack_require__(8);
+	var _reducerFor = __webpack_require__(10);
 
 	var _reducerFor2 = _interopRequireDefault(_reducerFor);
 
-	var _reactContext = __webpack_require__(5);
+	var _reactContext = __webpack_require__(7);
 
 	var _reactContext2 = _interopRequireDefault(_reactContext);
 
-	var _reactConnect = __webpack_require__(4);
+	var _reactConnect = __webpack_require__(6);
 
 	var _reactConnect2 = _interopRequireDefault(_reactConnect);
 
-	var _reactSelect = __webpack_require__(6);
+	var _reactSelect = __webpack_require__(8);
 
 	var _reactSelect2 = _interopRequireDefault(_reactSelect);
 
-	exports.Store = _reducerStore2['default'];
+	var _middlewareThunk = __webpack_require__(5);
+
+	var _middlewareThunk2 = _interopRequireDefault(_middlewareThunk);
+
+	var _middlewarePromise = __webpack_require__(4);
+
+	var _middlewarePromise2 = _interopRequireDefault(_middlewarePromise);
+
+	exports.Shape = _reducerShape2['default'];
 	exports.Reducer = _reducerReducer2['default'];
 	exports.Filter = _reducerFilter2['default'];
 	exports.For = _reducerFor2['default'];
 	exports.Context = _reactContext2['default'];
 	exports.connect = _reactConnect2['default'];
 	exports.select = _reactSelect2['default'];
+	exports.thunk = _middlewareThunk2['default'];
+	exports.promise = _middlewarePromise2['default'];
 	exports['default'] = _flux2['default'];
 
 /***/ },
@@ -251,10 +261,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = exports['default'];
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ },
 /* 4 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	exports["default"] = function (next) {
+		var _this = this;
+
+		return function (action) {
+			return action.then instanceof Function ? action.then(_this.dispatch) : next(action);
+		};
+	};
+
+	module.exports = exports["default"];
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	exports["default"] = function (next) {
+		var _this = this;
+
+		return function (action) {
+			return action instanceof Function ? action(_this) : next(action);
+		};
+	};
+
+	;
+	module.exports = exports["default"];
+
+/***/ },
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -340,7 +391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -393,7 +444,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 6 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -434,7 +485,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 7 */
+/* 9 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -452,7 +503,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 8 */
+/* 10 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -473,7 +524,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 9 */
+/* 11 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -482,8 +533,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
-	exports["default"] = function (initial, reducers) {
-		if (initial === undefined) initial = {};
+	exports["default"] = function () {
+		var initial = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+		var reducers = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 		return function (state, action) {
 			if (state === undefined) state = initial;
 
@@ -498,7 +550,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 10 */
+/* 12 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -531,7 +583,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 11 */
+/* 13 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser

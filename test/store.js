@@ -1,7 +1,7 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Store, Reducer, Filter } from '..';
+import { Shape, Reducer, Filter } from '..';
 
 chai.use(spies);
 
@@ -55,7 +55,7 @@ describe('Reducer', () => {
 	});
 });
 
-describe('Store', () => {
+describe('Shape', () => {
 
 	it('should compose reducers', () => {
 		let inc = chai.spy(state => ({ ...state, num: state.num + 1, history: state.history.concat(state.num) }));
@@ -68,7 +68,7 @@ describe('Store', () => {
 			[TYPES.DEC]: dec
 		});
 
-		let store = Store({
+		let store = Shape({
 			domain: reducer
 		});
 
@@ -89,7 +89,7 @@ describe('Filter', () => {
 			[TYPES.DEC]: dec
 		});
 
-		let store = Store({
+		let store = Shape({
 			domain: Filter([TYPES.DEC], reducer)
 		});
 

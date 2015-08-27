@@ -5,6 +5,6 @@
   "serve_files": ["./dist/testem.js"],
   "src_files": [
     "./src/**/*.js",
-    "./test/*.js"
+    "./test/**/*.js"
   ]
 }
