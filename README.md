@@ -15,6 +15,7 @@
 * [Debugging](#debugging)
 * [SSR](#ssr)
 * [Asynchronous](#asynchronous)
+* [Optimistic Updates](#optimistic-updates)
 * [Store Dependencies](#store-dependencies)
 * [Store Composition](#store-composition)
 * [Examples](#examples)
@@ -514,9 +515,8 @@ Another way is to return an array of actions directly from the action creator:
 import { thunk } from 'fluxette';
 
 let { dispatch, use } = flux;
-use([thunk]);
+use(thunk);
 
-// actions
 let resource = data => [
 	{ type: RESOURCE.REQUEST },
 	({ dispatch }) => {
@@ -534,6 +534,44 @@ let resource = data => [
 dispatch(getResource(data));
 ```
 
+## Optimistic Updates
+Using the design pattern outlined in [Asynchronous](#asynchronous), the preemptive *request* action can be used for optimistic updates on an asynchronous write from the client. If the write completed successfully, the *success* action can then be dispatched, without the user experiencing any latency. If the write failed, a *failure* action can be dispatched to easily rollback the changes from the optimistic update.
+
+```js
+import { thunk, Reducer } from 'fluxette';
+
+let { dispatch, use } = flux;
+use(thunk);
+
+let setMessage = (messages, { message }) => ({
+	...messages,
+	id: message.id
+});
+let messageReducer = Reducer({}, {
+	[MESSAGE.REQUEST]: setMessage,
+	[MESSAGE.SUCCESS]: setMessage,
+	[MESSAGE.FAILURE]: (messages, { message }) => {
+		let { [message.id]: remove, ...rollback } = messages;
+		return rollback;
+	}
+});
+
+let sendMessage = message => [
+	{ type: MESSAGE.REQUEST, message },
+	({ dispatch }) => {
+		sendToServer(message, (err, message) => {
+			if (err) {
+				dispatch({ type: RESOURCE.FAIL, err });
+			}
+			else {
+				dispatch({ type: RESOURCE.SUCCESS, message });
+			}
+		});
+	}
+];
+
+dispatch(sendMessage(message));
+```
 
 ## Store Dependencies
 Store dependencies in vanilla flux is handled by using `waitFor`, but `waitFor` is hard to trace, and may result in unpredictable application behavior, such as infinite loops. The fluxette way to handle store dependencies is to instead split an action into two semantic actions, which will be dispatched in order. This is known as action splitting, and it allows for declarative store dependencies, simultaneously improving clarity and preventing any possibility of mutual locks. In most Flux implementations, this would not be a viable solution, as dispatching twice results in an extra setState on each component. Since fluxette allows you to dispatch arrays of actions, atomic action handling is possible, and only one setState is called once the array has been fully processed. A dependency refactor usually should not involve changing component code; you can just make the relevant action creator return an array of actions instead. If you do not want to use action splitting, you can implement a short custom Store instead (see [Store Composition](#store-composition)).

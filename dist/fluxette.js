@@ -276,7 +276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		var _this = this;
 
 		return function (action) {
-			return action.then instanceof Function ? action.then(_this.dispatch) : next(action);
+			return action.then instanceof Function ? action.then(_this.dispatch)["catch"](_this.dispatch) : next(action);
 		};
 	};
 
