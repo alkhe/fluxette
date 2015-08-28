@@ -18,7 +18,7 @@ describe('middleware', () => {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}));
-			flux.use([thunk]);
+			flux.use(thunk);
 			flux.dispatch({ type: TYPES.A });
 
 			flux.hook(state => {
@@ -37,7 +37,7 @@ describe('middleware', () => {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}));
-			flux.use([promise, thunk]);
+			flux.use(promise, thunk);
 			flux.dispatch({ type: TYPES.A });
 
 			let temporal = () => {

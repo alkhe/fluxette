@@ -1,5 +1,5 @@
 /* global describe it */
-import React, { addons } from 'react/addons';
+import React, { addons, PropTypes } from 'react/addons';
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
 import Flux, { Shape, Reducer, Context, connect, select } from '..';
@@ -241,5 +241,42 @@ describe('React', () => {
 		);
 		let c = findRenderedComponentWithType(tree, Component);
 		Simulate.click(React.findDOMNode(c.refs.toggle));
+	});
+	it('should include base context types', done => {
+		let flux = Flux(Reducer({}));
+
+		@connect()
+		class Component extends React.Component {
+			static contextTypes = {
+				test: PropTypes.object.isRequired
+			}
+			render() {
+				let { context } = this;
+				expect(context).to.have.property('flux')
+					.that.is.an.instanceof(Object);
+				expect(context).to.have.property('test')
+					.that.deep.equals({ prop: 'x' });
+				done();
+				return null;
+			}
+		}
+
+		class ContextTest extends React.Component {
+			static childContextTypes = {
+				test: PropTypes.object.isRequired
+			}
+			getChildContext() {
+				return { test: { prop: 'x' } };
+			}
+			render() {
+				return <Component />;
+			}
+		}
+
+		renderIntoDocument(
+			<Context flux={ flux }>
+				{ () => <ContextTest /> }
+			</Context>
+		);
 	});
 });

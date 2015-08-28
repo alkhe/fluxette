@@ -43,7 +43,7 @@ export default (store, initial) => {
 
 	let flux = {
 		init, dispatch, process, update,
-		use: middleware => { reduce = middle(flux, middleware, reduce); },
+		use: (...middleware) => { reduce = middle(flux, middleware, reduce); },
 		state: () => state,
 		history: () => history,
 		hook: ::hooks.push,

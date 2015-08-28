@@ -166,7 +166,7 @@ flux.dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
 
 // thunks
 import { thunk } from 'fluxette';
-flux.use([thunk]);
+flux.use(thunk);
 flux.dispatch(({ dispatch }) => {
 	// useful if this function came from somewhere else
 	dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
@@ -187,11 +187,11 @@ Calls all listeners that are `hook`ed. `dispatch` uses this.
 flux.update();
 ```
 
-**flux.use(middleware)**
-Takes an array of middleware and folds them over the internal dispatcher function. This can be called multiple times.
+**flux.use(...middleware)**
+Takes an argument list of middleware and folds them over the internal dispatcher function. This can be called multiple times.
 
 ```js
-flux.use([thunk, promise]);
+flux.use(thunk, promise);
 ```
 
 **flux.state()**
@@ -357,12 +357,12 @@ The *Deriver* is an concept specific to the `select` facility. `select` takes a 
 In the most general sense, Functional Flux relies on reducing actions into the state. Therefore, Stores or Reducers are pure functions with the signature `(State, Action) => State`. If a Store processes an action that it listens to, which results in a different state, it returns a value or reference that differs from the state that it was called with. This recursively cascades down to the root of the state tree. At the end of the dispatch, all listeners are called. Any of which that depend on data that could have possibly changed are called with new values or references. Thus, listeners can simply maintain a reference to the old state and compare with the new one to determine whether the state has changed.
 
 ## Middleware
-Middleware can extend the functionality of the dispatcher by accommodating functions, Promises, and other data structures, allowing for advanced asynchronous and multiplexing functionality. Middleware do not require knowledge of other middleware, which makes them easily composable. To use middleware, pass an array of them to `flux.use`.
+Middleware can extend the functionality of the dispatcher by accommodating functions, Promises, and other data structures, allowing for advanced asynchronous and multiplexing functionality. Middleware do not require knowledge of other middleware, which makes them easily composable. To use middleware, pass a list of them to `flux.use`.
 
 ```js
 import { thunk, promise } from 'fluxette';
 
-flux.use([thunk, promise]);
+flux.use(thunk, promise);
 ```
 
 ### Writing Middleware
@@ -416,7 +416,7 @@ flux.process(history);
 Add a logger to the beginning of your middleware chain. This will log all actions before they are possibly transformed by other middleware.
 
 ```js
-flux.use([
+flux.use(
 	function(next) {
 		return action => {
 			console.log(this.state(), action);
@@ -424,13 +424,13 @@ flux.use([
 		}
 	},
 	...middleware
-]);
+);
 ```
 
 **To log all actions just before the store reduces them:** Add a logger to the end of your middleware chain. This will log only actions that the stores see, and will be logged to the history.
 
 ```js
-flux.use([
+flux.use(
 	...middleware,
 	function(next) {
 		return action => {
@@ -438,7 +438,7 @@ flux.use([
 			next(action);
 		}
 	}
-]);
+);
 ```
 
 

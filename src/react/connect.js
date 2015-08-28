@@ -6,6 +6,7 @@ export default (selector = x => x) => {
 	return Component =>
 		class Connect extends Component {
 			static contextTypes = {
+				...Component.contextTypes,
 				flux: PropTypes.object.isRequired
 			}
 			constructor(...args) {
