@@ -606,12 +606,12 @@ $ npm test
 ```
 
 ## Todo
-* React and non-React builds
+* separate React facilities into fluxette-react
+* write middleware
 * add ~~lint~~, code coverage, CI, badges, etc.
-* add examples (async, router, ~~flux-comparison~~, etc.)
 * submit to HN
 
 ## Influences
 * Unix
 * @gaearon
-* [Alan Baker on Occam's Razor](http://plato.stanford.edu/archives/sum2011/entries/simplicity/#OntPar)
+* [Alan Baker/Occam's Razor](http://plato.stanford.edu/archives/sum2011/entries/simplicity/#OntPar)

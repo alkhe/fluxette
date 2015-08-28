@@ -4,3 +4,6 @@
 [submodule "examples/flux-comparison"]
 	path = examples/flux-comparison
 	url = https://github.com/edge/flux-comparison
+[submodule "examples/fluxette-react-router"]
+	path = examples/fluxette-react-router
+	url = https://github.com/edge/fluxette-react-router
