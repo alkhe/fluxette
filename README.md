@@ -545,7 +545,7 @@ use(thunk);
 
 let setMessage = (messages, { message }) => ({
 	...messages,
-	id: message.id
+	[message.id]: message
 });
 let messageReducer = Reducer({}, {
 	[MESSAGE.REQUEST]: setMessage,
