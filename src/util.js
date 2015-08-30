@@ -37,7 +37,7 @@ export let same = (left, right) => {
 		return false;
 	}
 	for (let i in left) {
-		if (right.indexOf(left[i]) === -1) {
+		if (right[i] !== left[i]) {
 			return false;
 		}
 	}

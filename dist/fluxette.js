@@ -156,7 +156,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			return false;
 		}
 		for (var i in left) {
-			if (right.indexOf(left[i]) === -1) {
+			if (right[i] !== left[i]) {
 				return false;
 			}
 		}
