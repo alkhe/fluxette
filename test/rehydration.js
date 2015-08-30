@@ -31,8 +31,8 @@ describe('rehydration', () => {
 			let lastState = state(),
 				lastHistory = history();
 
-			let { process, state: state2 } = Flux(Shape(stores));
-			process(lastHistory);
+			let { dispatch: dispatch2, state: state2 } = Flux(Shape(stores));
+			dispatch2(lastHistory, false);
 
 			expect(state2()).to.deep.equal(lastState);
 			expect(state2()).not.to.equal(lastState);

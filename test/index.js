@@ -12,13 +12,11 @@ const TYPES = {
 };
 
 describe('index', () => {
-	it('should properly construct flux class', () => {
+	it('should properly construct flux object', () => {
 		let flux = Flux(Shape());
 		expect(flux).to.have.property('init')
 			.that.is.an.instanceof(Function);
 		expect(flux).to.have.property('dispatch')
-			.that.is.an.instanceof(Function);
-		expect(flux).to.have.property('process')
 			.that.is.an.instanceof(Function);
 		expect(flux).to.have.property('update')
 			.that.is.an.instanceof(Function);

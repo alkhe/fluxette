@@ -13,13 +13,13 @@ let $normalize = (arr, into) => {
 };
 
 export let normalize = arr => {
-	if (arr.length > 0) {
+	if (arr instanceof Array) {
 		let norm = [];
 		$normalize(arr, norm);
 		return norm;
 	}
 	else {
-		return arr;
+		return [arr];
 	}
 };
 

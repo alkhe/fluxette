@@ -15,22 +15,16 @@ export default (store, initial) => {
 			buffer = [];
 			state = s !== undefined ? s : store();
 		},
-		dispatch = (...actions) => {
+		dispatch = (actions, call = true) => {
 			actions = normalize(actions);
 			if (actions.length > 0) {
-				process(actions, true);
-				if (status === 0) {
-					update();
-				}
+				status++;
+				actions.forEach(reduce);
+				status--;
 			}
-		},
-		process = (actions, normalized) => {
-			if (!normalized) {
-				actions = normalize(actions);
+			if (call && status === 0) {
+				update();
 			}
-			status++;
-			actions.forEach(reduce);
-			status--;
 		},
 		update = () => {
 			for (let i = 0; i < hooks.length; i++) {
@@ -42,7 +36,7 @@ export default (store, initial) => {
 	init(initial);
 
 	let flux = {
-		init, dispatch, process, update,
+		init, dispatch, update,
 		use: (...middleware) => { reduce = middle(flux, middleware, reduce); },
 		state: () => state,
 		history: () => history,

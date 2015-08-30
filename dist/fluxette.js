@@ -131,12 +131,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	var normalize = function normalize(arr) {
-		if (arr.length > 0) {
+		if (arr instanceof Array) {
 			var norm = [];
 			$normalize(arr, norm);
 			return norm;
 		} else {
-			return arr;
+			return [arr];
 		}
 	};
 
@@ -181,7 +181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
+	'use strict';
 
 	Object.defineProperty(exports, '__esModule', {
 		value: true
@@ -206,26 +206,18 @@ return /******/ (function(modules) { // webpackBootstrap
 			buffer = [];
 			_state = s !== undefined ? s : store();
 		},
-		    dispatch = function dispatch() {
-			for (var _len = arguments.length, actions = Array(_len), _key = 0; _key < _len; _key++) {
-				actions[_key] = arguments[_key];
-			}
+		    dispatch = function dispatch(actions) {
+			var call = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
 
 			actions = (0, _util.normalize)(actions);
 			if (actions.length > 0) {
-				process(actions, true);
-				if (status === 0) {
-					update();
-				}
+				status++;
+				actions.forEach(reduce);
+				status--;
 			}
-		},
-		    process = function process(actions, normalized) {
-			if (!normalized) {
-				actions = (0, _util.normalize)(actions);
+			if (call && status === 0) {
+				update();
 			}
-			status++;
-			actions.forEach(reduce);
-			status--;
 		},
 		    update = function update() {
 			for (var i = 0; i < hooks.length; i++) {
@@ -237,10 +229,10 @@ return /******/ (function(modules) { // webpackBootstrap
 		init(initial);
 
 		var flux = {
-			init: init, dispatch: dispatch, process: process, update: update,
+			init: init, dispatch: dispatch, update: update,
 			use: function use() {
-				for (var _len2 = arguments.length, middleware = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-					middleware[_key2] = arguments[_key2];
+				for (var _len = arguments.length, middleware = Array(_len), _key = 0; _key < _len; _key++) {
+					middleware[_key] = arguments[_key];
 				}
 
 				reduce = (0, _util.middle)(flux, middleware, reduce);
@@ -260,7 +252,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = exports['default'];
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
 
 /***/ },
 /* 4 */
@@ -561,102 +552,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = exports["default"];
-
-/***/ },
-/* 12 */
-/***/ function(module, exports) {
-
-	// shim for using process in browser
-
-	var process = module.exports = {};
-	var queue = [];
-	var draining = false;
-	var currentQueue;
-	var queueIndex = -1;
-
-	function cleanUpNextTick() {
-	    draining = false;
-	    if (currentQueue.length) {
-	        queue = currentQueue.concat(queue);
-	    } else {
-	        queueIndex = -1;
-	    }
-	    if (queue.length) {
-	        drainQueue();
-	    }
-	}
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    var timeout = setTimeout(cleanUpNextTick);
-	    draining = true;
-
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        while (++queueIndex < len) {
-	            currentQueue[queueIndex].run();
-	        }
-	        queueIndex = -1;
-	        len = queue.length;
-	    }
-	    currentQueue = null;
-	    draining = false;
-	    clearTimeout(timeout);
-	}
-
-	process.nextTick = function (fun) {
-	    var args = new Array(arguments.length - 1);
-	    if (arguments.length > 1) {
-	        for (var i = 1; i < arguments.length; i++) {
-	            args[i - 1] = arguments[i];
-	        }
-	    }
-	    queue.push(new Item(fun, args));
-	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
-	    }
-	};
-
-	// v8 likes predictible objects
-	function Item(fun, array) {
-	    this.fun = fun;
-	    this.array = array;
-	}
-	Item.prototype.run = function () {
-	    this.fun.apply(null, this.array);
-	};
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-
-	// TODO(shtylman)
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
 
 /***/ }
 /******/ ])

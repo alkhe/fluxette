@@ -29,7 +29,7 @@ describe('React', () => {
 				let { dispatch } = this.context.flux;
 				let username = React.findDOMNode(this.refs.username).value;
 				let email = React.findDOMNode(this.refs.email).value;
-				dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
+				dispatch([{ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email }]);
 			}
 			render() {
 				let { user } = this.state;
@@ -71,7 +71,7 @@ describe('React', () => {
 				let { dispatch } = this.context.flux;
 				let username = React.findDOMNode(this.refs.username).value;
 				let email = React.findDOMNode(this.refs.email).value;
-				dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
+				dispatch([{ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email }]);
 			}
 			render() {
 				let user = this.state;
@@ -115,7 +115,7 @@ describe('React', () => {
 				let { dispatch } = this.context.flux;
 				let username = React.findDOMNode(this.refs.username).value;
 				let email = React.findDOMNode(this.refs.email).value;
-				dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
+				dispatch([{ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email }]);
 			}
 			render() {
 				spy();
@@ -168,7 +168,7 @@ describe('React', () => {
 				let { dispatch } = this.context.flux;
 				let username = React.findDOMNode(this.refs.username).value;
 				let email = React.findDOMNode(this.refs.email).value;
-				dispatch({ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email });
+				dispatch([{ type: USER.SETNAME, name: username }, { type: USER.SETEMAIL, email }]);
 			}
 			render() {
 				spy();

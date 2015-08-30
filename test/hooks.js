@@ -12,7 +12,7 @@ const TYPES = {
 };
 
 describe('hook', () => {
-	it('should call listeners by the number of valid dispatches', () => {
+	it('should call listeners by the number of dispatches', () => {
 		let { dispatch, hook } = Flux(Reducer(0, {
 			[TYPES.A]: state => state + 1,
 			[TYPES.B]: state => state - 1
@@ -20,14 +20,13 @@ describe('hook', () => {
 
 		let spy = chai.spy(() => {});
 		hook(spy);
-		dispatch({ type: TYPES.A }, { type: TYPES.B });
+		dispatch({ type: TYPES.A });
 		dispatch();
-		dispatch(false, null);
 		dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
 		dispatch({ type: TYPES.A });
-		expect(spy).to.have.been.called.exactly(3);
+		expect(spy).to.have.been.called.exactly(4);
 	});
-	it('should call listeners with (state, actions)', () => {
+	it('should call listeners with (state, actions)', done => {
 		let { dispatch, state: getState, hook } = Flux(Reducer(0, {
 			[TYPES.A]: state => state + 1,
 			[TYPES.B]: state => state - 1
@@ -36,9 +35,10 @@ describe('hook', () => {
 		let spy = chai.spy((state, actions) => {
 			expect(actions).to.deep.equal([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
 			expect(state).to.equal(getState());
+			done();
 		});
 		hook(spy);
-		dispatch([{ type: TYPES.A }, { type: TYPES.B }], { type: TYPES.BOGUS });
+		dispatch([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
 		expect(spy).to.have.been.called.once;
 	});
 });
@@ -52,10 +52,8 @@ describe('unhook', () => {
 
 		let spy = chai.spy(() => {});
 		hook(spy);
-		dispatch({ type: TYPES.A }, { type: TYPES.B });
-		dispatch();
-		dispatch(false, null);
 		dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
+		dispatch();
 		unhook(spy);
 		dispatch({ type: TYPES.A });
 		expect(spy).to.have.been.called.twice;

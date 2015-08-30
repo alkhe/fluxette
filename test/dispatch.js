@@ -53,24 +53,6 @@ describe('dispatch', () => {
 			b: 'ab'
 		});
 	});
-	it('should dispatch argument lists', () => {
-		let { dispatch, state } = Flux(Shape({
-			a: Reducer(0, {
-				[TYPES.A]: state => state + 1,
-				[TYPES.B]: state => state - 1
-			}),
-			b: Reducer('', {
-				[TYPES.A]: state => state + 'a',
-				[TYPES.B]: state => state + 'b'
-			})
-		}));
-
-		dispatch({ type: TYPES.A }, { type: TYPES.B });
-		expect(state()).to.deep.equal({
-			a: 0,
-			b: 'ab'
-		});
-	});
 	it('should not call hooks when nothing is passed', () => {
 		let { dispatch, hook } = Flux(Shape({
 			a: Reducer(0, {
@@ -111,7 +93,7 @@ describe('dispatch', () => {
 			[TYPES.B]: state => state - 1
 		}));
 
-		dispatch({ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS });
+		dispatch([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
 		expect(history()).to.deep.equal([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
 	});
 });
