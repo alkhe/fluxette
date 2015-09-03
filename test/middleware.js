@@ -49,9 +49,11 @@ describe('middleware', () => {
 			};
 			flux.hook(temporal);
 
-			flux.dispatch(new Promise(res => {
-				setTimeout(() => res({ type: TYPES.A }), 10);
-			}));
+			flux.dispatch(({ dispatch }) =>
+				new Promise(res => {
+					setTimeout(() => res({ type: TYPES.A }), 10);
+				}).then(dispatch)
+			);
 		});
 	});
 });
