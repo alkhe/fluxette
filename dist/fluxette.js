@@ -216,20 +216,17 @@ return /******/ (function(modules) { // webpackBootstrap
 				status--;
 			}
 			if (call && status === 0) {
-				update();
+				for (var i = 0; i < hooks.length; i++) {
+					hooks[i](_state, buffer);
+				}
+				buffer = [];
 			}
-		},
-		    update = function update() {
-			for (var i = 0; i < hooks.length; i++) {
-				hooks[i](_state, buffer);
-			}
-			buffer = [];
 		};
 
 		init(initial);
 
 		var flux = {
-			init: init, dispatch: dispatch, update: update,
+			init: init, dispatch: dispatch,
 			use: function use() {
 				for (var _len = arguments.length, middleware = Array(_len), _key = 0; _key < _len; _key++) {
 					middleware[_key] = arguments[_key];

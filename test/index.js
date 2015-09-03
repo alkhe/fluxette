@@ -18,8 +18,6 @@ describe('index', () => {
 			.that.is.an.instanceof(Function);
 		expect(flux).to.have.property('dispatch')
 			.that.is.an.instanceof(Function);
-		expect(flux).to.have.property('update')
-			.that.is.an.instanceof(Function);
 		expect(flux).to.have.property('use')
 			.that.is.an.instanceof(Function);
 		expect(flux).to.have.property('state')

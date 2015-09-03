@@ -159,8 +159,8 @@ Resets the Flux object with `state`, or uses the default state returned by the s
 flux.init(getStateFromServer());
 ```
 
-**flux.dispatch(...actions)**
-Processes `actions` and calls all listeners. `actions` can be any Object, array of Objects, or argument list of Objects. If you use middleware, that includes Functions, Promises, and others.
+**flux.dispatch(actions, [update = true])**
+Processes `actions` and calls all listeners if `update` is true. `actions` can be any Object, or array of Objects, which can be nested. If you use middleware, that includes Functions, Promises, and others. You can call `dispatch` without any arguments to call all listeners, if you streamed or buffered updates to the dispatcher.
 
 ```js
 flux.dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
@@ -172,20 +172,6 @@ flux.dispatch(({ dispatch }) => {
 	// useful if this function came from somewhere else
 	dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
 })
-```
-
-**flux.process(actions, [normalized])**
-Processes `actions`, but doesn't call listeners. `actions` are in the same format that `dispatch` uses. If you are sure that `actions` is a flat array of actions, you can pass `true` as the second argument. This is useful for time travel and buffered updates.
-
-```js
-flux.process([action1, action2, action3], true);
-```
-
-**flux.update()**
-Calls all listeners that are `hook`ed. `dispatch` uses this.
-
-```js
-flux.update();
 ```
 
 **flux.use(...middleware)**

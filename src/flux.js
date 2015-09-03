@@ -23,20 +23,17 @@ export default (store, initial) => {
 				status--;
 			}
 			if (call && status === 0) {
-				update();
+				for (let i = 0; i < hooks.length; i++) {
+					hooks[i](state, buffer);
+				}
+				buffer = [];
 			}
-		},
-		update = () => {
-			for (let i = 0; i < hooks.length; i++) {
-				hooks[i](state, buffer);
-			}
-			buffer = [];
 		};
 
 	init(initial);
 
 	let flux = {
-		init, dispatch, update,
+		init, dispatch,
 		use: (...middleware) => { reduce = middle(flux, middleware, reduce); },
 		state: () => state,
 		history: () => history,
