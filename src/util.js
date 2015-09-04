@@ -1,7 +1,7 @@
 let $normalize = (arr, into) => {
 	for (let i = 0; i < arr.length; i++) {
 		let val = arr[i];
-		if (val instanceof Array) {
+		if (Array.isArray(val)) {
 			$normalize(val, into);
 		}
 		else {
@@ -13,7 +13,7 @@ let $normalize = (arr, into) => {
 };
 
 export let normalize = arr => {
-	if (arr instanceof Array) {
+	if (Array.isArray(arr)) {
 		let norm = [];
 		$normalize(arr, norm);
 		return norm;

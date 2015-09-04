@@ -1,7 +1,7 @@
 import { same } from '../util';
 
 export default (getters, deriver = x => x) => {
-	if (!(getters instanceof Array)) {
+	if (!Array.isArray(getters)) {
 		getters = [getters];
 	}
 	// Caches

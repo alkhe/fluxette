@@ -120,7 +120,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var $normalize = function $normalize(arr, into) {
 		for (var i = 0; i < arr.length; i++) {
 			var val = arr[i];
-			if (val instanceof Array) {
+			if (Array.isArray(val)) {
 				$normalize(val, into);
 			} else {
 				if (val instanceof Object) {
@@ -131,7 +131,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	var normalize = function normalize(arr) {
-		if (arr instanceof Array) {
+		if (Array.isArray(arr)) {
 			var norm = [];
 			$normalize(arr, norm);
 			return norm;
@@ -451,7 +451,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			return x;
 		} : arguments[1];
 
-		if (!(getters instanceof Array)) {
+		if (!Array.isArray(getters)) {
 			getters = [getters];
 		}
 		// Caches
