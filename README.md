@@ -160,7 +160,7 @@ flux.init(getStateFromServer());
 ```
 
 **flux.dispatch(actions, [update = true])**
-Processes `actions` and calls all listeners if `update` is true. `actions` can be any Object, or array of Objects, which can be nested. If you use middleware, that includes Functions, Promises, and others. You can call `dispatch` without any arguments to call all listeners, if you streamed or buffered updates to the dispatcher.
+Processes `actions` and calls all listeners if `update` is true. `actions` can be any Object, or array of Objects, which can be nested. If you use middleware, that includes Functions, Promises, and others. You can call `dispatch` without any arguments to call all listeners, if you streamed or buffered updates to the dispatcher. It also returns the array of actions that were processed by the dispatch pipeline, making techniques like Promise chaining easy.
 
 ```js
 flux.dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
@@ -271,7 +271,7 @@ React.render(
 ```
 
 **connect([selectors])**
-Extends a Component to manage listeners to the Flux object on `this.context`, and performs a `setState` when the state changes. It also takes an optional selector or array of selectors, which make the state more specific. It will only update when the selector returns a new value.
+Extends a Component to manage listeners to the Flux object on `this.context`, and performs a `setState` when the state changes. It also takes an optional selector or array of selectors, which make the state more specific. It will only calculate a new value if one of the selectors returns a new value.
 
 ```js
 import { connect } from 'fluxette';
@@ -366,10 +366,8 @@ let history = flux.history();
 sendToServer({ history });
 // rehydrating
 let { history } = getFromServer();
-flux.process(history);
+flux.dispatch(history, false);
 ```
-
-This example uses the `process` method, which skips all middleware.
 
 **Declarative**
 ```js
@@ -394,7 +392,7 @@ sendToServer({ state: old, history });
 // rehydrating
 let { state, history } = getFromServer();
 flux.init(state);
-flux.process(history);
+flux.dispatch(history, false);
 ```
 
 ## Debugging

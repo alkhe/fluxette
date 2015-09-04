@@ -9,6 +9,7 @@ export default (store, initial) => {
 			history.push(action);
 			buffer.push(action);
 			state = store(state, action);
+			return action;
 		},
 		init = s => {
 			history = [];
@@ -19,7 +20,7 @@ export default (store, initial) => {
 			actions = normalize(actions);
 			if (actions.length > 0) {
 				status++;
-				actions.forEach(reduce);
+				actions = actions.map(reduce);
 				status--;
 			}
 			if (call && status === 0) {
@@ -28,6 +29,7 @@ export default (store, initial) => {
 				}
 				buffer = [];
 			}
+			return actions;
 		};
 
 	init(initial);

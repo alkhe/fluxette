@@ -200,6 +200,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			_history.push(action);
 			buffer.push(action);
 			_state = store(_state, action);
+			return action;
 		},
 		    init = function init(s) {
 			_history = [];
@@ -212,7 +213,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			actions = (0, _util.normalize)(actions);
 			if (actions.length > 0) {
 				status++;
-				actions.forEach(reduce);
+				actions = actions.map(reduce);
 				status--;
 			}
 			if (call && status === 0) {
@@ -221,6 +222,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 				buffer = [];
 			}
+			return actions;
 		};
 
 		init(initial);

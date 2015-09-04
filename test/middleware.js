@@ -33,6 +33,10 @@ describe('middleware', () => {
 	});
 	describe('promise', () => {
 		it('should dispatch promises', done => {
+			let then = function(...args) {
+				return Promise.all(this).then(...args);
+			};
+
 			let flux = Flux(Reducer(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
@@ -50,9 +54,9 @@ describe('middleware', () => {
 			flux.hook(temporal);
 
 			flux.dispatch(({ dispatch }) =>
-				new Promise(res => {
+				dispatch(new Promise(res => {
 					setTimeout(() => res({ type: TYPES.A }), 10);
-				}).then(dispatch)
+				}))::then(dispatch)
 			);
 		});
 	});
