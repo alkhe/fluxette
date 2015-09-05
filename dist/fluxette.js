@@ -172,14 +172,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return true;
 	};
-
 	exports.same = same;
-	var middle = function middle(flux, mw, dispatch) {
-		return mw.reduceRight(function (next, ware) {
-			return ware.call(flux, next);
-		}, dispatch);
-	};
-	exports.middle = middle;
 
 /***/ },
 /* 2 */
@@ -197,49 +190,57 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 	var _util = __webpack_require__(1);
 
-	exports['default'] = function (store, initial) {
-		var _state = initial !== undefined ? initial : store(),
-		    hooks = [],
-		    status = 0;
+	exports['default'] = function (reducer) {
+		var _state = arguments.length <= 1 || arguments[1] === undefined ? reducer() : arguments[1];
 
-		var reduce = function reduce(action) {
-			_state = store(_state, action);
-			return action;
-		},
-		    dispatch = function dispatch(actions) {
-			var call = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+		return (function () {
+			var hooks = [],
+			    status = 0;
+			return ({
+				reduce: function reduce(action) {
+					_state = reducer(_state, action);
+					return action;
+				},
+				using: function using() {
+					var _this = this;
 
-			status++;
-			actions = (0, _util.normalize)(actions).map(reduce);
-			status--;
-			if (call && status === 0) {
-				for (var i = 0; i < hooks.length; i++) {
-					hooks[i](_state);
+					var flux = _extends({}, this);
+
+					for (var _len = arguments.length, middleware = Array(_len), _key = 0; _key < _len; _key++) {
+						middleware[_key] = arguments[_key];
+					}
+
+					flux.reduce = middleware.reduceRight(function (next, ware) {
+						return ware.call(_this, next);
+					}, flux.reduce);
+					flux.dispatch = function (actions) {
+						var call = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+
+						status++;
+						actions = (0, _util.normalize)(actions).map(flux.reduce);
+						status--;
+						if (call && status === 0) {
+							for (var i = 0; i < hooks.length; i++) {
+								hooks[i](_state);
+							}
+						}
+						return actions;
+					};
+					return flux;
+				},
+				state: function state() {
+					return _state;
+				},
+				hook: hooks.push.bind(hooks),
+				unhook: function unhook(fn) {
+					(0, _util.remove)(hooks, fn);
 				}
-			}
-			return actions;
-		};
-
-		var flux = {
-			dispatch: dispatch,
-			use: function use() {
-				for (var _len = arguments.length, middleware = Array(_len), _key = 0; _key < _len; _key++) {
-					middleware[_key] = arguments[_key];
-				}
-
-				reduce = (0, _util.middle)(flux, middleware, reduce);
-			},
-			state: function state() {
-				return _state;
-			},
-			hook: hooks.push.bind(hooks),
-			unhook: function unhook(fn) {
-				(0, _util.remove)(hooks, fn);
-			}
-		};
-		return flux;
+			}).using();
+		})();
 	};
 
 	module.exports = exports['default'];
@@ -324,40 +325,30 @@ return /******/ (function(modules) { // webpackBootstrap
 					enumerable: true
 				}]);
 
-				function Connect() {
+				function Connect(props, context) {
 					var _this = this;
 
 					_classCallCheck(this, Connect);
 
-					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-						args[_key] = arguments[_key];
-					}
-
-					_get(Object.getPrototypeOf(Connect.prototype), 'constructor', this).apply(this, args);
-					var flux = this.context.flux;
+					_get(Object.getPrototypeOf(Connect.prototype), 'constructor', this).call(this, props, context);
+					var flux = context.flux;
 
 					// Initial state
 					var lastState = this.state = selector(flux.state());
-					// Caching Hook
-					var listener = this[listenerKey] = function (state) {
+					// Register caching hook
+					flux.hook(this[listenerKey] = function (state) {
 						var newState = selector(state);
 						if (lastState !== newState) {
 							_get(Object.getPrototypeOf(Connect.prototype), 'setState', _this).call(_this, lastState = newState);
 						}
-					};
-					// Register setState
-					flux.hook(listener);
+					});
 				}
 
 				_createClass(Connect, [{
 					key: 'componentWillUnmount',
 					value: function componentWillUnmount() {
 						if (_get(Object.getPrototypeOf(Connect.prototype), 'componentWillUnmount', this)) {
-							for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-								args[_key2] = arguments[_key2];
-							}
-
-							_get(Object.getPrototypeOf(Connect.prototype), 'componentWillUnmount', this).apply(this, args);
+							_get(Object.getPrototypeOf(Connect.prototype), 'componentWillUnmount', this).call(this);
 						}
 						// Unregister setState
 						this.context.flux.unhook(this[listenerKey]);

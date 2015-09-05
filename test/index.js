@@ -8,9 +8,9 @@ chai.use(spies);
 describe('index', () => {
 	it('should properly construct flux object', () => {
 		let flux = Flux(Shape());
-		expect(flux).to.have.property('dispatch')
+		expect(flux).to.have.property('reduce')
 			.that.is.an.instanceof(Function);
-		expect(flux).to.have.property('use')
+		expect(flux).to.have.property('dispatch')
 			.that.is.an.instanceof(Function);
 		expect(flux).to.have.property('state')
 			.that.is.an.instanceof(Function);

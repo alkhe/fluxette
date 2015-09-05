@@ -43,6 +43,3 @@ export let same = (left, right) => {
 	}
 	return true;
 }
-
-export let middle = (flux, mw, dispatch) =>
-	mw.reduceRight((next, ware) => flux::ware(next), dispatch);

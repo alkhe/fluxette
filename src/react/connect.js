@@ -9,24 +9,22 @@ export default (selector = x => x) => {
 				...Component.contextTypes,
 				flux: PropTypes.object.isRequired
 			}
-			constructor(...args) {
-				super(...args);
-				let { flux } = this.context;
+			constructor(props, context) {
+				super(props, context);
+				let { flux } = context;
 				// Initial state
 				let lastState = this.state = selector(flux.state());
-				// Caching Hook
-				let listener = this[listenerKey] = state => {
+				// Register caching hook
+				flux.hook(this[listenerKey] = state => {
 					let newState = selector(state);
 					if (lastState !== newState) {
 						super.setState(lastState = newState);
 					}
-				};
-				// Register setState
-				flux.hook(listener);
+				});
 			}
-			componentWillUnmount(...args) {
+			componentWillUnmount() {
 				if (super.componentWillUnmount) {
-					super.componentWillUnmount(...args);
+					super.componentWillUnmount();
 				}
 				// Unregister setState
 				this.context.flux.unhook(this[listenerKey]);

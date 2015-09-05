@@ -1,32 +1,31 @@
-import { normalize, remove, middle } from './util';
+import { normalize, remove } from './util';
 
-export default (store, initial) => {
-	let state = initial !== undefined ? initial : store(),
-		hooks = [],
+export default (reducer, state = reducer()) => {
+	let hooks = [],
 		status = 0;
-
-	let reduce = action => {
-			state = store(state, action);
+	return {
+		reduce: action => {
+			state = reducer(state, action);
 			return action;
 		},
-		dispatch = (actions, call = true) => {
-			status++;
-			actions = normalize(actions).map(reduce);
-			status--;
-			if (call && status === 0) {
-				for (let i = 0; i < hooks.length; i++) {
-					hooks[i](state);
+		using(...middleware) {
+			let flux = { ...this };
+			flux.reduce = middleware.reduceRight((next, ware) => this::ware(next), flux.reduce);
+			flux.dispatch = (actions, call = true) => {
+				status++;
+				actions = normalize(actions).map(flux.reduce);
+				status--;
+				if (call && status === 0) {
+					for (let i = 0; i < hooks.length; i++) {
+						hooks[i](state);
+					}
 				}
-			}
-			return actions;
-		};
-
-	let flux = {
-		dispatch,
-		use: (...middleware) => { reduce = middle(flux, middleware, reduce); },
+				return actions;
+			};
+			return flux;
+		},
 		state: () => state,
 		hook: ::hooks.push,
 		unhook: fn => { remove(hooks, fn); }
-	};
-	return flux;
+	}.using();
 }
