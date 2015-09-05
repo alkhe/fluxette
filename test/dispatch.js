@@ -87,13 +87,4 @@ describe('dispatch', () => {
 		dispatch(undefined, [0, false, null]);
 		expect(spy).not.to.have.been.called;
 	});
-	it('should update history', () => {
-		let { dispatch, history } = Flux(Reducer(0, {
-			[TYPES.A]: state => state + 1,
-			[TYPES.B]: state => state - 1
-		}));
-
-		dispatch([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
-		expect(history()).to.deep.equal([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
-	});
 });

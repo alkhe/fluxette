@@ -26,14 +26,13 @@ describe('hook', () => {
 		dispatch({ type: TYPES.A });
 		expect(spy).to.have.been.called.exactly(4);
 	});
-	it('should call listeners with (state, actions)', done => {
+	it('should call listeners with (state)', done => {
 		let { dispatch, state: getState, hook } = Flux(Reducer(0, {
 			[TYPES.A]: state => state + 1,
 			[TYPES.B]: state => state - 1
 		}));
 
-		let spy = chai.spy((state, actions) => {
-			expect(actions).to.deep.equal([{ type: TYPES.A }, { type: TYPES.B }, { type: TYPES.BOGUS }]);
+		let spy = chai.spy(state => {
 			expect(state).to.equal(getState());
 			done();
 		});

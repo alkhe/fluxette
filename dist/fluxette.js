@@ -66,17 +66,25 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _flux2 = _interopRequireDefault(_flux);
 
-	var _reducerShape = __webpack_require__(11);
+	var _reducerShape = __webpack_require__(13);
 
 	var _reducerShape2 = _interopRequireDefault(_reducerShape);
 
-	var _reducerReducer = __webpack_require__(10);
+	var _reducerReducer = __webpack_require__(12);
 
 	var _reducerReducer2 = _interopRequireDefault(_reducerReducer);
 
 	var _reducerFilter = __webpack_require__(9);
 
 	var _reducerFilter2 = _interopRequireDefault(_reducerFilter);
+
+	var _reducerHistory = __webpack_require__(10);
+
+	var _reducerHistory2 = _interopRequireDefault(_reducerHistory);
+
+	var _reducerHydrate = __webpack_require__(11);
+
+	var _reducerHydrate2 = _interopRequireDefault(_reducerHydrate);
 
 	var _reactContext = __webpack_require__(7);
 
@@ -101,6 +109,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.Shape = _reducerShape2['default'];
 	exports.Reducer = _reducerReducer2['default'];
 	exports.Filter = _reducerFilter2['default'];
+	exports.History = _reducerHistory2['default'];
+	exports.Hydrate = _reducerHydrate2['default'];
 	exports.Context = _reactContext2['default'];
 	exports.connect = _reactConnect2['default'];
 	exports.select = _reactSelect2['default'];
@@ -190,45 +200,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _util = __webpack_require__(1);
 
 	exports['default'] = function (store, initial) {
-		var _state = undefined,
-		    _history = undefined,
-		    buffer = undefined,
+		var _state = initial !== undefined ? initial : store(),
 		    hooks = [],
 		    status = 0;
 
 		var reduce = function reduce(action) {
-			_history.push(action);
-			buffer.push(action);
 			_state = store(_state, action);
 			return action;
-		},
-		    init = function init(s) {
-			_history = [];
-			buffer = [];
-			_state = s !== undefined ? s : store();
 		},
 		    dispatch = function dispatch(actions) {
 			var call = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
 
-			actions = (0, _util.normalize)(actions);
-			if (actions.length > 0) {
-				status++;
-				actions = actions.map(reduce);
-				status--;
-			}
+			status++;
+			actions = (0, _util.normalize)(actions).map(reduce);
+			status--;
 			if (call && status === 0) {
 				for (var i = 0; i < hooks.length; i++) {
-					hooks[i](_state, buffer);
+					hooks[i](_state);
 				}
-				buffer = [];
 			}
 			return actions;
 		};
 
-		init(initial);
-
 		var flux = {
-			init: init, dispatch: dispatch,
+			dispatch: dispatch,
 			use: function use() {
 				for (var _len = arguments.length, middleware = Array(_len), _key = 0; _key < _len; _key++) {
 					middleware[_key] = arguments[_key];
@@ -238,9 +233,6 @@ return /******/ (function(modules) { // webpackBootstrap
 			},
 			state: function state() {
 				return _state;
-			},
-			history: function history() {
-				return _history;
 			},
 			hook: hooks.push.bind(hooks),
 			unhook: function unhook(fn) {
@@ -502,6 +494,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 	exports["default"] = function () {
+		return function (state, action) {
+			if (state === undefined) state = [];
+			return state.concat(action);
+		};
+	};
+
+	module.exports = exports["default"];
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+		value: true
+	});
+
+	exports['default'] = function (store) {
+		return function (state, action) {
+			return action !== undefined && action.type === type ? action.state : store(state, action);
+		};
+	};
+
+	var type = '@edge/flux-reducers:HYDRATE';
+	exports.type = type;
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	exports["default"] = function () {
 		var initial = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 		var reducers = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 		return function (state, action) {
@@ -518,7 +548,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ },
-/* 11 */
+/* 13 */
 /***/ function(module, exports) {
 
 	"use strict";

@@ -188,13 +188,6 @@ Returns the state.
 flux.state();
 ```
 
-**flux.history()**
-Returns all actions that have been processed by the reducers.
-
-```js
-flux.history();
-```
-
 **flux.hook(fn)**
 Register a function as a listener.
 
@@ -360,9 +353,16 @@ Middleware is implemented as a *creator* function that takes a `next` argument, 
 
 **Imperative**
 ```js
+import { Flux, Shape, History } from 'fluxette';
+
+let flux = Flux(Shape({
+	history: History(),
+	// ...
+}));
+
 flux.dispatch(actions);
 // dehydrating
-let history = flux.history();
+let { history } = flux.state();
 sendToServer({ history });
 // rehydrating
 let { history } = getFromServer();

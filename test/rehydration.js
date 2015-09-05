@@ -1,7 +1,8 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import Flux, { Shape, Reducer } from '..';
+import Flux, { Shape, Reducer, History } from '..';
+import Hydrate, { type } from '../lib/reducer/hydrate';
 
 chai.use(spies);
 
@@ -15,6 +16,7 @@ describe('rehydration', () => {
 	describe('imperative', () => {
 		it('should recover state from history', () => {
 			let stores = {
+				history: History(),
 				a: Reducer(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
@@ -25,14 +27,13 @@ describe('rehydration', () => {
 				})
 			};
 
-			let { dispatch, state, history } = Flux(Shape(stores));
-			dispatch({ type: TYPES.A }, { type: TYPES.B });
+			let { dispatch, state } = Flux(Shape(stores));
+			dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
 
-			let lastState = state(),
-				lastHistory = history();
+			let lastState = state();
 
 			let { dispatch: dispatch2, state: state2 } = Flux(Shape(stores));
-			dispatch2(lastHistory, false);
+			dispatch2(lastState.history, false);
 
 			expect(state2()).to.deep.equal(lastState);
 			expect(state2()).not.to.equal(lastState);
@@ -53,11 +54,11 @@ describe('rehydration', () => {
 			};
 
 			let { dispatch, state } = Flux(Shape(stores));
-			dispatch({ type: TYPES.A }, { type: TYPES.B });
-
+			dispatch([{ type: TYPES.A }, { type: TYPES.B }]);
 			let lastState = state();
 
-			let { state: state2 } = Flux(stores, lastState);
+			let { dispatch: dispatch2, state: state2 } = Flux(Hydrate(Shape(stores)));
+			dispatch2({ type, state: lastState });
 
 			expect(state2()).to.deep.equal(lastState);
 			expect(state2()).to.equal(lastState);
