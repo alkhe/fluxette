@@ -340,6 +340,8 @@ return /******/ (function(modules) { // webpackBootstrap
 							_get(Object.getPrototypeOf(Connect.prototype), 'setState', _this).call(_this, lastState = newState);
 						}
 					});
+					// Attach dispatch to component
+					this.dispatch = flux.dispatch;
 				}
 
 				_createClass(Connect, [{

@@ -21,6 +21,8 @@ export default (selector = x => x) => {
 						super.setState(lastState = newState);
 					}
 				});
+				// Attach dispatch to component
+				this.dispatch = flux.dispatch;
 			}
 			componentWillUnmount() {
 				if (super.componentWillUnmount) {
