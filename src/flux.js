@@ -10,7 +10,7 @@ export default (reducer, state = reducer()) => {
 		},
 		using(...middleware) {
 			let flux = { ...this };
-			flux.reduce = middleware.reduceRight((next, ware) => this::ware(next), flux.reduce);
+			flux.reduce = middleware.reduceRight((next, ware) => flux::ware(next), flux.reduce);
 			flux.dispatch = (actions, call = true) => {
 				status++;
 				actions = normalize(actions).map(flux.reduce);

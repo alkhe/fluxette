@@ -206,8 +206,6 @@ return /******/ (function(modules) { // webpackBootstrap
 					return action;
 				},
 				using: function using() {
-					var _this = this;
-
 					var flux = _extends({}, this);
 
 					for (var _len = arguments.length, middleware = Array(_len), _key = 0; _key < _len; _key++) {
@@ -215,7 +213,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 
 					flux.reduce = middleware.reduceRight(function (next, ware) {
-						return ware.call(_this, next);
+						return ware.call(flux, next);
 					}, flux.reduce);
 					flux.dispatch = function (actions) {
 						var call = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
