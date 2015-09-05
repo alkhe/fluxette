@@ -1,8 +1,7 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import Flux, { Shape, Reducer, History } from '..';
-import Hydrate, { type } from '../lib/reducer/hydrate';
+import Flux, { Shape, Reducer, History, Hydrate } from '..';
 
 chai.use(spies);
 
@@ -58,7 +57,7 @@ describe('rehydration', () => {
 			let lastState = state();
 
 			let { dispatch: dispatch2, state: state2 } = Flux(Hydrate(Shape(stores)));
-			dispatch2({ type, state: lastState });
+			dispatch2({ type: Hydrate.type, state: lastState });
 
 			expect(state2()).to.deep.equal(lastState);
 			expect(state2()).to.equal(lastState);

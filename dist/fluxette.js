@@ -200,6 +200,23 @@ return /******/ (function(modules) { // webpackBootstrap
 		return (function () {
 			var hooks = [],
 			    status = 0;
+
+			var makeDispatch = function makeDispatch(reduce) {
+				return function (actions) {
+					var call = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+
+					status++;
+					actions = (0, _util.normalize)(actions).map(reduce);
+					status--;
+					if (call && status === 0) {
+						for (var i = 0; i < hooks.length; i++) {
+							hooks[i](_state);
+						}
+					}
+					return actions;
+				};
+			};
+
 			return ({
 				reduce: function reduce(action) {
 					_state = reducer(_state, action);
@@ -212,22 +229,9 @@ return /******/ (function(modules) { // webpackBootstrap
 						middleware[_key] = arguments[_key];
 					}
 
-					flux.reduce = middleware.reduceRight(function (next, ware) {
+					flux.dispatch = makeDispatch(flux.reduce = middleware.reduceRight(function (next, ware) {
 						return ware.call(flux, next);
-					}, flux.reduce);
-					flux.dispatch = function (actions) {
-						var call = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
-
-						status++;
-						actions = (0, _util.normalize)(actions).map(flux.reduce);
-						status--;
-						if (call && status === 0) {
-							for (var i = 0; i < hooks.length; i++) {
-								hooks[i](_state);
-							}
-						}
-						return actions;
-					};
+					}, flux.reduce));
 					return flux;
 				},
 				state: function state() {
@@ -502,15 +506,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
-	exports['default'] = function (store) {
+	var Hydrate = function Hydrate(store) {
 		return function (state, action) {
-			return action !== undefined && action.type === type ? action.state : store(state, action);
+			return action !== undefined && action.type === Hydrate.type ? action.state : store(state, action);
 		};
 	};
 
-	var type = '@edge/flux-reducers:HYDRATE';
-	exports.type = type;
+	Hydrate.type = '@edge/flux-reducers:HYDRATE';
+
+	exports['default'] = Hydrate;
+	module.exports = exports['default'];
 
 /***/ },
 /* 12 */

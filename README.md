@@ -96,7 +96,7 @@ We also create a stateful interface to our reducer, which we can now integrate i
 
 **Putting it all together**
 
-Here we import two things: the `@connect` decorator and the `Context` component. `Context` provides flux on `this.context` to all of its children, which `@connect` then utilizes to manage listeners on your component.
+Here we import two things: the `@connect` decorator and the `Context` component. `Context` provides flux on `this.context` to all of its children, which `@connect` then utilizes to manage listeners on your component (also attaches `dispatch` to the component, for your convenience).
 
 ```js
 import React from 'react';
@@ -119,8 +119,7 @@ const flux = Flux(updater);
 @connect(state => ({ text: state }))
 class Updater extends React.Component {
 	change(e) {
-		let { dispatch } = this.context.flux;
-		dispatch(update(e.target.value));
+		this.dispatch(update(e.target.value));
 	}
 	render() {
 		return (
@@ -152,13 +151,6 @@ import stores from './stores';
 const flux = Flux(stores);
 ```
 
-**flux.init(state)**
-Resets the Flux object with `state`, or uses the default state returned by the store if `state` is undefined. This is used for things like time travel and declarative rehydration.
-
-```js
-flux.init(getStateFromServer());
-```
-
 **flux.dispatch(actions, [update = true])**
 Processes `actions` and calls all listeners if `update` is true. `actions` can be any Object, or array of Objects, which can be nested. If you use middleware, that includes Functions, Promises, and others. You can call `dispatch` without any arguments to call all listeners, if you streamed or buffered updates to the dispatcher. It also returns the array of actions that were processed by the dispatch pipeline, making techniques like Promise chaining easy.
 
@@ -167,18 +159,18 @@ flux.dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
 
 // thunks
 import { thunk } from 'fluxette';
-flux.use(thunk);
+flux = flux.using(thunk);
 flux.dispatch(({ dispatch }) => {
 	// useful if this function came from somewhere else
 	dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
 })
 ```
 
-**flux.use(...middleware)**
-Takes an argument list of middleware and folds them over the internal dispatcher function. This can be called multiple times.
+**flux.using(...middleware)**
+Takes an argument list of middleware folds them over the internal dispatcher, on a new Flux object. This can be called multiple times.
 
 ```js
-flux.use(thunk, promise);
+flux = flux.using(thunk, promise);
 ```
 
 **flux.state()**
@@ -189,7 +181,7 @@ flux.state();
 ```
 
 **flux.hook(fn)**
-Register a function as a listener.
+Registers a function as a listener.
 
 ```js
 flux.hook((state, actions) => {
@@ -198,7 +190,7 @@ flux.hook((state, actions) => {
 ```
 
 **flux.unhook(fn)**
-Deregister a function that was previously registered as a listener.
+Deregisters a function that was previously registered as a listener.
 
 ```js
 let fn = (state, actions) => {
@@ -264,7 +256,7 @@ React.render(
 ```
 
 **connect([selectors])**
-Extends a Component to manage listeners to the Flux object on `this.context`, and performs a `setState` when the state changes. It also takes an optional selector or array of selectors, which make the state more specific. It will only calculate a new value if one of the selectors returns a new value.
+Extends a Component to manage listeners to the Flux object on `this.context`, and performs a `setState` when the state changes. It also takes an optional selector or array of selectors, which make the state more specific. It will only calculate a new value if one of the selectors returns a new value. It makes `this.context.flux.dispatch` available as `this.dispatch` on the component.
 
 ```js
 import { connect } from 'fluxette';
@@ -273,8 +265,7 @@ import { details } from './creators';
 @connect(state => state.details)
 class Component extends React.Component {
 	submit() {
-		let { dispatch } = this.context.flux;
-		dispatch(details.update({
+		this.dispatch(details.update({
 			nickname: React.findDOMNode(this.refs.nickname).value,
 			email: React.findDOMNode(this.refs.email).value
 		}));
@@ -337,12 +328,12 @@ The *Deriver* is an concept specific to the `select` facility. `select` takes a 
 In the most general sense, Functional Flux relies on reducing actions into the state. Therefore, Stores or Reducers are pure functions with the signature `(State, Action) => State`. If a Store processes an action that it listens to, which results in a different state, it returns a value or reference that differs from the state that it was called with. This recursively cascades down to the root of the state tree. At the end of the dispatch, all listeners are called. Any of which that depend on data that could have possibly changed are called with new values or references. Thus, listeners can simply maintain a reference to the old state and compare with the new one to determine whether the state has changed.
 
 ## Middleware
-Middleware can extend the functionality of the dispatcher by accommodating functions, Promises, and other data structures, allowing for advanced asynchronous and multiplexing functionality. Middleware do not require knowledge of other middleware, which makes them easily composable. To use middleware, pass a list of them to `flux.use`.
+Middleware can extend the functionality of the dispatcher by accommodating functions, Promises, and other data structures, allowing for advanced asynchronous and multiplexing functionality. Middleware do not require knowledge of other middleware, which makes them easily composable. To use middleware, create a new flux object that implements them, by passing a list to `flux.using`.
 
 ```js
 import { thunk, promise } from 'fluxette';
 
-flux.use(thunk, promise);
+flux = flux.using(thunk, promise);
 ```
 
 ### Writing Middleware
@@ -366,33 +357,46 @@ let { history } = flux.state();
 sendToServer({ history });
 // rehydrating
 let { history } = getFromServer();
-flux.dispatch(history, false);
+flux.dispatch(history);
 ```
 
 **Declarative**
 ```js
+import { Flux, Shape, History, Hydrate } from 'fluxette';
+
+let flux = Flux(Hydrate(Shape({
+	history: History(),
+	// ...
+})));
+
 flux.dispatch(actions);
 // dehydrating
 let state = flux.state();
 sendToServer({ state });
 // rehydrating
 let { state } = getFromServer();
-flux.init(state);
+flux.dispatch({ type: Hydrate.type, state });
 ```
 
 If, for any reason you wanted to use both methods, this is one possible way:
 
 **Mux**
 ```js
-let old = flux.state();
+import { Flux, Shape, History, Hydrate } from 'fluxette';
+
+let flux = Flux(Hydrate(Shape({
+	history: History(),
+	// ...
+})));
+
+let state = flux.state();
 flux.dispatch(actions);
 // dehydrating
-let history = flux.history();
-sendToServer({ state: old, history });
+let history = state.history;
+sendToServer({ state, history });
 // rehydrating
 let { state, history } = getFromServer();
-flux.init(state);
-flux.dispatch(history, false);
+flux.dispatch([{ type: Hydrate.type, state }, ...history]);
 ```
 
 ## Debugging
@@ -401,7 +405,7 @@ flux.dispatch(history, false);
 Add a logger to the beginning of your middleware chain. This will log all actions before they are possibly transformed by other middleware.
 
 ```js
-flux.use(
+flux = flux.using(
 	function(next) {
 		return action => {
 			console.log(this.state(), action);
@@ -415,7 +419,7 @@ flux.use(
 **To log all actions just before the store reduces them:** Add a logger to the end of your middleware chain. This will log only actions that the stores see, and will be logged to the history.
 
 ```js
-flux.use(
+flux = flux.using
 	...middleware,
 	function(next) {
 		return action => {
@@ -466,8 +470,8 @@ One way to use the thunk middleware is to use an async action that combines acti
 ```js
 import { thunk } from 'fluxette';
 
-let { dispatch, use } = flux;
-use([thunk]);
+flux = flux.using(thunk);
+let { dispatch } = flux;
 
 // actions
 let resource = {
@@ -498,8 +502,8 @@ Another way is to return an array of actions directly from the action creator:
 ```js
 import { thunk } from 'fluxette';
 
-let { dispatch, use } = flux;
-use(thunk);
+flux = flux.using(thunk);
+let { dispatch } = flux;
 
 let resource = data => [
 	{ type: RESOURCE.REQUEST },
@@ -524,8 +528,8 @@ Using the design pattern outlined in [Asynchronous](#asynchronous), the preempti
 ```js
 import { thunk, Reducer } from 'fluxette';
 
-let { dispatch, use } = flux;
-use(thunk);
+flux = flux.using(thunk);
+let { dispatch } = flux;
 
 let setMessage = (messages, { message }) => ({
 	...messages,
@@ -623,14 +627,14 @@ Examples can be found [here](https://github.com/edge/fluxette/tree/master/exampl
 
 ## Testing
 ```sh
-# npm i -g testem mocha
-$ npm test
+npm i -g testem mocha
+npm test
 ```
 
 ## Todo
-* separate React facilities into fluxette-react
-* write middleware
-* add ~~lint~~, code coverage, CI, badges, etc.
+* separate React, middleware, and Reducer facilities
+* write async data dependencies
+* add code coverage, CI, badges, etc.
 * submit to HN
 
 ## Influences

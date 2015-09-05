@@ -1,7 +1,9 @@
-export default store =>
+let Hydrate = store =>
 	(state, action) =>
-		(action !== undefined) && (action.type === type)
+		(action !== undefined) && (action.type === Hydrate.type)
 			? action.state
 			: store(state, action);
 
-export let type = '@edge/flux-reducers:HYDRATE';
+Hydrate.type = '@edge/flux-reducers:HYDRATE';
+
+export default Hydrate;

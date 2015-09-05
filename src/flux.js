@@ -3,6 +3,20 @@ import { normalize, remove } from './util';
 export default (reducer, state = reducer()) => {
 	let hooks = [],
 		status = 0;
+
+	let makeDispatch = reduce =>
+		(actions, call = true) => {
+			status++;
+			actions = normalize(actions).map(reduce);
+			status--;
+			if (call && status === 0) {
+				for (let i = 0; i < hooks.length; i++) {
+					hooks[i](state);
+				}
+			}
+			return actions;
+		};
+
 	return {
 		reduce: action => {
 			state = reducer(state, action);
@@ -10,18 +24,9 @@ export default (reducer, state = reducer()) => {
 		},
 		using(...middleware) {
 			let flux = { ...this };
-			flux.reduce = middleware.reduceRight((next, ware) => flux::ware(next), flux.reduce);
-			flux.dispatch = (actions, call = true) => {
-				status++;
-				actions = normalize(actions).map(flux.reduce);
-				status--;
-				if (call && status === 0) {
-					for (let i = 0; i < hooks.length; i++) {
-						hooks[i](state);
-					}
-				}
-				return actions;
-			};
+			flux.dispatch = makeDispatch(flux.reduce = middleware.reduceRight(
+					(next, ware) => flux::ware(next), flux.reduce
+			));
 			return flux;
 		},
 		state: () => state,
