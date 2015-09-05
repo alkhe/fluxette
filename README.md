@@ -239,6 +239,41 @@ import { USER } from './types';
 user = Filter([USER.LOGIN, USER.LOGOUT, USER.CHAT], user);
 ```
 
+**History()**
+Creates a reducer that keeps track of the actions that have been dispatched.
+
+```js
+import { Shape, History } from 'fluxette';
+
+let flux = Flux(Shape({
+	history: History(),
+	// ...
+}))
+
+dispatch([{ type: TYPES.A, data: 'a' }, { type: TYPES.B, data: 'b' }]);
+dispatch({ type: TYPES.C, data: 'c' });
+
+flux.state().history
+
+// [{ type: TYPES.A, data: 'a' }, { type: TYPES.B, data: 'b' }, { type: TYPES.C, data: 'c' }]
+```
+
+**Hydrate(reducer)**
+Creates a reducer that wraps `reducer`, and replaces the state with `action.state` when an action of type `Hydrate.type` is dispatched.
+
+```js
+import { Hydrate } from 'fluxette';
+
+let flux = Flux(Hydrate(/* ... */));
+
+dispatch({ type: Hydrate.type, state: { a: 5, b: 6 }});
+
+flux.state()
+
+// { a: 5, b: 6 }
+
+```
+
 **Context**
 Extends a React component to provide a Flux object on the context to all of its children.
 
