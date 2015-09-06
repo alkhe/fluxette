@@ -27,7 +27,7 @@
 
 Why fluxette? (We used to have a list of buzzwords here.)
 
-"fluxette" means "little flux". That's exactly what it is, coming in a tiny ~1 kB, minified and gzipped. It is a library that combines the advantages of orthogonal code with the robust design of Facebook Flux. Through simple rules, it allows for the creation and exploitation of very advanced design patterns. It relies only on the basic convention that your stores are pure functions in the form of `(State, Action) => State` (see [The Law of Functional Flux](#the-law-of-functional-flux)). As a result, its dispatcher exists as [one simple line](https://github.com/edge/fluxette/blob/master/src/flux.js#L10). fluxette makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste reducers/listeners from redux).
+"fluxette" means "little flux". That's exactly what it is, coming in a tiny 1.6 kB, minified (even smaller gzipped!). It is a library that combines the advantages of orthogonal code with the robust design of Facebook Flux. Through simple rules, it allows for the creation and exploitation of very advanced design patterns. It relies only on the basic convention that your stores are pure functions in the form of `(State, Action) => State` (see [The Law of Functional Flux](#the-law-of-functional-flux)). As a result, its dispatcher exists as [one simple line](https://github.com/edge/fluxette/blob/master/src/flux.js#L10). fluxette makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste reducers/listeners from redux).
 
 fluxette prevents you from having many of the headaches that you may have had with React and other Flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("did the state really change?" and "I'm not done updating yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more.
 
@@ -258,7 +258,9 @@ Middleware is implemented as a *creator* function that takes a `next` argument, 
 
 **Imperative**
 ```js
-import { Flux, Shape, History } from 'fluxette';
+import Flux from 'fluxette';
+import Shape from 'reducer/shape';
+import History from 'reducer/history';
 
 let flux = Flux(Shape({
 	history: History(),
@@ -276,7 +278,10 @@ flux.dispatch(history);
 
 **Declarative**
 ```js
-import { Flux, Shape, History, Hydrate } from 'fluxette';
+import Flux from 'fluxette';
+import Shape from 'reducer/shape';
+import History from 'reducer/history';
+import Hydrate from 'reducer/hydrate';
 
 let flux = Flux(Hydrate(Shape({
 	history: History(),
@@ -296,7 +301,10 @@ If, for any reason you wanted to use both methods, this is one possible way:
 
 **Mux**
 ```js
-import { Flux, Shape, History, Hydrate } from 'fluxette';
+import Flux from 'fluxette';
+import Shape from 'reducer/shape';
+import History from 'reducer/history';
+import Hydrate from 'reducer/hydrate';
 
 let flux = Flux(Hydrate(Shape({
 	history: History(),
@@ -382,7 +390,7 @@ fluxette is completely synchronous, but asynchronous functionality is also suppo
 
 One way to use the thunk middleware is to use an async action that combines actions:
 ```js
-import { thunk } from 'fluxette';
+import thunk from 'fluxette-thunk';
 
 flux = flux.using(thunk);
 let { dispatch } = flux;
@@ -414,7 +422,7 @@ dispatch(getResource(data));
 
 Another way is to return an array of actions directly from the action creator:
 ```js
-import { thunk } from 'fluxette';
+import thunk from 'fluxette-thunk';
 
 flux = flux.using(thunk);
 let { dispatch } = flux;
@@ -440,7 +448,8 @@ dispatch(getResource(data));
 Using the design pattern outlined in [Asynchronous](#asynchronous), the preemptive *request* action can be used for optimistic updates on an asynchronous write from the client. If the write completed successfully, the *success* action can then be dispatched, without the user experiencing any latency. If the write failed, a *failure* action can be dispatched to easily rollback the changes from the optimistic update.
 
 ```js
-import { thunk, Reducer } from 'fluxette';
+import thunk from 'fluxette-thunk';
+import Leaf from 'reducer/leaf';
 
 flux = flux.using(thunk);
 let { dispatch } = flux;
@@ -449,7 +458,7 @@ let setMessage = (messages, { message }) => ({
 	...messages,
 	[message.id]: message
 });
-let messageReducer = Reducer({}, {
+let messageReducer = Leaf({}, {
 	[MESSAGE.REQUEST]: setMessage,
 	[MESSAGE.SUCCESS]: setMessage,
 	[MESSAGE.FAILURE]: (messages, { message }) => {
@@ -482,9 +491,9 @@ Store dependencies in vanilla flux is handled by using `waitFor`, but `waitFor` 
 Because Stores are just pure functions, they can easily be composed and reused.
 
 ```js
-import { Reducer } from 'fluxette';
+import Leaf from 'reducer/leaf';
 
-let player = Reducer({ points: 0 }, {
+let player = Leaf({ points: 0 }, {
 	[PLAYER.ADDPOINTS]: (state, action) => ({ ...state, points: state.points + action.points })
 });
 
@@ -508,7 +517,7 @@ let game = (state = { left: {}, right: {} }, action) => {
 For simpler use cases, just plug Stores into other Stores.
 
 ```js
-import { Shape } from 'fluxette';
+import Shape from 'reducer/shape';
 
 let users = {};
 
