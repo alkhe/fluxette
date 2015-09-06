@@ -1,9 +1,7 @@
 /* global describe it */
-import chai, { expect } from 'chai';
-import spies from 'chai-spies';
-import Flux, { Shape } from '..';
-
-chai.use(spies);
+import { expect } from 'chai';
+import Flux from '..';
+import Shape from 'reducer/shape';
 
 describe('index', () => {
 	it('should properly construct flux object', () => {

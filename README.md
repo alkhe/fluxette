@@ -27,16 +27,26 @@
 
 Why fluxette? (We used to have a list of buzzwords here.)
 
-"fluxette" means "little flux". That's exactly what it is, coming in at ~3 kB, minified and gzipped. It is a library that combines the advantages of orthogonal code with the robust design of Facebook Flux. Through simple rules, it allows for the creation and exploitation of very advanced design patterns. It relies only on the basic convention that your stores are pure functions in the form of `(State, Action) => State` (see [The Law of Functional Flux](#the-law-of-functional-flux)). As a result, its dispatcher exists as [one simple line](https://github.com/edge/fluxette/blob/master/src/flux.js#L32). fluxette provides facilities for elements of Functional Flux that will cover most of your use cases, but it is always possible to defer to writing a custom function if the need arises. This also makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste from redux).
+"fluxette" means "little flux". That's exactly what it is, coming in a tiny ~1 kB, minified and gzipped. It is a library that combines the advantages of orthogonal code with the robust design of Facebook Flux. Through simple rules, it allows for the creation and exploitation of very advanced design patterns. It relies only on the basic convention that your stores are pure functions in the form of `(State, Action) => State` (see [The Law of Functional Flux](#the-law-of-functional-flux)). As a result, its dispatcher exists as [one simple line](https://github.com/edge/fluxette/blob/master/src/flux.js#L10). fluxette makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste reducers/listeners from redux).
 
-fluxette removes many of the headaches that you may have had with React and other flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("did the state really change?" and "I'm not done dispatching yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more. With two React helpers, integrating Flux into your components no longer requires complicated mixins or lots of boilerplate.
+fluxette prevents you from having many of the headaches that you may have had with React and other Flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("did the state really change?" and "I'm not done updating yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more.
 
 ## Install
 
 ```sh
-$ npm i --save fluxette
+npm install --save fluxette
 ```
 [Browser builds (umd) are also available.](https://github.com/edge/fluxette/tree/master/dist)
+
+You'll probably want `reducer` as well for common reducer compositions (these used to come packaged with fluxette).
+```sh
+npm install --save reducer
+```
+
+If you're working with React, you should grab the React bindings.
+```sh
+npm install --save fluxette-react
+```
 
 ## Getting Started
 
@@ -79,10 +89,11 @@ const update = value => ({ type: UPDATE, value });
 We'll also need a Reducer to manage our state.
 
 ```js
-import Flux, { Reducer } from 'fluxette';
+import Flux from 'fluxette';
+import Leaf from 'reducer/leaf';
 
-// reducer store
-const updater = Reducer('', {
+// leaf reducer
+const updater = Leaf('', {
 	[UPDATE]: (state, action) => action.value
 });
 
@@ -90,17 +101,19 @@ const updater = Reducer('', {
 const flux = Flux(updater);
 ```
 
-`Reducer` creates a pure function that looks at your actions and uses them to determine how to operate on the state. Our Reducer's default value is an empty string, just like in our `Updater` component. It listens to any actions of the type `UPDATE`, and uses the value that the action carries as our new state.
+`Leaf` creates a pure function that looks at your actions and uses them to determine how to operate on the state. Our Reducer's default value is an empty string, just like in our `Updater` component. It listens to any actions of the type `UPDATE`, and uses the value that the action carries as our new state.
 
 We also create a stateful interface to our reducer, which we can now integrate into our component.
 
 **Putting it all together**
 
-Here we import two things: the `@connect` decorator and the `Context` component. `Context` provides flux on `this.context` to all of its children, which `@connect` then utilizes to manage listeners on your component (also attaches `dispatch` to the component, for your convenience).
+Here we import two things from the React bindings: the `@connect` decorator and the `Context` component. `Context` provides flux on `this.context` to all of its children, which `@connect` then utilizes to manage listeners on your component (also attaches `dispatch` to the component, for your convenience).
 
 ```js
 import React from 'react';
-import Flux, { Reducer, Context, connect } from 'fluxette';
+import Flux from 'fluxette';
+import Leaf from 'reducer/leaf';
+import { Context, connect } from 'fluxette-react'
 
 // constants
 const UPDATE = 'UPDATE';
@@ -109,7 +122,7 @@ const UPDATE = 'UPDATE';
 const update = value => ({ type: UPDATE, value });
 
 // reducer store
-const updater = Reducer('', {
+const updater = Leaf('', {
 	[UPDATE]: (state, action) => action.value
 });
 
@@ -200,140 +213,6 @@ let fn = (state, actions) => {
 flux.hook(fn);
 
 flux.unhook(fn);
-```
-
-**Shape(shape)**
-Creates a reducer that holds more reducers on each of its properties. The property names reflect how they will appear on the state.
-
-```js
-import { Shape } from 'fluxette';
-import { stock, cart } from './reducers';
-
-let store = Shape({ stock, cart });
-
-user()
-// { stock: stock(), cart: cart() }
-```
-
-**Reducer(initial, reducers)**
-Creates a reducer that applies its reducers to a state respective to the type of the action provided, using `initial` as the initial state.
-
-```js
-import { Reducer } from 'fluxette';
-import { API } from './types';
-
-let request = Reducer({ status: 'ready' }, {
-	[API.REQUEST]: state => ({ status: 'loading' }),
-	[API.DONE]: (state, action) => ({ status: 'done', data: action.data }),
-	[API.FAIL]: (state, action) => ({ status: 'error', error: action.error })
-});
-```
-
-**Filter(types, reducer)**
-Creates a reducer that proxies its action to its reducers only if the action's type matches one of its types.
-
-```js
-import { Filter } from 'fluxette';
-import { USER } from './types';
-
-user = Filter([USER.LOGIN, USER.LOGOUT, USER.CHAT], user);
-```
-
-**History()**
-Creates a reducer that keeps track of the actions that have been dispatched.
-
-```js
-import { Shape, History } from 'fluxette';
-
-let flux = Flux(Shape({
-	history: History(),
-	// ...
-}))
-
-dispatch([{ type: TYPES.A, data: 'a' }, { type: TYPES.B, data: 'b' }]);
-dispatch({ type: TYPES.C, data: 'c' });
-
-flux.state().history
-
-// [{ type: TYPES.A, data: 'a' }, { type: TYPES.B, data: 'b' }, { type: TYPES.C, data: 'c' }]
-```
-
-**Hydrate(reducer)**
-Creates a reducer that wraps `reducer`, and replaces the state with `action.state` when an action of type `Hydrate.type` is dispatched.
-
-```js
-import { Hydrate } from 'fluxette';
-
-let flux = Flux(Hydrate(/* ... */));
-
-dispatch({ type: Hydrate.type, state: { a: 5, b: 6 }});
-
-flux.state()
-
-// { a: 5, b: 6 }
-
-```
-
-**Context**
-Extends a React component to provide a Flux object on the context to all of its children.
-
-```js
-import { Context } from 'fluxette';
-import App from './app';
-import flux from './flux';
-
-React.render(
-	<Context flux={ flux }>
-		{ () => <App /> }
-	</Context>,
-	document.getElementById('root')
-);
-```
-
-**connect([selectors])**
-Extends a Component to manage listeners to the Flux object on `this.context`, and performs a `setState` when the state changes. It also takes an optional selector or array of selectors, which make the state more specific. It will only calculate a new value if one of the selectors returns a new value. It makes `this.context.flux.dispatch` available as `this.dispatch` on the component.
-
-```js
-import { connect } from 'fluxette';
-import { details } from './creators';
-
-@connect(state => state.details)
-class Component extends React.Component {
-	submit() {
-		this.dispatch(details.update({
-			nickname: React.findDOMNode(this.refs.nickname).value,
-			email: React.findDOMNode(this.refs.email).value
-		}));
-	}
-	render() {
-		let details = this.state;
-		return (
-			<div>
-				<input ref='nickname' defaultValue={ details.nickname } />
-				<input ref='email' defaultValue={ details.email } />
-				<button onClick={ ::this.submit }>Submit</button>
-			</div>
-		);
-	}
-}
-```
-
-**select(getters, deriver)**
-Creates a selector that caches the results of the `getters` array, which are applied to `deriver` as an argument list. It only returns a new value when the getters have returned new data, which is useful for data computations that would break equality checks otherwise.
-
-```js
-import { select } from 'fluxette';
-
-let itemsWith = {
-	discount: state => state.products.onSale,
-	warranty: state => state.products.warranted,
-	highRating: state => state.products.highRated
-};
-
-let userProducts = select(
-	[itemsWith.discount, itemsWith.warranty],
-	(discounted, warranted) => ({ products: _.union(discounted, warranted) })
-);
 ```
 
 ## Glossary
@@ -667,8 +546,7 @@ npm test
 ```
 
 ## Todo
-* separate React, middleware, and Reducer facilities
-* write async data dependencies
+* write async data dependencies example
 * add code coverage, CI, badges, etc.
 * submit to HN
 

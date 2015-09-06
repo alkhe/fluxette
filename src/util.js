@@ -30,16 +30,3 @@ export let remove = (array, obj) => {
 		array.splice(index, 1);
 	}
 };
-
-// Determine whether two arrays are functionally equivalent
-export let same = (left, right) => {
-	if (left.length !== right.length) {
-		return false;
-	}
-	for (let i in left) {
-		if (right[i] !== left[i]) {
-			return false;
-		}
-	}
-	return true;
-}

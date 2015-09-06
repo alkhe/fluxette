@@ -1,7 +1,10 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import Flux, { Reducer, thunk, promise } from '..';
+import Flux from '..';
+import Leaf from 'reducer/leaf';
+import thunk from 'fluxette-thunk';
+import promise from 'fluxette-promise';
 
 chai.use(spies);
 
@@ -14,7 +17,7 @@ const TYPES = {
 describe('middleware', () => {
 	describe('thunk', () => {
 		it('should dispatch functions', done => {
-			let flux = Flux(Reducer(0, {
+			let flux = Flux(Leaf(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			})).using(thunk);
@@ -36,7 +39,7 @@ describe('middleware', () => {
 				return Promise.all(this).then(...args);
 			};
 
-			let flux = Flux(Reducer(0, {
+			let flux = Flux(Leaf(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			})).using(thunk, promise);

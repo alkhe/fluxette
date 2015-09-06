@@ -1,7 +1,9 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import { Shape, Reducer, Filter } from '..';
+import Shape from 'reducer/shape';
+import Leaf from 'reducer/leaf';
+import Filter from 'reducer/filter';
 
 chai.use(spies);
 
@@ -10,13 +12,13 @@ let TYPES = {
 	DEC: 'DEC'
 };
 
-describe('Reducer', () => {
+describe('Leaf', () => {
 
 	it('should return state when called', () => {
 		let inc = chai.spy(state => ({ ...state, num: state.num + 1, history: state.history.concat(state.num) }));
 		let dec = chai.spy(state => ({ ...state, num: state.num - 1, history: state.history.concat(state.num) }));
 
-		let store = Reducer({ num: 0, history: [] }, {
+		let store = Leaf({ num: 0, history: [] }, {
 			[TYPES.INC]: inc,
 			[TYPES.DEC]: dec
 		});
@@ -28,7 +30,7 @@ describe('Reducer', () => {
 		let dec = chai.spy(state => ({ ...state, num: state.num - 1, history: state.history.concat(state.num) }));
 
 		let state;
-		let store = Reducer({ num: 0, history: [] }, {
+		let store = Leaf({ num: 0, history: [] }, {
 			[TYPES.INC]: inc,
 			[TYPES.DEC]: dec
 		});
@@ -43,7 +45,7 @@ describe('Reducer', () => {
 		let dec = chai.spy(state => ({ ...state, num: state.num - 1, history: state.history.concat(state.num) }));
 
 		let state;
-		let store = Reducer({ num: 0, history: [] }, {
+		let store = Leaf({ num: 0, history: [] }, {
 			[TYPES.INC]: inc,
 			[TYPES.DEC]: dec
 		});
@@ -63,7 +65,7 @@ describe('Shape', () => {
 
 		let state;
 
-		let reducer = Reducer({ num: 0, history: [] }, {
+		let reducer = Leaf({ num: 0, history: [] }, {
 			[TYPES.INC]: inc,
 			[TYPES.DEC]: dec
 		});
@@ -84,7 +86,7 @@ describe('Filter', () => {
 
 		let state, newstate;
 
-		let reducer = Reducer({ num: 0, history: [] }, {
+		let reducer = Leaf({ num: 0, history: [] }, {
 			[TYPES.INC]: inc,
 			[TYPES.DEC]: dec
 		});

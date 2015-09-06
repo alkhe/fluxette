@@ -1,7 +1,13 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import Flux, { Shape, Reducer, History, Hydrate } from '..';
+import Flux from '..';
+import Shape from 'reducer/shape';
+import Leaf from 'reducer/leaf';
+import History from 'reducer/history';
+import Hydrate, { type as hydrateType } from 'reducer/hydrate';
+
+console.log(Hydrate);
 
 chai.use(spies);
 
@@ -16,11 +22,11 @@ describe('rehydration', () => {
 		it('should recover state from history', () => {
 			let stores = {
 				history: History(),
-				a: Reducer(0, {
+				a: Leaf(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
 				}),
-				b: Reducer('', {
+				b: Leaf('', {
 					[TYPES.A]: state => state + 'a',
 					[TYPES.B]: state => state + 'b'
 				})
@@ -42,11 +48,11 @@ describe('rehydration', () => {
 	describe('declarative', () => {
 		it('should recover state by initialization', () => {
 			let stores = {
-				a: Reducer(0, {
+				a: Leaf(0, {
 					[TYPES.A]: state => state + 1,
 					[TYPES.B]: state => state - 1
 				}),
-				b: Reducer('', {
+				b: Leaf('', {
 					[TYPES.A]: state => state + 'a',
 					[TYPES.B]: state => state + 'b'
 				})
@@ -57,7 +63,7 @@ describe('rehydration', () => {
 			let lastState = state();
 
 			let { dispatch: dispatch2, state: state2 } = Flux(Hydrate(Shape(stores)));
-			dispatch2({ type: Hydrate.type, state: lastState });
+			dispatch2({ type: hydrateType, state: lastState });
 
 			expect(state2()).to.deep.equal(lastState);
 			expect(state2()).to.equal(lastState);

@@ -1,7 +1,8 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import Flux, { Reducer } from '..';
+import Flux from '..';
+import Leaf from 'reducer/leaf';
 
 chai.use(spies);
 
@@ -13,7 +14,7 @@ const TYPES = {
 
 describe('hook', () => {
 	it('should call listeners by the number of dispatches', () => {
-		let { dispatch, hook } = Flux(Reducer(0, {
+		let { dispatch, hook } = Flux(Leaf(0, {
 			[TYPES.A]: state => state + 1,
 			[TYPES.B]: state => state - 1
 		}));
@@ -27,7 +28,7 @@ describe('hook', () => {
 		expect(spy).to.have.been.called.exactly(4);
 	});
 	it('should call listeners with (state)', done => {
-		let { dispatch, state: getState, hook } = Flux(Reducer(0, {
+		let { dispatch, state: getState, hook } = Flux(Leaf(0, {
 			[TYPES.A]: state => state + 1,
 			[TYPES.B]: state => state - 1
 		}));
@@ -44,7 +45,7 @@ describe('hook', () => {
 
 describe('unhook', () => {
 	it('should not call listeners after unhook', () => {
-		let { dispatch, hook, unhook } = Flux(Reducer(0, {
+		let { dispatch, hook, unhook } = Flux(Leaf(0, {
 			[TYPES.A]: state => state + 1,
 			[TYPES.B]: state => state - 1
 		}));

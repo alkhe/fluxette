@@ -1,7 +1,9 @@
 /* global describe it */
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import Flux, { Shape, Reducer } from '..';
+import Flux from '..';
+import Shape from 'reducer/shape';
+import Leaf from 'reducer/leaf';
 
 chai.use(spies);
 
@@ -14,11 +16,11 @@ const TYPES = {
 describe('dispatch', () => {
 	it('should update state when called', () => {
 		let { dispatch, state } = Flux(Shape({
-			a: Reducer(0, {
+			a: Leaf(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}),
-			b: Reducer('', {
+			b: Leaf('', {
 				[TYPES.A]: state => state + 'a',
 				[TYPES.B]: state => state + 'b'
 			})
@@ -37,11 +39,11 @@ describe('dispatch', () => {
 	});
 	it('should dispatch arrays', () => {
 		let { dispatch, state } = Flux(Shape({
-			a: Reducer(0, {
+			a: Leaf(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}),
-			b: Reducer('', {
+			b: Leaf('', {
 				[TYPES.A]: state => state + 'a',
 				[TYPES.B]: state => state + 'b'
 			})
@@ -55,11 +57,11 @@ describe('dispatch', () => {
 	});
 	it('should not call hooks when nothing is passed', () => {
 		let { dispatch, hook } = Flux(Shape({
-			a: Reducer(0, {
+			a: Leaf(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}),
-			b: Reducer('', {
+			b: Leaf('', {
 				[TYPES.A]: state => state + 'a',
 				[TYPES.B]: state => state + 'b'
 			})
@@ -72,11 +74,11 @@ describe('dispatch', () => {
 	});
 	it('should not notify hooks when non-Objects are passed', () => {
 		let { dispatch, hook } = Flux(Shape({
-			a: Reducer(0, {
+			a: Leaf(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
 			}),
-			b: Reducer('', {
+			b: Leaf('', {
 				[TYPES.A]: state => state + 'a',
 				[TYPES.B]: state => state + 'b'
 			})

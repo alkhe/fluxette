@@ -2,7 +2,10 @@
 import React, { addons, PropTypes } from 'react/addons';
 import chai, { expect } from 'chai';
 import spies from 'chai-spies';
-import Flux, { Shape, Reducer, Context, connect, select } from '..';
+import Flux from '..';
+import Shape from 'reducer/shape';
+import Leaf from 'reducer/leaf';
+import { Context, connect, select } from 'fluxette-react';
 
 chai.use(spies);
 
@@ -17,7 +20,7 @@ describe('React', () => {
 
 	it('should hook component without specifier', () => {
 		let flux = Flux(Shape({
-			user: Reducer({ username: '', email: '' }, {
+			user: Leaf({ username: '', email: '' }, {
 				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
 			})
@@ -59,7 +62,7 @@ describe('React', () => {
 	});
 	it('should hook component with specifier', () => {
 		let flux = Flux(Shape({
-			user: Reducer({ username: '', email: '' }, {
+			user: Leaf({ username: '', email: '' }, {
 				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
 			})
@@ -103,7 +106,7 @@ describe('React', () => {
 	it('should not rerender if data has not changed', () => {
 		let spy = chai.spy(() => {});
 		let flux = Flux(Shape({
-			user: Reducer({ username: '', email: '' }, {
+			user: Leaf({ username: '', email: '' }, {
 				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
 			})
@@ -151,7 +154,7 @@ describe('React', () => {
 	it('should not rerender if data has not changed with selector', () => {
 		let spy = chai.spy(() => {});
 		let flux = Flux(Shape({
-			user: Reducer({ username: '', email: '' }, {
+			user: Leaf({ username: '', email: '' }, {
 				[USER.SETNAME]: (state, action) => ({ ...state, username: action.name }),
 				[USER.SETEMAIL]: (state, action) => ({ ...state, email: action.email })
 			})
@@ -243,7 +246,7 @@ describe('React', () => {
 		Simulate.click(React.findDOMNode(c.refs.toggle));
 	});
 	it('should include base context types', done => {
-		let flux = Flux(Reducer({}));
+		let flux = Flux(Leaf({}));
 
 		@connect()
 		class Component extends React.Component {
