@@ -338,7 +338,7 @@ flux = flux.using(
 **To log all actions just before they are reduced:** Add a logger to the end of your middleware chain. This will log only actions that the reducers see, and will be logged to the history.
 
 ```js
-flux = flux.using
+flux = flux.using(
 	...middleware,
 	function(next) {
 		return action => {
@@ -383,7 +383,9 @@ server.route('/', (req, res) => {
 ```
 
 ## Asynchronous
-fluxette is completely synchronous, but asynchronous functionality is also supported. [`thunk`](https://github.com/edge/fluxette-thunk) and [`promise`](https://github.com/edge/fluxette-promise) are two middleware available in the ecosystem.
+fluxette by itself is completely synchronous, but is engineered with asynchronous functionality in mind. [`thunk`](https://github.com/edge/fluxette-thunk) and [`promise`](https://github.com/edge/fluxette-promise) are two middleware available in the ecosystem.
+
+Mix and match the many possible styles to your liking.
 
 One way to use the thunk middleware is to use an async action that combines actions:
 ```js
@@ -394,21 +396,21 @@ let { dispatch } = flux;
 
 // actions
 let resource = {
-	request: () => { type: RESOURCE.REQUEST },
-	done: data => { type: RESOURCE.DONE, data },
-	fail: err => { type: RESOURCE.FAIL, err }
+	request: () => ({ type: RESOURCE.REQUEST }),
+	success: data => ({ type: RESOURCE.SUCCESS, data }),
+	failure: err => ({ type: RESOURCE.FAILURE, err })
 };
 
 // async action
-let getResource = (data) => {
+let getResource = url => {
 	({ dispatch }) => {
 		dispatch(resource.request());
-		asyncRequest(data.url, (err, res) => {
+		asyncRequest(url, (err, data) => {
 			if (err) {
-				dispatch(resource.fail(err));
+				dispatch(resource.failure(err));
 			}
 			else {
-				dispatch(resource.done(res));
+				dispatch(resource.success(data));
 			}
 		});
 	}
@@ -422,14 +424,13 @@ Another way is to return an array of actions directly from the action creator:
 import thunk from 'fluxette-thunk';
 
 flux = flux.using(thunk);
-let { dispatch } = flux;
 
-let resource = data => [
+let getResource = url => [
 	{ type: RESOURCE.REQUEST },
 	({ dispatch }) => {
-		asyncRequest(data.url, (err, data) => {
+		asyncRequest(url, (err, data) => {
 			if (err) {
-				dispatch({ type: RESOURCE.FAIL, err });
+				dispatch({ type: RESOURCE.FAILURE, err });
 			}
 			else {
 				dispatch({ type: RESOURCE.SUCCESS, data });
@@ -438,7 +439,25 @@ let resource = data => [
 	}
 ];
 
-dispatch(getResource(data));
+flux.dispatch(getResource(data));
+```
+
+Or, if your asynchronous actions can be represented as Promises (usually the most concise and reasonable way):
+```js
+import thunk from 'fluxette-thunk';
+
+flux = flux.using(thunk);
+
+let getResource = data =>
+	({ dispatch }) => {
+		dispatch({ type: RESOURCE.REQUEST });
+		asyncRequest(url)
+			.then(data => ({ type: RESOURCE.SUCCESS, data }))
+			.catch(err => ({ type: RESOURCE.FAILURE, err }))
+			.then(dispatch);
+	}
+
+flux.dispatch(getResource(data));
 ```
 
 ## Optimistic Updates
@@ -449,12 +468,12 @@ import thunk from 'fluxette-thunk';
 import Leaf from 'reducer/leaf';
 
 flux = flux.using(thunk);
-let { dispatch } = flux;
 
 let setMessage = (messages, { message }) => ({
 	...messages,
 	[message.id]: message
 });
+
 let messageReducer = Leaf({}, {
 	[MESSAGE.REQUEST]: setMessage,
 	[MESSAGE.SUCCESS]: setMessage,
@@ -464,21 +483,16 @@ let messageReducer = Leaf({}, {
 	}
 });
 
-let sendMessage = message => [
-	{ type: MESSAGE.REQUEST, message },
+let sendMessage = message =>
 	({ dispatch }) => {
-		sendToServer(message, (err, message) => {
-			if (err) {
-				dispatch({ type: RESOURCE.FAIL, err });
-			}
-			else {
-				dispatch({ type: RESOURCE.SUCCESS, message });
-			}
-		});
-	}
-];
+		dispatch({ type: MESSAGE.REQUEST, message });
+		sendToServerPromise(message)
+			.then(() => ({ type: RESOURCE.SUCCESS, message }))
+			.catch(err => ({ type: RESOURCE.FAILURE, err }))
+			.then(dispatch);
+	};
 
-dispatch(sendMessage(message));
+flux.dispatch(sendMessage(message));
 ```
 
 ## Store Dependencies
@@ -511,7 +525,7 @@ let game = (state = { left: {}, right: {} }, action) => {
 }
 ```
 
-For simpler use cases, just plug Stores into other Stores.
+For simpler use cases, just plug Reducers into other Reducers.
 
 ```js
 import Shape from 'reducer/shape';
