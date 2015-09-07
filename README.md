@@ -197,18 +197,14 @@ flux.state();
 Registers a function as a listener.
 
 ```js
-flux.hook((state, actions) => {
-	console.log(state, actions);
-});
+flux.hook(state => console.log(state));
 ```
 
 **flux.unhook(fn)**
 Deregisters a function that was previously registered as a listener.
 
 ```js
-let fn = (state, actions) => {
-	console.log(state, actions);
-};
+let fn = ::console.log;
 
 flux.hook(fn);
 
@@ -227,10 +223,10 @@ An *Action* is an Object that contains information on how to update the state. C
 *Action Creators* are not internally known by fluxette, but are usually used in Flux applications to parametrize actions. By the norm of Functional Flux, they are functions that return *Actions*.
 
 **Reducer**
-A *Reducer* (or *Store*) is a pure function that accepts a state and an action, which it combines, or *reduces*, to create a new state. All Reducers should have the signature `(State, Action) => State`. The `Shape`, `Reducer`, and `Filter` facilities all return a Reducer.
+A *Reducer* is a function that accepts a state and an action, which it combines, or *reduces*, to create a new state. All Reducers should have the signature `(State, Action) => State`. The `Shape`, `Reducer`, and `Filter` facilities all return a Reducer. There are Pure Reducers and Dirty Reducers. Pure Reducers reduce based only on the state and action provided, while Dirty Reducers pull data from outside, or have side effects.
 
 **Hook**
-*Hooks* (or *Listeners*) are functions that respond to a change in the state. They have a wide spectrum of uses; they are similar to the `change` event listeners of a traditional MVC framework. They have a signature of `(?State, ?Array<Action>) => void`. The `connect` decorator uses a hook to subscribe your components to state changes.
+*Hooks* (or *Listeners*) are functions that respond to a change in the state. They have a wide spectrum of uses; they are similar to the `change` event listeners of a traditional MVC framework. They have a signature of `(?State) => void`. The `connect` decorator uses a hook to subscribe your components to state changes.
 
 **Selector**
 A *Selector* is a function that takes a state and makes it more specific. Selectors are very useful in React components, to keep your `render` method DRY and orthogonal, and to take advantage of caching features. For more advanced caching, you can use the `select` facility, which also returns a Selector. Selectors have the signature `(State) => State`.
