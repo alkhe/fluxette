@@ -121,7 +121,7 @@ const UPDATE = 'UPDATE';
 // actions
 const update = value => ({ type: UPDATE, value });
 
-// reducer store
+// reducer
 const updater = Leaf('', {
 	[UPDATE]: (state, action) => action.value
 });
@@ -159,9 +159,9 @@ Creates your central Flux object that manages the dispatcher and state. Its meth
 
 ```js
 import Flux from 'fluxette';
-import stores from './stores';
+import reducers from './reducers';
 
-const flux = Flux(stores);
+const flux = Flux(reducers);
 ```
 
 **flux.dispatch(actions, [update = true])**
@@ -171,7 +171,7 @@ Processes `actions` and calls all listeners if `update` is true. `actions` can b
 flux.dispatch({ type: 'MY_ACTION_TYPE', data: 'x' });
 
 // thunks
-import { thunk } from 'fluxette';
+import thunk from 'fluxette-thunk';
 flux = flux.using(thunk);
 flux.dispatch(({ dispatch }) => {
 	// useful if this function came from somewhere else
@@ -221,7 +221,7 @@ flux.unhook(fn);
 A *State* is any value that is representative of your application. It can be a primitive, Object, Array, or anything else. If you wish to implement de/rehydration, you may want to keep JSON serialization in mind.
 
 **Action**
-An *Action* is an Object that contains information on how to update the state. Customarily, they have a `type` property, along with any other data that your stores may need to operate on the state.
+An *Action* is an Object that contains information on how to update the state. Customarily, they have a `type` property, along with any other data that your reducers may need to operate on the state.
 
 **Action Creator**
 *Action Creators* are not internally known by fluxette, but are usually used in Flux applications to parametrize actions. By the norm of Functional Flux, they are functions that return *Actions*.
@@ -245,7 +245,8 @@ In the most general sense, Functional Flux relies on reducing actions into the s
 Middleware can extend the functionality of the dispatcher by accommodating functions, Promises, and other data structures, allowing for advanced asynchronous and multiplexing functionality. Middleware do not require knowledge of other middleware, which makes them easily composable. To use middleware, create a new flux object that implements them, by passing a list to `flux.using`.
 
 ```js
-import { thunk, promise } from 'fluxette';
+import thunk from 'fluxette-thunk';
+import promise from 'fluxette-promise';
 
 flux = flux.using(thunk, promise);
 ```
@@ -338,7 +339,7 @@ flux = flux.using(
 );
 ```
 
-**To log all actions just before the store reduces them:** Add a logger to the end of your middleware chain. This will log only actions that the stores see, and will be logged to the history.
+**To log all actions just before they are reduced:** Add a logger to the end of your middleware chain. This will log only actions that the reducers see, and will be logged to the history.
 
 ```js
 flux = flux.using
@@ -353,7 +354,7 @@ flux = flux.using
 ```
 
 
-**To log all actions after they are reduced into the stores:** Pass your logger/debugger to `hook` and `unhook` when you're done.
+**To log all actions after they are reduced:** Pass your logger/debugger to `hook` and `unhook` when you're done.
 
 ```js
 let logger = (state, actions) => {
@@ -372,11 +373,11 @@ Universal flux is very easy. Because `fluxette` doesn't force you to use use sin
 
 ```js
 import Flux from 'fluxette';
-import stores from './stores';
+import reducers from './reducers';
 import App from './views';
 
 server.route('/', (req, res) => {
-	let flux = Flux(stores);
+	let flux = Flux(reducers);
 	res.end(React.renderToString(
 		<Context flux={ flux }>
 			{ () => <App /> }
@@ -386,7 +387,7 @@ server.route('/', (req, res) => {
 ```
 
 ## Asynchronous
-fluxette is completely synchronous, but asynchronous functionality is also supported. `thunk` and `promise` middlewares are provided for you to use.
+fluxette is completely synchronous, but asynchronous functionality is also supported. [`thunk`](https://github.com/edge/fluxette-thunk) and [`promise`](https://github.com/edge/fluxette-promise) are two middleware available in the ecosystem.
 
 One way to use the thunk middleware is to use an async action that combines actions:
 ```js
@@ -485,7 +486,7 @@ dispatch(sendMessage(message));
 ```
 
 ## Store Dependencies
-Store dependencies in vanilla flux is handled by using `waitFor`, but `waitFor` is hard to trace, and may result in unpredictable application behavior, such as infinite loops. The fluxette way to handle store dependencies is to instead split an action into two semantic actions, which will be dispatched in order. This is known as action splitting, and it allows for declarative store dependencies, simultaneously improving clarity and preventing any possibility of mutual locks. In most Flux implementations, this would not be a viable solution, as dispatching twice results in an extra setState on each component. Since fluxette allows you to dispatch arrays of actions, atomic action handling is possible, and only one setState is called once the array has been fully processed. A dependency refactor usually should not involve changing component code; you can just make the relevant action creator return an array of actions instead. If you do not want to use action splitting, you can implement a short custom Store instead (see [Store Composition](#store-composition)).
+Store dependencies in vanilla flux is handled by using `waitFor`, but `waitFor` is hard to trace, and may result in unpredictable application behavior, such as infinite loops. The fluxette way to handle reducer dependencies is to instead split an action into two semantic actions, which will be dispatched in order. This is known as action splitting, and it allows for declarative reducer dependencies, simultaneously improving clarity and preventing any possibility of mutual locks. In most Flux implementations, this would not be a viable solution, as dispatching twice results in an extra setState on each component. Since fluxette allows you to dispatch arrays of actions, atomic action handling is possible, and only one setState is called once the array has been fully processed. A dependency refactor usually should not involve changing component code; you can just make the relevant action creator return an array of actions instead. If you do not want to use action splitting, you can implement a short custom Store instead (see [Store Composition](#store-composition)).
 
 ## Store Composition
 Because Stores are just pure functions, they can easily be composed and reused.
@@ -523,7 +524,7 @@ let users = {};
 
 let dispatchCount = (state = 0) => state + 1;
 
-let store = Shape(users);
+let userReducer = Shape(users);
 
 // user_029347 joined
 users['user_029347'] = dispatchCount;
