@@ -38,12 +38,12 @@ npm install --save fluxette
 ```
 [Browser builds (umd) are also available.](https://github.com/edge/fluxette/tree/master/dist)
 
-You'll probably want `reducer` as well for common reducer compositions (these used to come packaged with fluxette).
+You'll probably want [`reducer`](https://github.com/edge/reducer) as well for common reducer compositions (these used to come packaged with fluxette).
 ```sh
 npm install --save reducer
 ```
 
-If you're working with React, you should grab the React bindings.
+If you're working with React, you should grab the [React bindings](https://github.com/edge/fluxette-react).
 ```sh
 npm install --save fluxette-react
 ```
