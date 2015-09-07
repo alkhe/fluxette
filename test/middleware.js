@@ -35,14 +35,10 @@ describe('middleware', () => {
 	});
 	describe('promise', () => {
 		it('should dispatch promises', done => {
-			let then = function(...args) {
-				return Promise.all(this).then(...args);
-			};
-
 			let flux = Flux(Leaf(0, {
 				[TYPES.A]: state => state + 1,
 				[TYPES.B]: state => state - 1
-			})).using(thunk, promise);
+			})).using(promise);
 
 			flux.dispatch({ type: TYPES.A });
 
@@ -55,10 +51,9 @@ describe('middleware', () => {
 			};
 			flux.hook(temporal);
 
-			flux.dispatch(({ dispatch }) =>
-				dispatch(new Promise(res => {
-					setTimeout(() => res({ type: TYPES.A }), 10);
-				}))::then(dispatch)
+			flux.dispatch(
+				new Promise(res => setTimeout(() => res(TYPES.A), 10))
+					.then(type => ({ type }))
 			);
 		});
 	});
