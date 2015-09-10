@@ -7,8 +7,6 @@ import Leaf from 'reducer/leaf';
 import History from 'reducer/history';
 import Hydrate, { type as hydrateType } from 'reducer/hydrate';
 
-console.log(Hydrate);
-
 chai.use(spies);
 
 const TYPES = {

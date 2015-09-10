@@ -1,30 +1,24 @@
 let gulp = require('gulp'),
-	babel = require('gulp-babel'),
 	webpack = require('webpack'),
-	wf = require('../webpack.factory');
+	browser = require('../browser.config'),
+	npm = require('../npm.config'),
+	test = require('../test.config');
 
-let src = './src/**/*.js';
+let log = next =>
+	(err, stats) => {
+		if (err) {
+			throw new Error(err);
+		}
+		console.log(stats.toString());
+		next();
+	};
 
-let wlogger = (err, stats) => {
-	if (err) {
-		throw new Error(err);
-	}
-	console.log(stats.toString());
-};
-
-gulp.task('default', ['watch']);
-gulp.task('watch', () => gulp.watch(src, 'build'));
 gulp.task('build', ['npm', 'browser']);
 
-gulp.task('npm', () =>
-	gulp.src(src)
-		.pipe(babel())
-		.pipe(gulp.dest('./lib'))
-);
-
+gulp.task('npm', next => webpack(npm, log(next)));
 gulp.task('browser', ['min', 'dev']);
 
-gulp.task('min', () => webpack(wf.build(true, 'fluxette.min.js'), wlogger));
-gulp.task('dev', () => webpack(wf.build(false, 'fluxette.js'), wlogger));
+gulp.task('min', next => webpack(browser(true), log(next)));
+gulp.task('dev', next => webpack(browser(false), log(next)));
 
-gulp.task('test', () => webpack(wf.test(), wlogger));
+gulp.task('test', next => webpack(test, log(next)));

@@ -1,7 +1,7 @@
 {
   "name": "fluxette",
   "version": "0.19.2",
-  "description": "Minimalist, functional, and concise Flux.",
+  "description": "Minimalist, functional, concise Flux.",
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
@@ -26,7 +26,9 @@
   "keywords": [
     "flux",
     "fluxette",
+    "redux",
     "functional",
+    "reactive",
     "pure",
     "react",
     "dispatcher"

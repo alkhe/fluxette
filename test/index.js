@@ -3,6 +3,14 @@ import { expect } from 'chai';
 import Flux from '..';
 import Shape from 'reducer/shape';
 
+import './dispatch';
+import './hooks';
+import './middleware';
+import './react';
+import './rehydration';
+import './state';
+import './store';
+
 describe('index', () => {
 	it('should properly construct flux object', () => {
 		let flux = Flux(Shape());
