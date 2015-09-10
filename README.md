@@ -27,9 +27,9 @@
 
 Why fluxette? (We used to have a list of buzzwords here.)
 
-"fluxette" means "little flux". That's exactly what it is, coming in a tiny 1.6 kB, minified (even smaller gzipped!). It is a library that combines the advantages of orthogonal code with the robust design of Facebook Flux. Through simple rules, it allows for the creation and exploitation of very advanced design patterns. It relies only on the basic convention that your stores are pure functions in the form of `(State, Action) => State` (see [The Law of Functional Flux](#the-law-of-functional-flux)). As a result, its dispatcher exists as [one simple line](https://github.com/edge/fluxette/blob/master/src/flux.js#L10). fluxette makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste reducers/listeners from redux).
+"fluxette" means "little flux". That's exactly what it is, coming in at a tiny 1.4 kB, minified (even smaller gzipped!). It is a library that combines the advantages of orthogonal code with the robust design of Facebook Flux. Through simple rules, it allows for the creation and exploitation of very advanced design patterns. It relies only on the basic convention that your stores are pure functions in the form of `(State, Action) => State` (see [The Law of Functional Flux](#the-law-of-functional-flux)). As a result, its dispatcher exists as [one simple line](https://github.com/edge/fluxette/blob/master/src/index.js#L10). fluxette makes migrating from other implementations in the family of functional Flux very easy (e.g. copy-paste reducers/listeners from redux).
 
-fluxette prevents you from having many of the headaches that you may have had with React and other Flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("did the state really change?" and "I'm not done updating yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more.
+fluxette abstracts away many of the headaches that you may have had with React and other Flux implementations, such as Store dependencies (`waitFor`), superfluous `setState`s ("did the state really change?" and "I'm not done updating yet!"), listening to finer and coarser-grained updates, [`Uncaught Error: Invariant Violation: Dispatch.dispatch(...)`](http://i.imgur.com/YnI9TIJ.jpg), and more.
 
 ## Install
 
@@ -38,7 +38,7 @@ npm install --save fluxette
 ```
 [Browser builds (umd) are also available.](https://github.com/edge/fluxette/tree/master/dist)
 
-You'll probably want [`reducer`](https://github.com/edge/reducer) as well for common reducer compositions (these used to come packaged with fluxette).
+You'll probably want [`reducer`](https://github.com/edge/reducer) as well for common reducer compositions.
 ```sh
 npm install --save reducer
 ```
@@ -103,11 +103,11 @@ const flux = Flux(updater);
 
 `Leaf` creates a pure function that looks at your actions and uses them to determine how to operate on the state. Our Reducer's default value is an empty string, just like in our `Updater` component. It listens to any actions of the type `UPDATE`, and uses the value that the action carries as our new state.
 
-We also create a stateful interface to our reducer, which we can now integrate into our component.
+We also create a Flux object, which we can now integrate into our component.
 
 **Putting it all together**
 
-Here we import two things from the React bindings: the `@connect` decorator and the `Context` component. `Context` provides flux on `this.context` to all of its children, which `@connect` then utilizes to manage listeners on your component (also attaches `dispatch` to the component, for your convenience).
+Here we import two things from the React bindings: the `@connect` decorator and the `Context` component. `Context` provides flux on `this.context` to all of its children, which `@connect` then utilizes to manage listeners on your component (also attaches `dispatch` to the component, for convenience).
 
 ```js
 import React from 'react';
@@ -155,6 +155,7 @@ React.render(
 ## API
 
 **Flux(reducer)**
+
 Creates your central Flux object that manages the dispatcher and state. Its methods can be called anonymously.
 
 ```js
@@ -165,6 +166,7 @@ const flux = Flux(reducers);
 ```
 
 **flux.dispatch(actions, [update = true])**
+
 Processes `actions` and calls all listeners if `update` is true. `actions` can be any Object, or array of Objects, which can be nested. If you use middleware, that includes Functions, Promises, and others. You can call `dispatch` without any arguments to call all listeners, if you streamed or buffered updates to the dispatcher. It also returns the array of actions that were processed by the dispatch pipeline, making techniques like Promise chaining easy.
 
 ```js
@@ -180,6 +182,7 @@ flux.dispatch(({ dispatch }) => {
 ```
 
 **flux.using(...middleware)**
+
 Takes an argument list of middleware folds them over the internal dispatcher, on a new Flux object. This can be called multiple times.
 
 ```js
@@ -187,6 +190,7 @@ flux = flux.using(thunk, promise);
 ```
 
 **flux.state()**
+
 Returns the state.
 
 ```js
@@ -194,6 +198,7 @@ flux.state();
 ```
 
 **flux.hook(fn)**
+
 Registers a function as a listener.
 
 ```js
@@ -201,6 +206,7 @@ flux.hook(state => console.log(state));
 ```
 
 **flux.unhook(fn)**
+
 Deregisters a function that was previously registered as a listener.
 
 ```js
@@ -214,24 +220,31 @@ flux.unhook(fn);
 ## Glossary
 
 **State**
+
 A *State* is any value that is representative of your application. It can be a primitive, Object, Array, or anything else. If you wish to implement de/rehydration, you may want to keep JSON serialization in mind.
 
 **Action**
+
 An *Action* is an Object that contains information on how to update the state. Customarily, they have a `type` property, along with any other data that your reducers may need to operate on the state.
 
 **Action Creator**
+
 *Action Creators* are not internally known by fluxette, but are usually used in Flux applications to parametrize actions. By the norm of Functional Flux, they are functions that return *Actions*.
 
 **Reducer**
+
 A *Reducer* is a function that accepts a state and an action, which it combines, or *reduces*, to create a new state. All Reducers should have the signature `(State, Action) => State`. The `Shape`, `Reducer`, and `Filter` facilities all return a Reducer. There are Pure Reducers and Dirty Reducers. Pure Reducers reduce based only on the state and action provided, while Dirty Reducers pull data from outside, or have side effects.
 
 **Hook**
+
 *Hooks* (or *Listeners*) are functions that respond to a change in the state. They have a wide spectrum of uses; they are similar to the `change` event listeners of a traditional MVC framework. They have a signature of `(?State) => void`. The `connect` decorator uses a hook to subscribe your components to state changes.
 
 **Selector**
+
 A *Selector* is a function that takes a state and makes it more specific. Selectors are very useful in React components, to keep your `render` method DRY and orthogonal, and to take advantage of caching features. For more advanced caching, you can use the `select` facility, which also returns a Selector. Selectors have the signature `(State) => State`.
 
 **Deriver**
+
 The *Deriver* is an concept specific to the `select` facility. `select` takes a Selector or an array of Selectors, and passes the results of each to the deriver to create a logical (as opposed to raw) data object that your application uses. Derivers are functions that expect the results of Selectors and returns a State.
 
 ## The Law of Functional Flux
@@ -525,7 +538,7 @@ let game = (state = { left: {}, right: {} }, action) => {
 }
 ```
 
-For simpler use cases, just plug Reducers into other Reducers.
+For simpler use cases, just plug Reducers into other Reducers. (You should write a Reducer to do this).
 
 ```js
 import Shape from 'reducer/shape';
